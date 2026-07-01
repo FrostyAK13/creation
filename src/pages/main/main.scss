@@ -65,6 +65,15 @@
         }
 
         .dc-tabs {
+            height: 100%;
+            display: grid;
+            grid-template-rows: auto 1fr;
+
+            &__content {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
             &__active-line {
                 background-color: #f7c53b;
                 transition: none;
