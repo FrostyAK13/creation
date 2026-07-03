@@ -1,11 +1,11 @@
 {
-    "brand_name": "YourBrand",
-    "brand_domain": "yourbrand.com",
+    "brand_name": "FROSTYDBOT",
+    "brand_domain": "frostydbot.site",
     "brand_hostname": {
-        "staging": "staging.yourbrand.com/dashboard",
-        "production": "yourbrand.com/dashboard"
+        "staging": "staging.frostydbot.site",
+        "production": "www.frostydbot.site"
     },
-    "domain_name": "YourBrand.com",
+    "domain_name": "frostydbot.site",
     "colors": {
         "primary": "#f7c53b",
         "secondary": "#64748b",
