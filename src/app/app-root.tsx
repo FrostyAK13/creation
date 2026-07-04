@@ -4,6 +4,8 @@ import ErrorBoundary from '@/components/error-component/error-boundary';
 import ErrorComponent from '@/components/error-component/error-component';
 import ConnectionLoader from '@/components/loader/connection-loader';
 import { api_base } from '@/external/bot-skeleton';
+import { CONNECTION_STATUS } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
+import { useApiBase } from '@/hooks/useApiBase';
 import { useStore } from '@/hooks/useStore';
 import './app-root.scss';
 
@@ -32,6 +34,7 @@ const ErrorComponentWrapper = observer(() => {
 
 const AppRoot = () => {
     const store = useStore();
+    const { connectionStatus } = useApiBase();
     const api_base_initialized = useRef(false);
     const [is_api_initialized, setIsApiInitialized] = useState(false);
 
@@ -53,7 +56,7 @@ const AppRoot = () => {
                     api_base_initialized.current = false;
                 } finally {
                     setIsApiInitialized(true);
-                    clearTimeout(timeoutId); // Clear timeout if API init completes
+                    clearTimeout(timeoutId);
                 }
             }
         };
@@ -62,7 +65,9 @@ const AppRoot = () => {
         return () => clearTimeout(timeoutId);
     }, []);
 
-    if (!store || !is_api_initialized) return <AppRootLoader />;
+    const isConnected = connectionStatus === CONNECTION_STATUS.OPENED;
+
+    if (!store || !is_api_initialized || !isConnected) return <AppRootLoader />;
 
     return (
         <Suspense fallback={<AppRootLoader />}>
