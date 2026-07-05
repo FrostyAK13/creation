@@ -5,6 +5,7 @@ import { addComma, getCurrencyDisplayCode, getDecimalPlaces } from '@/components
 import Text from '@/components/shared_ui/text';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 import { useApiBase } from '@/hooks/useApiBase';
+import { useMarketingBalance } from '@/hooks/useMarketingBalance';
 import { useStore } from '@/hooks/useStore';
 import { isDemoAccount } from '@/utils/account-helpers';
 import { Localize } from '@deriv-com/translations';
@@ -17,6 +18,15 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const { accountList, activeLoginid } = useApiBase();
     const { client, run_panel } = useStore() ?? {};
+
+    // ── Marketing balance ─────────────────────────────────────────────────────
+    const {
+        isMarketingActive,
+        marketingDemoLoginid,
+        marketingBalance,
+        defaultBalance,
+        resetDemoBalance,
+    } = useMarketingBalance(accountList);
 
     const is_bot_running = run_panel?.is_running || api_base.is_running;
     const isSingleAccount = !accountList || accountList.length <= 1;
@@ -52,23 +62,44 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
         [client]
     );
 
+    // Format balance helper — returns the string shown in the dropdown for an account.
+    const formatAccountBalance = useCallback(
+        (account: { loginid: string; balance?: number | string; currency: string }) => {
+            // Override for the marketing demo account.
+            if (isMarketingActive && account.loginid === marketingDemoLoginid && marketingBalance !== null) {
+                return addComma(marketingBalance.toFixed(getDecimalPlaces(account.currency)));
+            }
+            return addComma(Number(account.balance ?? 0).toFixed(getDecimalPlaces(account.currency)));
+        },
+        [isMarketingActive, marketingDemoLoginid, marketingBalance]
+    );
+
     const formattedAccounts = useMemo(() => {
         if (!accountList) return [];
         return accountList
             .map(account => ({
                 loginid: account.loginid,
                 currency: account.currency,
-                balance: addComma(Number(account.balance ?? 0).toFixed(getDecimalPlaces(account.currency))),
+                balance: formatAccountBalance(account),
                 isVirtual: isDemoAccount(account.loginid),
                 isActive: account.loginid === activeLoginid,
             }))
             .sort((a, b) => (a.isActive ? -1 : b.isActive ? 1 : 0));
-    }, [accountList, activeLoginid]);
+    }, [accountList, activeLoginid, formatAccountBalance]);
 
     if (!activeAccount) return null;
 
     const { currency, isVirtual, balance } = activeAccount;
     const showChevron = !isSingleAccount && !is_bot_running;
+
+    // ── Override header balance for the marketing demo account ────────────────
+    const isActiveAccountMarketingDemo =
+        isMarketingActive && isVirtual && activeLoginid === marketingDemoLoginid;
+
+    const displayBalance =
+        isActiveAccountMarketingDemo && marketingBalance !== null
+            ? addComma(marketingBalance.toFixed(getDecimalPlaces(currency ?? 'USD')))
+            : balance;
 
     return (
         <div className='acc-info__wrapper' ref={wrapperRef}>
@@ -131,7 +162,7 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                                     {!currency ? (
                                         <Localize i18n_default_text='No currency assigned' />
                                     ) : (
-                                        `${balance} ${getCurrencyDisplayCode(currency)}`
+                                        `${displayBalance} ${getCurrencyDisplayCode(currency)}`
                                     )}
                                 </p>
                             </div>
@@ -139,45 +170,90 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                     </div>
                 </div>
             </AccountInfoWrapper>
+
             {isOpen && (
                 <div className='acc-dropdown' role='listbox'>
                     {formattedAccounts.map(account => (
-                        <div
-                            key={account.loginid}
-                            role='option'
-                            aria-selected={account.isActive}
-                            tabIndex={0}
-                            className={classNames('acc-dropdown__account', {
-                                'acc-dropdown__account--selected': account.isActive,
-                                'acc-dropdown__account--virtual': account.isVirtual,
-                            })}
-                            onClick={() => !account.isActive && handleAccountSelect(account.loginid)}
-                            onKeyDown={e => {
-                                if (!account.isActive && (e.key === 'Enter' || e.key === ' ')) {
-                                    e.preventDefault();
-                                    handleAccountSelect(account.loginid);
-                                }
-                            }}
-                        >
-                            <Text
-                                size='xxxs'
-                                className={classNames('acc-dropdown__account-type', {
-                                    'acc-dropdown__account-type--virtual': account.isVirtual,
+                        <div key={account.loginid}>
+                            <div
+                                role='option'
+                                aria-selected={account.isActive}
+                                tabIndex={0}
+                                className={classNames('acc-dropdown__account', {
+                                    'acc-dropdown__account--selected': account.isActive,
+                                    'acc-dropdown__account--virtual': account.isVirtual,
                                 })}
+                                onClick={() => !account.isActive && handleAccountSelect(account.loginid)}
+                                onKeyDown={e => {
+                                    if (!account.isActive && (e.key === 'Enter' || e.key === ' ')) {
+                                        e.preventDefault();
+                                        handleAccountSelect(account.loginid);
+                                    }
+                                }}
                             >
-                                {account.isVirtual ? (
-                                    <Localize i18n_default_text='Demo account' />
-                                ) : (
-                                    <Localize i18n_default_text='Real account' />
-                                )}
-                            </Text>
-                            <Text size='xs' weight='bold' className='acc-dropdown__balance'>
-                                {account.currency ? (
-                                    `${account.balance} ${getCurrencyDisplayCode(account.currency)}`
-                                ) : (
-                                    <Localize i18n_default_text='No currency assigned' />
-                                )}
-                            </Text>
+                                <Text
+                                    size='xxxs'
+                                    className={classNames('acc-dropdown__account-type', {
+                                        'acc-dropdown__account-type--virtual': account.isVirtual,
+                                    })}
+                                >
+                                    {account.isVirtual ? (
+                                        <Localize i18n_default_text='Demo account' />
+                                    ) : (
+                                        <Localize i18n_default_text='Real account' />
+                                    )}
+                                </Text>
+                                <Text size='xs' weight='bold' className='acc-dropdown__balance'>
+                                    {account.currency ? (
+                                        `${account.balance} ${getCurrencyDisplayCode(account.currency)}`
+                                    ) : (
+                                        <Localize i18n_default_text='No currency assigned' />
+                                    )}
+                                </Text>
+                            </div>
+
+                            {/* Reset button — only shown for the marketing demo account */}
+                            {isMarketingActive && account.isVirtual && account.loginid === marketingDemoLoginid && (
+                                <button
+                                    type='button'
+                                    className='acc-dropdown__reset-btn'
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        resetDemoBalance();
+                                    }}
+                                    title={`Reset demo balance to ${defaultBalance} USD`}
+                                >
+                                    <svg
+                                        width='13'
+                                        height='13'
+                                        viewBox='0 0 13 13'
+                                        fill='none'
+                                        aria-hidden='true'
+                                    >
+                                        <path
+                                            d='M2 6.5A4.5 4.5 0 0 1 6.5 2c1.38 0 2.62.62 3.46 1.6M11 6.5A4.5 4.5 0 0 1 6.5 11a4.48 4.48 0 0 1-3.46-1.6'
+                                            stroke='currentColor'
+                                            strokeWidth='1.4'
+                                            strokeLinecap='round'
+                                        />
+                                        <path
+                                            d='M9.5 1.5v2.6H12'
+                                            stroke='currentColor'
+                                            strokeWidth='1.4'
+                                            strokeLinecap='round'
+                                            strokeLinejoin='round'
+                                        />
+                                        <path
+                                            d='M3.5 11.5V8.9H1'
+                                            stroke='currentColor'
+                                            strokeWidth='1.4'
+                                            strokeLinecap='round'
+                                            strokeLinejoin='round'
+                                        />
+                                    </svg>
+                                    <span>Reset to {defaultBalance.toFixed(2)} USD</span>
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>

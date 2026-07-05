@@ -770,6 +770,42 @@
         line-height: 1.4;
         font-size: 1.2rem;
     }
+
+    // ── Marketing demo reset button ──────────────────────────────────────────
+    &__reset-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        width: 100%;
+        padding: 0.55rem 1.6rem 0.7rem;
+        border: none;
+        border-top: 1px dashed rgba(247, 197, 59, 0.28);
+        border-bottom: 1px solid var(--general-section-1);
+        background: rgba(247, 197, 59, 0.05);
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: rgba(247, 197, 59, 0.12);
+        }
+
+        &:active {
+            background: rgba(247, 197, 59, 0.2);
+        }
+
+        svg {
+            color: #f7c53b;
+            flex-shrink: 0;
+        }
+
+        span {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f7c53b;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+    }
 }
 
 .header {
