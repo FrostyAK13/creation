@@ -3,7 +3,7 @@ import { useStore } from '@/hooks/useStore';
 import { DBOT_TABS } from '@/constants/bot-contents';
 import { load } from '@/external/bot-skeleton';
 import { save_types } from '@/external/bot-skeleton/constants/save-type';
-import { scanMarkets, ScanResult, ScanProgress, UnifiedScanOutput } from './ai-scanner-service';
+import { scanMarkets, ScanResult, ScanProgress, ScanMode, UnifiedScanOutput } from './ai-scanner-service';
 import './ai-scanner.scss';
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -100,6 +100,7 @@ const AiScanner = () => {
 
     // ── scanner state ─────────────────────────────────────────────────────────
     const [isOpen,     setIsOpen]     = useState(false);
+    const [scanMode,   setScanMode]   = useState<ScanMode>('auto');
     const [ticks,      setTicks]      = useState(3000);
     const [scanState,  setScanState]  = useState<ScanState>('idle');
     const [progress,   setProgress]   = useState<ScanProgress | null>(null);
@@ -113,6 +114,16 @@ const AiScanner = () => {
     const [stopLoss,   setStopLoss]   = useState(10);
 
     const abortRef = useRef<AbortController | null>(null);
+
+    // Reset results when mode changes so stale data is never shown
+    useEffect(() => {
+        if (scanState === 'scanning') abortRef.current?.abort();
+        setScanState('idle');
+        setOutput(null);
+        setProgress(null);
+        setStatusMsg('');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scanMode]);
 
     const bestResult: ScanResult | null = output?.best ?? null;
 
@@ -151,7 +162,7 @@ const AiScanner = () => {
         setProgress(null);
         setStatusMsg('Starting scan…');
         try {
-            const result = await scanMarkets(ticks, p => {
+            const result = await scanMarkets(scanMode, ticks, p => {
                 setProgress(p);
                 setStatusMsg(statusFor('scanning', p, null));
             }, ctrl.signal);
@@ -299,10 +310,30 @@ const AiScanner = () => {
                         <button className='ai-scanner-modal__close' onClick={handleClose} aria-label='Close'>✕</button>
                     </div>
 
+                    {/* ── Mode toggle ──────────────────────────────────────── */}
+                    <div className='ai-scanner-modal__mode-bar'>
+                        <button
+                            className={`ai-scanner-modal__mode-btn${scanMode === 'auto' ? ' ai-scanner-modal__mode-btn--active' : ''}`}
+                            onClick={() => setScanMode('auto')}
+                            disabled={scanState === 'scanning'}
+                        >
+                            ⚡ Auto
+                        </button>
+                        <button
+                            className={`ai-scanner-modal__mode-btn${scanMode === 'evenodd' ? ' ai-scanner-modal__mode-btn--active ai-scanner-modal__mode-btn--evenodd' : ''}`}
+                            onClick={() => setScanMode('evenodd')}
+                            disabled={scanState === 'scanning'}
+                        >
+                            ⇌ Even / Odd
+                        </button>
+                    </div>
+
                     {/* ── Description ──────────────────────────────────────── */}
                     <div className='ai-scanner-modal__description'>
-                        Scans all volatilities across <strong>Over/Under</strong> and <strong>Even/Odd</strong> simultaneously.
-                        Returns the single strongest signal — 1s volatilities have priority.
+                        {scanMode === 'auto'
+                            ? <>Scans all volatilities across <strong>Over/Under</strong> and <strong>Even/Odd</strong> simultaneously. Returns the single strongest signal — 1s volatilities have priority.</>
+                            : <>Scans all volatilities for the best <strong>Even / Odd</strong> signal. 1s volatilities have priority over standard ones.</>
+                        }
                     </div>
 
                     {/* ── Body ─────────────────────────────────────────────── */}

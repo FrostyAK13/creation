@@ -49,6 +49,13 @@ const MIN_1S_SCORE = 0.015;
 /** Which contract-type group the winning signal belongs to. */
 export type ContractGroup = 'overunder' | 'evenodd';
 
+/**
+ * Scan mode:
+ *  - 'auto'    — evaluates all contract types and returns the strongest signal.
+ *  - 'evenodd' — forces Even/Odd evaluation only; ignores Over/Under entirely.
+ */
+export type ScanMode = 'auto' | 'evenodd';
+
 export type ScanResult = {
     symbol: string;
     name: string;
@@ -243,17 +250,42 @@ function openConnection(wsURL: string, timeoutMs = 15_000): Promise<{
 // ─── main scan ────────────────────────────────────────────────────────────────
 
 /**
- * Scans all synthetic-digit markets, scores each one across every contract
- * type simultaneously, and returns a single recommended outcome.
+ * Scores a digit stream for Even/Odd only.
+ * Returns the deviation from the 50% baseline (same scale as OU scores).
+ * Direction is contrarian — bets against the dominant side.
+ */
+function scoreMarketEvenOdd(digits: number[]): {
+    score: number; tradeType: string; percentage: string;
+    contractGroup: ContractGroup; entryPoint?: number;
+} {
+    const total = digits.length;
+    if (total === 0) return { score: 0, tradeType: 'Even', percentage: '50.0%', contractGroup: 'evenodd' };
+    const evenPct     = digits.filter(d => d % 2 === 0).length / total;
+    const oddPct      = 1 - evenPct;
+    const dominantPct = Math.max(evenPct, oddPct);
+    return {
+        score:         dominantPct - 0.5,
+        tradeType:     evenPct > oddPct ? 'Odd' : 'Even',   // bet against dominant
+        percentage:    `${(dominantPct * 100).toFixed(1)}%`,
+        contractGroup: 'evenodd',
+    };
+}
+
+/**
+ * Scans all synthetic-digit markets and returns a single recommended outcome.
  *
- * Priority rule:
- *   1. Evaluate all 1s volatilities — if the best has score >= MIN_1S_SCORE,
- *      that is the recommendation.
+ * mode = 'auto'    → evaluates Over/Under (all thresholds) AND Even/Odd for
+ *                    every symbol, returns the single strongest signal.
+ * mode = 'evenodd' → forces Even/Odd evaluation only across all symbols.
+ *
+ * Priority rule (both modes):
+ *   1. Best 1s volatility is used when its score >= MIN_1S_SCORE.
  *   2. Otherwise fall back to the best plain volatility.
  *
- * The same volatility never appears more than once in the results list.
+ * Each volatility appears exactly once in the output.
  */
 export async function scanMarkets(
+    mode: ScanMode,
     tickCount: number,
     onProgress: (p: ScanProgress) => void,
     signal?: AbortSignal
@@ -280,14 +312,20 @@ export async function scanMarkets(
                 });
 
                 const prices: number[] = response?.history?.prices ?? [];
-                const digits     = prices.map(p => getLastDigit(p));
+                const digits      = prices.map(p => getLastDigit(p));
                 const digitCounts = buildDigitCounts(digits);
-                const { score, tradeType, percentage, contractGroup, entryPoint } =
-                    scoreMarketUnified(digits);
+
+                const scored = mode === 'evenodd'
+                    ? scoreMarketEvenOdd(digits)
+                    : scoreMarketUnified(digits);
 
                 const result: ScanResult = {
-                    symbol, name, is1s, score, tradeType, percentage,
-                    contractGroup, digitCounts, entryPoint,
+                    symbol, name, is1s, digitCounts,
+                    score:         scored.score,
+                    tradeType:     scored.tradeType,
+                    percentage:    scored.percentage,
+                    contractGroup: scored.contractGroup,
+                    entryPoint:    scored.entryPoint,
                 };
 
                 if (is1s) results1s.push(result);
@@ -305,15 +343,14 @@ export async function scanMarkets(
     results1s.sort((a, b) => b.score - a.score);
     resultsPlain.sort((a, b) => b.score - a.score);
 
-    // Priority: use 1s if the best 1s has a meaningful edge
+    // Priority: 1s wins when its best score clears the minimum edge threshold
     const best1s    = results1s[0]    ?? null;
     const bestPlain = resultsPlain[0] ?? null;
 
     const used1s = !!(best1s && best1s.score >= MIN_1S_SCORE);
     const best   = used1s ? best1s! : (bestPlain ?? best1s!);
 
-    // Combined list for display: 1s first, then plain (no duplicates — each
-    // symbol appears exactly once since SCAN_SYMBOLS has no repeats)
+    // 1s first, then plain — no duplicates
     const all = [...results1s, ...resultsPlain];
 
     return { best, all, used1s };
