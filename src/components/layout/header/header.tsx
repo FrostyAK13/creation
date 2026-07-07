@@ -85,21 +85,9 @@ const AppHeader = observer(() => {
         return () => clearTimeout(timer);
     }, [isAuthorizing, activeLoginid, setIsAuthorizing, authTimeout, isOAuthPending]);
 
-    const handleSignup = useCallback(async () => {
-        try {
-            setIsAuthorizing(true);
-            const oauthUrl = await generateOAuthURL('registration');
-            if (oauthUrl) {
-                window.location.replace(oauthUrl);
-            } else {
-                console.error('Failed to generate OAuth URL for signup');
-                setIsAuthorizing(false);
-            }
-        } catch (error) {
-            console.error('Signup redirection failed:', error);
-            setIsAuthorizing(false);
-        }
-    }, [setIsAuthorizing]);
+    const handleSignup = useCallback(() => {
+        window.open('https://track.deriv.com/_6B2BFQC0E1f1hit6RV3zsGNd7ZgqdRLk/1/', '_blank', 'noopener,noreferrer');
+    }, []);
 
     const handleLogin = useCallback(async () => {
         try {
