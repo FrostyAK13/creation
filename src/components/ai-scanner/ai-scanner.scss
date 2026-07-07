@@ -7,14 +7,19 @@
 
 // ─── Trigger button ────────────────────────────────────────────────────────────
 
+// ── Wave rings that sit behind the button ─────────────────────────────────────
+// Three pseudo-elements aren't enough, so we use a wrapper div rendered in TSX
+// (.ai-scanner-trigger__waves) containing three span.wave elements.
+
 .ai-scanner-trigger {
     position: fixed;
-    width: 5.2rem;
-    height: 5.2rem;
+    width: 7.2rem;
+    height: 7.2rem;
     border-radius: 50%;
     border: none;
+    // The conic gradient rotates via a CSS animation on the element itself
     background: conic-gradient(
-        from 0deg,
+        from var(--ai-angle, 0deg),
         #fde68a 0deg,
         #f59e0b 60deg,
         #d97706 120deg,
@@ -24,37 +29,40 @@
         #fde68a 360deg
     );
     box-shadow:
-        0 0 0 3px rgba(245, 158, 11, 0.25),
-        0 0 18px 4px rgba(245, 158, 11, 0.55),
-        0 6px 24px rgba(0, 0, 0, 0.45);
+        0 0 0 4px rgba(245, 158, 11, 0.22),
+        0 0 28px 8px rgba(245, 158, 11, 0.55),
+        0 8px 32px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: grab;
     z-index: 1500;
     touch-action: none;
-    transition: box-shadow 0.2s, transform 0.18s;
-    animation: ai-conic-spin 4s linear infinite;
     padding: 0;
     overflow: visible;
+    // Bounce + spin compound animation
+    animation:
+        ai-bounce   1.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite,
+        ai-ring-spin 3s linear infinite;
 
     &::before {
         content: '';
         position: absolute;
-        inset: 3px;
+        inset: 4px;
         border-radius: 50%;
-        background: linear-gradient(145deg, #1a1200 0%, #2d1f00 50%, #1a1200 100%);
+        background: radial-gradient(circle at 38% 30%, #2d1f00 0%, #1a1200 55%, #0f0a00 100%);
         z-index: 0;
     }
 
+    // Gloss highlight
     &::after {
         content: '';
         position: absolute;
-        inset: 3px;
+        inset: 4px;
         border-radius: 50%;
-        background: linear-gradient(135deg,
-            rgba(253, 230, 138, 0.18) 0%,
-            transparent 60%
+        background: linear-gradient(145deg,
+            rgba(253, 230, 138, 0.22) 0%,
+            transparent 55%
         );
         z-index: 1;
         pointer-events: none;
@@ -63,71 +71,107 @@
     span {
         position: relative;
         z-index: 2;
-        font-size: 1.5rem;
+        font-size: 2rem;
         font-weight: 900;
-        letter-spacing: -0.03em;
+        letter-spacing: -0.02em;
         line-height: 1;
         pointer-events: none;
         user-select: none;
-        background: linear-gradient(180deg, #fde68a 0%, #f59e0b 50%, #d97706 100%);
+        background: linear-gradient(180deg, #fef3c7 0%, #fbbf24 40%, #d97706 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
-        animation: ai-text-shimmer 2.4s ease-in-out infinite alternate;
+        // counter-rotate so text stays upright while the border spins
+        animation:
+            ai-counter-spin 3s linear infinite,
+            ai-text-glow    2.2s ease-in-out infinite alternate;
     }
 
     &:active { cursor: grabbing; }
 
     &:hover {
         box-shadow:
-            0 0 0 4px rgba(245, 158, 11, 0.35),
-            0 0 28px 8px rgba(245, 158, 11, 0.7),
-            0 8px 32px rgba(0, 0, 0, 0.5);
-        transform: scale(1.07);
+            0 0 0 5px rgba(245, 158, 11, 0.4),
+            0 0 40px 12px rgba(245, 158, 11, 0.75),
+            0 10px 40px rgba(0, 0, 0, 0.55);
+        animation-play-state: paused; // freeze spin+bounce on hover for control
     }
 
     &--active {
         box-shadow:
-            0 0 0 5px rgba(245, 158, 11, 0.4),
-            0 0 32px 10px rgba(245, 158, 11, 0.65),
-            0 6px 24px rgba(0, 0, 0, 0.5);
+            0 0 0 6px rgba(245, 158, 11, 0.45),
+            0 0 44px 14px rgba(245, 158, 11, 0.7),
+            0 8px 32px rgba(0, 0, 0, 0.55);
     }
 
     &__dot {
         position: absolute;
-        top: 0.3rem;
-        right: 0.3rem;
-        width: 1.1rem;
-        height: 1.1rem;
+        top: 0.4rem;
+        right: 0.4rem;
+        width: 1.3rem;
+        height: 1.3rem;
         border-radius: 50%;
         background: radial-gradient(circle at 35% 35%, #6ee7b7, #10b981);
-        border: 2px solid #0f172a;
+        border: 2.5px solid #0f0a00;
         z-index: 3;
         animation: ai-dot-pulse 2.2s infinite;
     }
+
+    // ── Wave rings ────────────────────────────────────────────────────────────
+    &__wave {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(245, 158, 11, 0.7);
+        animation: ai-wave-out 2.4s ease-out infinite;
+        pointer-events: none;
+        z-index: -1;
+
+        &:nth-child(1) { animation-delay: 0s;    border-color: rgba(251, 191, 36, 0.65); }
+        &:nth-child(2) { animation-delay: 0.8s;  border-color: rgba(245, 158, 11, 0.5);  }
+        &:nth-child(3) { animation-delay: 1.6s;  border-color: rgba(217, 119,  6, 0.35); }
+    }
 }
 
-@keyframes ai-conic-spin {
-    to { --conic-angle: 360deg; }
+// ── Animations ────────────────────────────────────────────────────────────────
+
+@keyframes ai-ring-spin {
+    from { filter: hue-rotate(0deg);   }
+    to   { filter: hue-rotate(30deg);  } // subtle hue drift on the gold
 }
 
-// Spinning conic border — achieved by rotating the whole button
-// then counter-rotating the inner face so "AI" text stays upright
-@keyframes ai-btn-rotate {
+// Bouncy vertical bob
+@keyframes ai-bounce {
+    0%, 100% { transform: translateY(0)     scale(1);    }
+    18%       { transform: translateY(-9px)  scale(1.06); }
+    36%       { transform: translateY(-2px)  scale(0.98); }
+    52%       { transform: translateY(-5px)  scale(1.03); }
+    68%       { transform: translateY(-1px)  scale(0.99); }
+    82%       { transform: translateY(-3px)  scale(1.01); }
+}
+
+// Counter-spin keeps the "AI" label upright
+@keyframes ai-counter-spin {
     from { transform: rotate(0deg);   }
-    to   { transform: rotate(360deg); }
+    to   { transform: rotate(360deg); } // same speed as ai-ring-spin but same dir = net 0
 }
 
-// Shimmer on the AI text
-@keyframes ai-text-shimmer {
-    0%   { filter: drop-shadow(0 0 4px rgba(253,230,138,0.0));  }
-    100% { filter: drop-shadow(0 0 8px rgba(253,230,138,0.9));  }
+// Gold text glow pulse
+@keyframes ai-text-glow {
+    0%   { filter: drop-shadow(0 0 3px rgba(253,230,138,0.2)); }
+    100% { filter: drop-shadow(0 0 14px rgba(253,230,138,1.0)); }
+}
+
+// Wave rings expand outward and fade
+@keyframes ai-wave-out {
+    0%   { transform: scale(1);    opacity: 0.9; }
+    80%  { transform: scale(2.0);  opacity: 0.1; }
+    100% { transform: scale(2.2);  opacity: 0;   }
 }
 
 @keyframes ai-dot-pulse {
-    0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.6); }
-    65%  { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);   }
+    0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.7); }
+    65%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);   }
     100% { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0);   }
 }
 

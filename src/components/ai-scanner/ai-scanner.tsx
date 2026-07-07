@@ -386,6 +386,10 @@ const AiScanner = () => {
                 title='AI Entry Scanner'
                 touch-action='none'
             >
+                {/* Wave rings — three expanding halos */}
+                <span className='ai-scanner-trigger__wave' aria-hidden='true' />
+                <span className='ai-scanner-trigger__wave' aria-hidden='true' />
+                <span className='ai-scanner-trigger__wave' aria-hidden='true' />
                 <span>AI</span>
                 <div className='ai-scanner-trigger__dot' />
             </button>
