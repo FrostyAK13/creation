@@ -196,15 +196,25 @@ export default Engine =>
                 }
 
                 // Explicitly subscribe to proposal_open_contract for each bought contract.
-                // This is the only reliable way to get streaming settlement updates for
-                // parameter-based direct buys — subscribe:1 on the buy request itself is
-                // ignored by the API for this buy format.
+                //
+                // The Deriv API does NOT honour subscribe:1 on direct parameter-based buy
+                // requests — that flag only works when buying from a proposal ID.  Without
+                // an explicit subscription here the global onMessage() listener in
+                // observeOpenContract never receives settlement data for bulk contracts,
+                // so broadcastContract / updateTotals / log(PROFIT|LOSS) are never called
+                // and the transaction list, journal, and statistics all remain empty.
+                //
+                // We fire these as plain send() calls (no retry wrapper) because:
+                //  - The API responds with the initial contract state, then streams updates.
+                //  - observeOpenContract's onMessage() subscription receives all messages.
+                //  - If a single subscription fails, loginAndGetBalance's recovery timeout
+                //    will re-request the contract state after 1.5 s as a fallback.
                 this.bulkContractIds.forEach(contract_id => {
-                    doUntilDone(() =>
-                        api_base.api.send({ proposal_open_contract: 1, contract_id, subscribe: 1 })
-                    ).catch(err => {
-                        console.warn('[BulkPurchase] POC subscription failed for', contract_id, err);
-                    });
+                    api_base.api
+                        .send({ proposal_open_contract: 1, contract_id, subscribe: 1 })
+                        .catch(err => {
+                            console.warn('[BulkPurchase] POC subscription failed for', contract_id, err);
+                        });
                 });
             });
         }
