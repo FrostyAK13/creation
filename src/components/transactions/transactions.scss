@@ -251,6 +251,22 @@
         color: var(--text-general);
     }
 
+    &__bulk-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 0.4rem;
+        height: 1.4rem;
+        border-radius: 2px;
+        background-color: var(--brand-secondary, #f4c700);
+        color: #000;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        margin-left: 0.4rem;
+        flex-shrink: 0;
+    }
+
     &__profit {
         &--win {
             color: var(--text-profit-success);

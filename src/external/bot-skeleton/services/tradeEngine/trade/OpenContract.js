@@ -20,7 +20,12 @@ export default Engine =>
 
                     this.data.contract = contract;
 
-                    broadcastContract({ accountID: api_base.account_info.loginid, ...contract });
+                    const is_bulk =
+                        this.bulkContractIds &&
+                        this.bulkContractIds.length > 0 &&
+                        this.bulkContractIds.includes(contract.contract_id);
+
+                    broadcastContract({ accountID: api_base.account_info.loginid, ...contract, is_bulk: Boolean(is_bulk) });
 
                     const is_sold = Boolean(contract.is_sold);
 

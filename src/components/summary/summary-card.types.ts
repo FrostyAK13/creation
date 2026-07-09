@@ -15,6 +15,7 @@ export type TContractInfo = Omit<
     exit_tick?: TDateType;
     exit_tick_time?: TDateType;
     underlying_symbol?: string;
+    is_bulk?: boolean;
 };
 
 export interface TSummaryCardProps {

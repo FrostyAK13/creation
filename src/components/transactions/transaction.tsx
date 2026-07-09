@@ -203,6 +203,11 @@ const Transaction = ({ contract, active_transaction_id, onClickTransaction }: TT
                             <TransactionIconLoader />
                         )}
                     </div>
+                    {(contract as any)?.is_bulk && (
+                        <span className='transactions__bulk-badge' title={localize('Part of a bulk purchase')}>
+                            {localize('BULK')}
+                        </span>
+                    )}
                 </div>
                 <div className='transactions__cell transactions__entry-spot'>
                     <TransactionIconWithText
