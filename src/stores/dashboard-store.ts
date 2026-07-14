@@ -62,6 +62,8 @@ export interface IDashboardStore {
     is_chart_modal_visible: boolean;
     is_trading_view_modal_visible: boolean;
     is_d_circles_modal_visible: boolean;
+    is_analysis_tool_modal_visible: boolean;
+    is_market_analyzer_modal_visible: boolean;
     setPreviewOnPopup: (is_preview_on_popup: boolean) => void;
 }
 
@@ -123,6 +125,8 @@ export default class DashboardStore implements IDashboardStore {
             is_chart_modal_visible: observable,
             is_trading_view_modal_visible: observable,
             is_d_circles_modal_visible: observable,
+            is_analysis_tool_modal_visible: observable,
+            is_market_analyzer_modal_visible: observable,
             bot_builder_symbol: observable,
         });
         this.root_store = root_store;
@@ -209,6 +213,8 @@ export default class DashboardStore implements IDashboardStore {
     is_chart_modal_visible = false;
     is_trading_view_modal_visible = false;
     is_d_circles_modal_visible = false;
+    is_analysis_tool_modal_visible = false;
+    is_market_analyzer_modal_visible = false;
     faq_title = '';
 
     setFaqTitle = (faq_title: string) => {
@@ -302,6 +308,14 @@ export default class DashboardStore implements IDashboardStore {
 
     setDCirclesModalVisibility = () => {
         this.is_d_circles_modal_visible = !this.is_d_circles_modal_visible;
+    };
+
+    setAnalysisToolModalVisibility = () => {
+        this.is_analysis_tool_modal_visible = !this.is_analysis_tool_modal_visible;
+    };
+
+    setMarketAnalyzerModalVisibility = () => {
+        this.is_market_analyzer_modal_visible = !this.is_market_analyzer_modal_visible;
     };
 
     setIsFileSupported = (is_file_supported: boolean) => {

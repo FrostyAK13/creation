@@ -6,6 +6,8 @@ import {
     LabelPairedArrowRotateLeftMdRegularIcon,
     LabelPairedArrowRotateRightMdRegularIcon,
     LabelPairedArrowsRotateMdRegularIcon,
+    LabelPairedBarsMdRegularIcon,
+    LabelPairedChartCandlestickMdRegularIcon,
     LabelPairedChartLineMdRegularIcon,
     LabelPairedChartTradingviewMdRegularIcon,
     LabelPairedCircleStarMdRegularIcon,
@@ -22,8 +24,14 @@ import ToolbarIcon from './toolbar-icon';
 
 const WorkspaceGroup = observer(() => {
     const { dashboard, toolbar, load_modal } = useStore();
-    const { setPreviewOnPopup, setChartModalVisibility, setTradingViewModalVisibility, setDCirclesModalVisibility } =
-        dashboard;
+    const {
+        setPreviewOnPopup,
+        setChartModalVisibility,
+        setTradingViewModalVisibility,
+        setDCirclesModalVisibility,
+        setAnalysisToolModalVisibility,
+        setMarketAnalyzerModalVisibility,
+    } = dashboard;
     const { has_redo_stack, has_undo_stack, onResetClick, onSortClick, onUndoClick, onZoomInOutClick } = toolbar;
     const { toggleLoadModal } = load_modal;
     const { isDesktop } = useDevice();
@@ -72,6 +80,32 @@ const WorkspaceGroup = observer(() => {
                             onClick={() => setDCirclesModalVisibility()}
                         >
                             <LabelPairedCircleStarMdRegularIcon />
+                        </span>
+                    }
+                />
+                <ToolbarIcon
+                    popover_message={localize('Analysis Tool')}
+                    icon={
+                        <span
+                            className='toolbar__icon'
+                            id='db-toolbar__analysis-tool-button'
+                            data-testid='dt_toolbar_analysis_tool_button'
+                            onClick={() => setAnalysisToolModalVisibility()}
+                        >
+                            <LabelPairedBarsMdRegularIcon />
+                        </span>
+                    }
+                />
+                <ToolbarIcon
+                    popover_message={localize('Market Analyzer')}
+                    icon={
+                        <span
+                            className='toolbar__icon'
+                            id='db-toolbar__market-analyzer-button'
+                            data-testid='dt_toolbar_market_analyzer_button'
+                            onClick={() => setMarketAnalyzerModalVisibility()}
+                        >
+                            <LabelPairedChartCandlestickMdRegularIcon />
                         </span>
                     }
                 />

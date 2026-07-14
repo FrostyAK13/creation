@@ -3,8 +3,10 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useLocation, useNavigate } from 'react-router-dom';
+import AnalysisToolModal from '@/components/analysis-tool/analysis-tool-modal';
 import DCirclesModal from '@/components/d-circles/d-circles-modal';
 import ChunkLoader from '@/components/loader/chunk-loader';
+import MarketAnalyzerModal from '@/components/market-analyzer/market-analyzer-modal';
 import { generateOAuthURL } from '@/components/shared';
 import DesktopWrapper from '@/components/shared_ui/desktop-wrapper';
 import Dialog from '@/components/shared_ui/dialog';
@@ -592,6 +594,8 @@ const AppWrapper = observer(() => {
                 <ChartModal />
                 <TradingViewModal />
                 <DCirclesModal />
+                <AnalysisToolModal />
+                <MarketAnalyzerModal />
             </DesktopWrapper>
             <MobileWrapper>{!is_open && <RunPanel />}</MobileWrapper>
             <Dialog
