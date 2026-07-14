@@ -119,7 +119,7 @@ const FeatureShowcase = observer(() => {
         <div className='feature-showcase'>
             <div className='feature-showcase__header'>
                 <Text as='h3' size={isDesktop ? 'sm' : 's'} weight='bold' className='feature-showcase__title'>
-                    <Localize i18n_default_text='Explore the arsenal' />
+                    <Localize i18n_default_text='Explore what you can do' />
                 </Text>
                 <Text as='p' size={isDesktop ? 'xs' : 'xxs'} className='feature-showcase__subtitle'>
                     <Localize i18n_default_text="Everything FrostyDBot can do — pick a card to jump right in." />

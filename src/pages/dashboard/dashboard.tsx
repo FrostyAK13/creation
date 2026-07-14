@@ -71,7 +71,7 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
                         </div>
                         <Cards has_dashboard_strategies={has_dashboard_strategies} is_mobile={!isDesktop} />
                     </div>
-                    {!has_dashboard_strategies && <FeatureShowcase />}
+                    <FeatureShowcase />
                 </div>
             </div>
             <InfoPanel />
