@@ -20,7 +20,6 @@ type TFeature = {
     icon: React.ReactElement;
     title: React.ReactElement;
     tab: number;
-    accent: 'gold' | 'blue' | 'purple' | 'green';
 };
 
 const FeatureShowcase = observer(() => {
@@ -35,49 +34,42 @@ const FeatureShowcase = observer(() => {
             icon: <LabelPairedCircleStarMdRegularIcon />,
             title: <Localize i18n_default_text='D-Circles' />,
             tab: DBOT_TABS.D_CIRCLES,
-            accent: 'purple',
         },
         {
             id: 'analysis-tool',
             icon: <LabelPairedBarsMdRegularIcon />,
             title: <Localize i18n_default_text='Analysis Tool' />,
             tab: DBOT_TABS.ANALYSIS_TOOL,
-            accent: 'blue',
         },
         {
             id: 'market-analyzer',
             icon: <LabelPairedChartCandlestickMdRegularIcon />,
             title: <Localize i18n_default_text='Market Analyzer' />,
             tab: DBOT_TABS.MARKET_ANALYZER,
-            accent: 'gold',
         },
         {
             id: 'free-bots',
             icon: <LabelPairedCloneMdRegularIcon />,
             title: <Localize i18n_default_text='Free Bots' />,
             tab: DBOT_TABS.FREE_BOTS,
-            accent: 'green',
         },
         {
             id: 'calculator',
             icon: <LabelPairedPercentMdRegularIcon />,
             title: <Localize i18n_default_text='Calculator' />,
             tab: DBOT_TABS.ANALYSIS,
-            accent: 'gold',
         },
         {
             id: 'tutorials',
             icon: <LabelPairedGraduationCapMdRegularIcon />,
             title: <Localize i18n_default_text='Tutorials' />,
             tab: DBOT_TABS.TUTORIAL,
-            accent: 'blue',
         },
         {
             id: 'copy-trading',
             icon: <LabelPairedUsersMdRegularIcon />,
             title: <Localize i18n_default_text='Copy Trading' />,
             tab: DBOT_TABS.COPY_TRADING,
-            accent: 'green',
         },
     ];
 
@@ -90,9 +82,7 @@ const FeatureShowcase = observer(() => {
             key={feature.id}
             type='button'
             style={{ '--card-index': index } as React.CSSProperties}
-            className={`feature-showcase__card feature-showcase__card--${feature.accent}${
-                is_square ? ' feature-showcase__card--square' : ''
-            }`}
+            className={`feature-showcase__card${is_square ? ' feature-showcase__card--square' : ''}`}
             onClick={() => setActiveTab(feature.tab)}
             data-testid={`dt_feature_showcase_${feature.id}`}
         >
