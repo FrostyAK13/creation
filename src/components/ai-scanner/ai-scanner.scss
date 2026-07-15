@@ -81,10 +81,7 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        // Continuous full-circle spin, on its own axis, independent of the bounce
-        animation:
-            ai-text-spin 1.6s linear infinite,
-            ai-text-glow 2.2s ease-in-out infinite alternate;
+        animation: ai-text-glow 2.2s ease-in-out infinite alternate;
     }
 
     &:active { cursor: grabbing; }
@@ -148,12 +145,6 @@
     52%       { transform: translateY(-5px)  scale(1.03); }
     68%       { transform: translateY(-1px)  scale(0.99); }
     82%       { transform: translateY(-3px)  scale(1.01); }
-}
-
-// Spins the "AI" label in place, on its own axis
-@keyframes ai-text-spin {
-    from { transform: rotate(0deg);   }
-    to   { transform: rotate(360deg); }
 }
 
 // Gold text glow pulse
