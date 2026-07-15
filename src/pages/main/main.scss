@@ -89,16 +89,26 @@
 
             &__active-line {
                 background-color: #f7c53b;
+                box-shadow: 0 0 8px rgb(247 197 59 / 70%);
                 transition: none;
             }
 
             &__active {
-                background: var(--general-main-1);
-                color: #f7c53b !important;
+                background: linear-gradient(150deg, #241c09 0%, #14100a 100%);
+                color: #fff8d6 !important;
+                text-shadow: 0 0 8px rgb(247 197 59 / 45%);
+
+                svg {
+                    fill: #f7c53b;
+                    filter: drop-shadow(0 0 5px rgb(247 197 59 / 55%));
+                }
             }
 
             &__list {
-                background: var(--general-section-1);
+                background: linear-gradient(150deg, #211a08 0%, #14100a 100%);
+                border: 1.5px solid rgb(247 197 59 / 30%);
+                border-radius: 1rem 1rem 0 0;
+                box-shadow: 0 4px 14px rgb(0 0 0 / 25%), 0 0 14px rgb(247 197 59 / 18%);
                 justify-content: flex-start;
                 flex-wrap: nowrap;
                 overflow-x: auto;
@@ -187,6 +197,12 @@
                 flex-shrink: 0;
                 min-width: max-content;
                 overflow: visible;
+                transition: background 0.25s ease, color 0.25s ease;
+
+                &:hover {
+                    background: rgb(247 197 59 / 8%);
+                    color: #fff8d6;
+                }
 
                 @include flex-center;
 
