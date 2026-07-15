@@ -99,16 +99,22 @@ const FeatureShowcase = observer(() => {
                 </Text>
             </div>
             <div className='feature-showcase__grid'>
-                {features.map(feature => (
+                {features.map((feature, index) => (
                     <button
                         key={feature.id}
                         type='button'
+                        style={{ '--card-index': index } as React.CSSProperties}
                         className={`feature-showcase__card feature-showcase__card--${feature.accent}`}
                         onClick={() => setActiveTab(feature.tab)}
                         data-testid={`dt_feature_showcase_${feature.id}`}
                     >
                         <span className='feature-showcase__card-glow' aria-hidden='true' />
-                        <span className='feature-showcase__card-icon'>{feature.icon}</span>
+                        <span className='feature-showcase__card-top'>
+                            <span className='feature-showcase__card-icon'>{feature.icon}</span>
+                            <span className='feature-showcase__card-arrow' aria-hidden='true'>
+                                →
+                            </span>
+                        </span>
                         <Text as='p' size='xs' weight='bold' className='feature-showcase__card-title'>
                             {feature.title}
                         </Text>
