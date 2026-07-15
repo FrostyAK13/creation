@@ -106,10 +106,10 @@
 
             &__list {
                 position: relative;
-                background: linear-gradient(150deg, #423418 0%, #2a2110 100%);
+                background: linear-gradient(150deg, #f3e2ab 0%, #d9bd77 100%);
                 border: 1.5px solid rgb(247 197 59 / 55%);
                 border-radius: 1rem 1rem 0 0;
-                box-shadow: 0 4px 18px rgb(0 0 0 / 20%), 0 0 22px rgb(247 197 59 / 35%);
+                box-shadow: 0 4px 18px rgb(0 0 0 / 15%), 0 0 22px rgb(247 197 59 / 35%);
                 justify-content: flex-start;
                 flex-wrap: nowrap;
                 overflow-x: auto;
@@ -213,11 +213,16 @@
                 flex-shrink: 0;
                 min-width: max-content;
                 overflow: visible;
+                color: #4a3410;
                 transition: background 0.25s ease, color 0.25s ease;
 
+                svg {
+                    fill: #4a3410;
+                }
+
                 &:hover {
-                    background: rgb(247 197 59 / 12%);
-                    color: #fff8d6;
+                    background: rgb(255 255 255 / 25%);
+                    color: #2a1d08;
                 }
 
                 @include flex-center;
