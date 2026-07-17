@@ -153,6 +153,14 @@ const FREE_BOTS = [
         difficulty: 'Intermediate',
     },
     {
+        id: 'frosty_entry_loop',
+        xml_file: 'frosty_entry_loop',
+        name: 'Frosty Entry Loop',
+        description: 'Waits for digit 4 as the entry point before trading over/under on Volatility 100 (1s), with martingale recovery and configurable take-profit and stop-loss.',
+        category: 'Automated' as BotCategory,
+        difficulty: 'Advanced',
+    },
+    {
         id: 'frosty_over_2_v1',
         xml_file: 'frosty_over_2_v1',
         name: 'Frosty Over 2 V1',
