@@ -106,6 +106,30 @@ const FREE_BOTS: BotEntry[] = [
         tab: 'PREMIUM',
         difficulty: 'Advanced',
     },
+    {
+        id: 'frosty_dominator_normal',
+        xml_file: 'frosty_dominator_normal',
+        name: 'Frosty Dominator',
+        description: 'Over/Under digit strategy on Volatility 50 (1s) with entry-digit targeting, martingale recovery, and configurable take-profit and stop-loss.',
+        tab: 'NORMAL',
+        difficulty: 'Intermediate',
+    },
+    {
+        id: 'frosty_version_normal',
+        xml_file: 'frosty_version_normal',
+        name: 'Frosty Version',
+        description: 'Matches/Differs strategy on Volatility 10 (1s) with martingale recovery and configurable profit and loss thresholds.',
+        tab: 'NORMAL',
+        difficulty: 'Intermediate',
+    },
+    {
+        id: 'frosty_speed_bot_normal',
+        xml_file: 'frosty_speed_bot_normal',
+        name: 'Frosty Speed Bot',
+        description: 'Fast digit-over strategy on Volatility 100 (1s) built for rapid trade execution with take-profit and stop-loss controls.',
+        tab: 'NORMAL',
+        difficulty: 'Beginner',
+    },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
 
