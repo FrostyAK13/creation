@@ -322,52 +322,49 @@
         }
     }
 
-    /* ---------- Log in / Sign up buttons ---------- */
-    .auth-actions {
-        .dc-btn--tertiary {
-            border: 1.5px solid rgb(6 182 212 / 55%) !important;
-            color: #06b6d4 !important;
-            background: transparent !important;
+    /* ---------- Log in button (tertiary) ---------- */
+    &.dc-btn--tertiary,
+    .dc-btn--tertiary {
+        border: 1.5px solid rgb(6 182 212 / 55%) !important;
+        background: transparent !important;
 
-            &:hover {
-                background: rgb(6 182 212 / 10%) !important;
-                border-color: rgb(6 182 212 / 85%) !important;
-                box-shadow: 0 0 10px rgb(6 182 212 / 20%) !important;
-            }
+        .dc-btn__text,
+        .dc-btn__icon {
+            color: #06b6d4 !important;
         }
 
-        .dc-btn--primary-light {
-            background: linear-gradient(
-                90deg,
-                #003060 0%,
-                #0369a1 20%,
-                #06b6d4 45%,
-                #7dd3fc 55%,
-                #06b6d4 70%,
-                #0369a1 85%,
-                #003060 100%
-            ) !important;
-            background-size: 200% auto !important;
-            animation: auth-btn-cyan-shimmer 2.5s linear infinite !important;
-            border: none !important;
-            color: #e0f2fe !important;
-            font-weight: 800 !important;
-            text-shadow: 0 1px 2px rgb(6 182 212 / 40%) !important;
+        &:hover:not([disabled]) {
+            background: rgb(6 182 212 / 10%) !important;
+            border-color: rgb(6 182 212 / 85%) !important;
+            box-shadow: 0 0 10px rgb(6 182 212 / 20%) !important;
+        }
+    }
 
-            &:hover {
-                background: linear-gradient(
-                    90deg,
-                    #004080 0%,
-                    #0284c7 20%,
-                    #22d3ee 45%,
-                    #a5f3fc 55%,
-                    #22d3ee 70%,
-                    #0284c7 85%,
-                    #004080 100%
-                ) !important;
-                background-size: 200% auto !important;
-                color: #f0f9ff !important;
-            }
+    /* ---------- Sign up button (primary__light) ---------- */
+    .dc-btn--primary__light {
+        background: linear-gradient(
+            90deg,
+            #003060 0%,
+            #0369a1 20%,
+            #06b6d4 45%,
+            #7dd3fc 55%,
+            #06b6d4 70%,
+            #0369a1 85%,
+            #003060 100%
+        ) !important;
+        background-size: 200% auto !important;
+        animation: auth-btn-cyan-shimmer 2.5s linear infinite !important;
+        border: none !important;
+
+        .dc-btn__text,
+        .dc-btn__icon {
+            color: #e0f2fe !important;
+            text-shadow: 0 1px 2px rgb(6 182 212 / 40%);
+        }
+
+        &:hover:not([disabled]) {
+            box-shadow: 0 0 14px rgb(6 182 212 / 35%) !important;
+            transform: translateY(-1px);
         }
     }
 }
