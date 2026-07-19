@@ -1,5 +1,94 @@
 @use 'components/shared/styles/mixins' as *;
 
+@keyframes qs-form-blue-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+}
+
+@keyframes qs-form-blue-pulse {
+    0%, 100% {
+        box-shadow:
+            0 0 8px 2px rgb(6 182 212 / 50%),
+            0 0 24px 6px rgb(59 130 246 / 25%),
+            inset 0 1px 0 rgb(224 242 254 / 30%);
+    }
+    50% {
+        box-shadow:
+            0 0 16px 6px rgb(6 182 212 / 80%),
+            0 0 48px 16px rgb(59 130 246 / 35%),
+            inset 0 1px 0 rgb(224 242 254 / 30%);
+    }
+}
+
+/* Quick strategy Run button — blue/cyan normal-bot theme */
+[data-testid='qs-run-button'] {
+    background: linear-gradient(
+        90deg,
+        #003060 0%,
+        #0369a1 20%,
+        #06b6d4 45%,
+        #7dd3fc 55%,
+        #06b6d4 70%,
+        #0369a1 85%,
+        #003060 100%
+    ) !important;
+    background-size: 200% auto !important;
+    animation: qs-form-blue-shimmer 2.5s linear infinite, qs-form-blue-pulse 2s ease-in-out infinite !important;
+    border: none !important;
+    color: #e0f2fe !important;
+    font-weight: 800 !important;
+    text-shadow: 0 1px 2px rgb(6 182 212 / 40%);
+    position: relative;
+    overflow: hidden;
+
+    svg path { fill: #e0f2fe !important; }
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            105deg,
+            transparent 35%,
+            rgb(224 242 254 / 28%) 50%,
+            transparent 65%
+        );
+        background-size: 200% 100%;
+        animation: qs-form-blue-shimmer 2s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    &:hover:not(:disabled) {
+        background: linear-gradient(
+            90deg,
+            #004080 0%,
+            #0284c7 20%,
+            #22d3ee 45%,
+            #a5f3fc 55%,
+            #22d3ee 70%,
+            #0284c7 85%,
+            #004080 100%
+        ) !important;
+        background-size: 200% auto !important;
+        color: #f0f9ff !important;
+        transform: scale(1.02);
+        transition: transform 0.15s ease;
+    }
+
+    &:disabled {
+        background: linear-gradient(
+            90deg,
+            #001428 0%,
+            #002040 50%,
+            #001428 100%
+        ) !important;
+        animation: none !important;
+        box-shadow: none !important;
+        opacity: 0.5;
+        color: rgb(56 189 248 / 50%) !important;
+    }
+}
+
 .qs {
     --sidebar-width: 24rem;
     --footer-height: 7.2rem;
