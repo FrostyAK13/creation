@@ -208,7 +208,7 @@ const FreeBots = observer(() => {
                         return (
                             <div
                                 key={bot.id}
-                                className='free-bots__card'
+                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : ' free-bots__card--normal-tab'}`}
                                 style={{ '--card-border': cfg.cardBorder } as React.CSSProperties}
                             >
                                 <div className='free-bots__card-icon-row'>
@@ -241,7 +241,7 @@ const FreeBots = observer(() => {
                                     <p className='free-bots__card-description'>{bot.description}</p>
                                 </div>
                                 <button
-                                    className={`free-bots__card-btn${is_loading ? ' free-bots__card-btn--loading' : ''}`}
+                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
                                     onClick={() => handleImport(bot)}
                                     disabled={is_loading}
                                 >

@@ -13,8 +13,8 @@
 
 .ai-scanner-trigger {
     position: fixed;
-    width: 7.2rem;
-    height: 7.2rem;
+    width: 5rem;
+    height: 5rem;
     border-radius: 50%;
     // Same dark gold-card theme used across the dashboard feature cards
     border: 1.5px solid rgb(247 197 59 / 50%);
@@ -64,7 +64,7 @@
     span {
         position: relative;
         z-index: 2;
-        font-size: 2rem;
+        font-size: 1.4rem;
         font-weight: 900;
         letter-spacing: -0.02em;
         line-height: 1;
@@ -96,10 +96,10 @@
 
     &__dot {
         position: absolute;
-        top: 0.4rem;
-        right: 0.4rem;
-        width: 1.3rem;
-        height: 1.3rem;
+        top: 0.3rem;
+        right: 0.3rem;
+        width: 0.9rem;
+        height: 0.9rem;
         border-radius: 50%;
         background: radial-gradient(circle at 35% 35%, #6ee7b7, #10b981);
         border: 2.5px solid #0f0a00;
