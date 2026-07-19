@@ -460,9 +460,9 @@
 }
 
 /* ============================================================
-   DASHBOARD THEME — FUSION (Gold × Cyan)
-   Light: ivory + deep navy + gold + cyan
-   Dark:  dark amber + gold (preserved)
+   DASHBOARD THEME — Blue/Cyan (normal-bot theme)
+   Light: soft white + navy + cyan
+   Dark:  deep navy + cyan
    ============================================================ */
 
 /* ── Keyframe animations (global — both themes) ── */
@@ -471,9 +471,14 @@
     100% { background-position:  200% center; }
 }
 
+@keyframes dash-cyan-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+}
+
 @keyframes gold-pulse-glow {
-    0%, 100% { box-shadow: 0 0 8px 2px rgb(247 197 59 / 25%), 0 0 24px 4px rgb(247 197 59 / 10%); }
-    50%       { box-shadow: 0 0 16px 6px rgb(247 197 59 / 50%), 0 0 48px 12px rgb(247 197 59 / 20%); }
+    0%, 100% { box-shadow: 0 0 8px 2px rgb(6 182 212 / 25%), 0 0 24px 4px rgb(6 182 212 / 10%); }
+    50%       { box-shadow: 0 0 16px 6px rgb(6 182 212 / 50%), 0 0 48px 12px rgb(6 182 212 / 20%); }
 }
 
 @keyframes gold-text-shine {
@@ -503,15 +508,15 @@
 .tab__dashboard__header .subtitle         { display: none !important; }
 
 /* ─────────────────────────────────────────────────────────────
-   LIGHT THEME — Ivory × Navy × Gold × Cyan fusion
+   LIGHT THEME — soft white + cyan/blue
    ───────────────────────────────────────────────────────────── */
 body.theme--light {
 
     /* Dashboard content area */
     .tab__dashboard__content {
         background:
-            radial-gradient(ellipse at 20% 10%, rgb(247 197 59 / 8%) 0%, transparent 45%),
-            radial-gradient(ellipse at 80% 85%, rgb(6 182 212 / 6%) 0%, transparent 45%),
+            radial-gradient(ellipse at 20% 10%, rgb(6 182 212 / 6%) 0%, transparent 45%),
+            radial-gradient(ellipse at 80% 85%, rgb(59 130 246 / 5%) 0%, transparent 45%),
             var(--general-main-1) !important;
         position: relative;
 
@@ -520,8 +525,8 @@ body.theme--light {
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgb(247 197 59 / 3%) 1px, transparent 1px),
-                linear-gradient(90deg, rgb(6 182 212 / 2%) 1px, transparent 1px);
+                linear-gradient(rgb(6 182 212 / 3%) 1px, transparent 1px),
+                linear-gradient(90deg, rgb(59 130 246 / 2%) 1px, transparent 1px);
             background-size: 48px 48px;
             pointer-events: none;
             z-index: 0;
@@ -530,19 +535,19 @@ body.theme--light {
         > * { position: relative; z-index: 1; }
     }
 
-    /* Header — gold shimmer title (brand identity), navy subtitle */
+    /* Header — cyan shimmer title */
     .tab__dashboard__header {
         .title {
             background: linear-gradient(
                 90deg,
-                #b8860b 0%, #f7c53b 25%, #fffde4 50%, #f7c53b 75%, #b8860b 100%
+                #0369a1 0%, #06b6d4 25%, #e0f2fe 50%, #06b6d4 75%, #0369a1 100%
             );
             background-size: 300% auto;
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gold-text-shine 4s linear infinite;
-            filter: drop-shadow(0 0 6px rgb(247 197 59 / 20%));
+            filter: drop-shadow(0 0 6px rgb(6 182 212 / 20%));
             font-weight: 900 !important;
             letter-spacing: 0.02em;
         }
@@ -553,14 +558,14 @@ body.theme--light {
         }
     }
 
-    /* Action card icon boxes — ivory surface, gold border, cyan inner glow */
+    /* Action card icon boxes — light surface, cyan border + glow */
     .tab__dashboard__table__images {
-        background: linear-gradient(145deg, #fefef7 0%, #f3f6ff 100%) !important;
-        border: 1.5px solid rgb(247 197 59 / 30%) !important;
+        background: linear-gradient(145deg, #f0f9ff 0%, #e8f4ff 100%) !important;
+        border: 1.5px solid rgb(6 182 212 / 30%) !important;
         box-shadow:
             0 0 0 1px rgb(6 182 212 / 6%) inset,
-            0 4px 20px rgb(30 45 90 / 8%),
-            0 0 8px rgb(247 197 59 / 6%) !important;
+            0 4px 20px rgb(3 105 161 / 8%),
+            0 0 8px rgb(6 182 212 / 6%) !important;
         border-radius: 1.2rem !important;
         position: relative;
         overflow: hidden;
@@ -573,35 +578,35 @@ body.theme--light {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(105deg, transparent 35%, rgb(247 197 59 / 5%) 50%, transparent 65%);
+            background: linear-gradient(105deg, transparent 35%, rgb(6 182 212 / 8%) 50%, transparent 65%);
             background-size: 200% 100%;
-            animation: gold-shimmer 3s ease-in-out infinite;
+            animation: dash-cyan-shimmer 3s ease-in-out infinite;
             pointer-events: none;
             border-radius: inherit;
         }
 
         &:hover {
             transform: translateY(-4px) scale(1.03) !important;
-            border-color: rgb(247 197 59 / 65%) !important;
+            border-color: rgb(6 182 212 / 65%) !important;
             box-shadow:
                 0 0 0 2px rgb(6 182 212 / 12%) inset,
-                0 8px 32px rgb(30 45 90 / 12%),
-                0 0 20px rgb(247 197 59 / 18%) !important;
+                0 8px 32px rgb(3 105 161 / 12%),
+                0 0 20px rgb(6 182 212 / 18%) !important;
             cursor: pointer;
         }
 
         svg {
-            filter: drop-shadow(0 0 3px rgb(247 197 59 / 20%));
+            filter: drop-shadow(0 0 3px rgb(6 182 212 / 20%));
             transition: filter 0.3s ease, transform 0.3s ease;
         }
 
         &:hover svg {
-            filter: drop-shadow(0 0 8px rgb(247 197 59 / 45%)) brightness(1.05);
+            filter: drop-shadow(0 0 8px rgb(6 182 212 / 45%)) brightness(1.05);
             transform: scale(1.08);
         }
     }
 
-    /* Card labels — navy, gold on hover */
+    /* Card labels — navy, cyan on hover */
     .tab__dashboard__table__block {
         .dc-text {
             color: #3d4f80 !important;
@@ -611,16 +616,16 @@ body.theme--light {
         }
 
         &:hover .dc-text {
-            color: #f7c53b !important;
-            text-shadow: 0 0 8px rgb(247 197 59 / 30%);
+            color: #06b6d4 !important;
+            text-shadow: 0 0 8px rgb(6 182 212 / 30%);
         }
     }
 
-    /* Announcements button — ivory, gold border */
+    /* Announcements button — light, cyan border */
     .announcements__button {
-        background: linear-gradient(135deg, #fefef7 0%, #f0f4ff 100%) !important;
-        border: 1.5px solid rgb(247 197 59 / 30%) !important;
-        box-shadow: 0 0 8px rgb(247 197 59 / 8%) !important;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e8f4ff 100%) !important;
+        border: 1.5px solid rgb(6 182 212 / 30%) !important;
+        box-shadow: 0 0 8px rgb(6 182 212 / 8%) !important;
         transition: all 0.25s ease !important;
         border-radius: 2.4rem !important;
 
@@ -628,13 +633,13 @@ body.theme--light {
         .dc-text  { color: #1a2340 !important; font-weight: 600 !important; }
 
         &:hover {
-            border-color: rgb(247 197 59 / 55%) !important;
-            box-shadow: 0 0 14px rgb(247 197 59 / 16%) !important;
-            background: linear-gradient(135deg, #fffef0 0%, #e8f0ff 100%) !important;
+            border-color: rgb(6 182 212 / 55%) !important;
+            box-shadow: 0 0 14px rgb(6 182 212 / 16%) !important;
+            background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%) !important;
         }
     }
 
-    /* Bot list — navy text, cyan dividers, gold hover accent */
+    /* Bot list — navy text, cyan dividers, cyan hover accent */
     .bot-list {
         &__title .dc-text {
             color: #1a2340 !important;
@@ -658,7 +663,7 @@ body.theme--light {
             transition: background 0.2s ease;
 
             &:hover {
-                background: linear-gradient(90deg, rgb(247 197 59 / 5%) 0%, transparent 100%) !important;
+                background: linear-gradient(90deg, rgb(6 182 212 / 5%) 0%, transparent 100%) !important;
             }
 
             &__label .dc-text,
@@ -673,15 +678,15 @@ body.theme--light {
             }
 
             &__actions button:hover svg {
-                fill: #f7c53b !important;
-                filter: drop-shadow(0 0 4px rgb(247 197 59 / 35%));
+                fill: #06b6d4 !important;
+                filter: drop-shadow(0 0 4px rgb(6 182 212 / 35%));
             }
         }
     }
 
-    /* User guide button — ivory, cyan border + icon */
+    /* User guide button — light, cyan border + icon */
     .user-guide__button {
-        background: linear-gradient(135deg, #fefef7 0%, #f0f4ff 100%) !important;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e8f4ff 100%) !important;
         border: 1.5px solid rgb(6 182 212 / 25%) !important;
         box-shadow: 0 0 6px rgb(6 182 212 / 8%) !important;
         transition: all 0.25s ease !important;
@@ -697,14 +702,14 @@ body.theme--light {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   DARK THEME — Original dark gold (preserved)
+   DARK THEME — deep navy + cyan
    ───────────────────────────────────────────────────────────── */
 body.theme--dark {
 
     .tab__dashboard__content {
         background:
-            radial-gradient(ellipse at 30% 20%, rgb(80 60 10 / 15%) 0%, transparent 55%),
-            radial-gradient(ellipse at 80% 80%, rgb(120 90 10 / 10%) 0%, transparent 50%),
+            radial-gradient(ellipse at 30% 20%, rgb(6 182 212 / 8%) 0%, transparent 55%),
+            radial-gradient(ellipse at 80% 80%, rgb(59 130 246 / 6%) 0%, transparent 50%),
             var(--general-main-1) !important;
         position: relative;
 
@@ -713,8 +718,8 @@ body.theme--dark {
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgb(247 197 59 / 2%) 1px, transparent 1px),
-                linear-gradient(90deg, rgb(247 197 59 / 2%) 1px, transparent 1px);
+                linear-gradient(rgb(6 182 212 / 2%) 1px, transparent 1px),
+                linear-gradient(90deg, rgb(59 130 246 / 2%) 1px, transparent 1px);
             background-size: 48px 48px;
             pointer-events: none;
             z-index: 0;
@@ -727,32 +732,32 @@ body.theme--dark {
         .title {
             background: linear-gradient(
                 90deg,
-                #b8860b 0%, #f7c53b 25%, #fffde4 50%, #f7c53b 75%, #b8860b 100%
+                #0369a1 0%, #06b6d4 25%, #e0f2fe 50%, #06b6d4 75%, #0369a1 100%
             );
             background-size: 300% auto;
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gold-text-shine 4s linear infinite;
-            filter: drop-shadow(0 0 8px rgb(247 197 59 / 25%));
+            filter: drop-shadow(0 0 8px rgb(6 182 212 / 30%));
             font-weight: 900 !important;
             letter-spacing: 0.02em;
         }
 
         .subtitle {
-            color: rgb(247 197 59 / 55%) !important;
+            color: rgb(6 182 212 / 55%) !important;
             font-weight: 500;
-            text-shadow: 0 1px 8px rgb(247 197 59 / 10%);
+            text-shadow: 0 1px 8px rgb(6 182 212 / 10%);
         }
     }
 
     .tab__dashboard__table__images {
-        background: linear-gradient(145deg, rgb(30 24 5 / 70%) 0%, rgb(50 38 5 / 60%) 100%) !important;
-        border: 1.5px solid rgb(247 197 59 / 20%) !important;
+        background: linear-gradient(145deg, rgb(0 30 60 / 70%) 0%, rgb(0 13 31 / 60%) 100%) !important;
+        border: 1.5px solid rgb(6 182 212 / 20%) !important;
         box-shadow:
-            0 0 0 1px rgb(247 197 59 / 5%) inset,
+            0 0 0 1px rgb(6 182 212 / 5%) inset,
             0 4px 20px rgb(0 0 0 / 30%),
-            0 0 8px rgb(247 197 59 / 5%) !important;
+            0 0 8px rgb(6 182 212 / 5%) !important;
         border-radius: 1.2rem !important;
         position: relative;
         overflow: hidden;
@@ -765,79 +770,79 @@ body.theme--dark {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(105deg, transparent 35%, rgb(255 255 180 / 8%) 50%, transparent 65%);
+            background: linear-gradient(105deg, transparent 35%, rgb(224 242 254 / 6%) 50%, transparent 65%);
             background-size: 200% 100%;
-            animation: gold-shimmer 3s ease-in-out infinite;
+            animation: dash-cyan-shimmer 3s ease-in-out infinite;
             pointer-events: none;
             border-radius: inherit;
         }
 
         &:hover {
             transform: translateY(-4px) scale(1.03) !important;
-            border-color: rgb(247 197 59 / 50%) !important;
+            border-color: rgb(6 182 212 / 50%) !important;
             box-shadow:
-                0 0 0 1px rgb(247 197 59 / 15%) inset,
+                0 0 0 1px rgb(6 182 212 / 15%) inset,
                 0 8px 32px rgb(0 0 0 / 40%),
-                0 0 16px rgb(247 197 59 / 20%),
-                0 0 32px rgb(247 197 59 / 8%) !important;
+                0 0 16px rgb(6 182 212 / 20%),
+                0 0 32px rgb(59 130 246 / 10%) !important;
             cursor: pointer;
         }
 
         svg {
-            filter: drop-shadow(0 0 4px rgb(247 197 59 / 25%)) saturate(0.4) sepia(1) saturate(2) hue-rotate(-5deg);
+            filter: drop-shadow(0 0 4px rgb(6 182 212 / 20%));
             transition: filter 0.3s ease, transform 0.3s ease;
         }
 
         &:hover svg {
-            filter: drop-shadow(0 0 8px rgb(247 197 59 / 50%)) saturate(0.4) sepia(1) saturate(3) hue-rotate(-5deg) brightness(1.1);
+            filter: drop-shadow(0 0 8px rgb(6 182 212 / 50%)) brightness(1.1);
             transform: scale(1.08);
         }
     }
 
     .tab__dashboard__table__block {
         .dc-text {
-            color: rgb(247 197 59 / 65%) !important;
+            color: rgb(6 182 212 / 65%) !important;
             font-weight: 600 !important;
-            text-shadow: 0 0 6px rgb(247 197 59 / 15%);
+            text-shadow: 0 0 6px rgb(6 182 212 / 15%);
             letter-spacing: 0.03em;
             transition: color 0.2s, text-shadow 0.2s;
         }
 
         &:hover .dc-text {
-            color: #fff8d6 !important;
-            text-shadow: 0 0 10px rgb(247 197 59 / 40%);
+            color: #e0f2fe !important;
+            text-shadow: 0 0 10px rgb(6 182 212 / 40%);
         }
     }
 
     .announcements__button {
-        background: linear-gradient(135deg, rgb(30 24 5 / 60%) 0%, rgb(60 46 6 / 60%) 100%) !important;
-        border: 1.5px solid rgb(247 197 59 / 25%) !important;
-        box-shadow: 0 0 8px rgb(247 197 59 / 10%) !important;
+        background: linear-gradient(135deg, rgb(0 30 60 / 60%) 0%, rgb(0 20 40 / 60%) 100%) !important;
+        border: 1.5px solid rgb(6 182 212 / 25%) !important;
+        box-shadow: 0 0 8px rgb(6 182 212 / 10%) !important;
         transition: all 0.25s ease !important;
         border-radius: 2.4rem !important;
 
-        svg path { fill: rgb(247 197 59 / 80%) !important; }
-        .dc-text  { color: rgb(247 197 59 / 80%) !important; font-weight: 600 !important; }
+        svg path { fill: rgb(6 182 212 / 80%) !important; }
+        .dc-text  { color: rgb(6 182 212 / 80%) !important; font-weight: 600 !important; }
 
         &:hover {
-            border-color: rgb(247 197 59 / 55%) !important;
-            box-shadow: 0 0 14px rgb(247 197 59 / 20%) !important;
-            background: linear-gradient(135deg, rgb(60 46 6 / 70%) 0%, rgb(90 70 8 / 70%) 100%) !important;
+            border-color: rgb(6 182 212 / 55%) !important;
+            box-shadow: 0 0 14px rgb(6 182 212 / 20%) !important;
+            background: linear-gradient(135deg, rgb(0 40 80 / 70%) 0%, rgb(0 30 60 / 70%) 100%) !important;
         }
     }
 
     .bot-list {
         &__title .dc-text {
-            color: rgb(247 197 59 / 80%) !important;
-            text-shadow: 0 0 6px rgb(247 197 59 / 20%);
+            color: rgb(6 182 212 / 80%) !important;
+            text-shadow: 0 0 6px rgb(6 182 212 / 20%);
             font-weight: 700 !important;
         }
 
         &__header {
-            border-bottom: 1px solid rgb(247 197 59 / 18%) !important;
+            border-bottom: 1px solid rgb(6 182 212 / 18%) !important;
 
             .dc-text {
-                color: rgb(247 197 59 / 55%) !important;
+                color: rgb(6 182 212 / 55%) !important;
                 font-weight: 700 !important;
                 letter-spacing: 0.04em;
                 text-transform: uppercase;
@@ -846,43 +851,43 @@ body.theme--dark {
         }
 
         &__item {
-            border-bottom: 1px solid rgb(247 197 59 / 8%) !important;
+            border-bottom: 1px solid rgb(6 182 212 / 8%) !important;
             transition: background 0.2s ease;
 
             &:hover {
-                background: linear-gradient(90deg, rgb(247 197 59 / 3%) 0%, transparent 100%) !important;
+                background: linear-gradient(90deg, rgb(6 182 212 / 4%) 0%, transparent 100%) !important;
             }
 
             &__label .dc-text,
             &__time-stamp .dc-text,
             &__load-type .dc-text {
-                color: rgb(247 197 59 / 55%) !important;
+                color: rgb(6 182 212 / 55%) !important;
             }
 
             &__actions button svg {
-                fill: rgb(247 197 59 / 45%) !important;
+                fill: rgb(6 182 212 / 45%) !important;
                 transition: fill 0.2s;
             }
 
             &__actions button:hover svg {
-                fill: rgb(247 197 59 / 85%) !important;
-                filter: drop-shadow(0 0 4px rgb(247 197 59 / 35%));
+                fill: rgb(6 182 212 / 90%) !important;
+                filter: drop-shadow(0 0 4px rgb(6 182 212 / 40%));
             }
         }
     }
 
     .user-guide__button {
-        background: linear-gradient(135deg, rgb(30 24 5 / 60%) 0%, rgb(60 46 6 / 60%) 100%) !important;
-        border: 1.5px solid rgb(247 197 59 / 22%) !important;
-        box-shadow: 0 0 6px rgb(247 197 59 / 8%) !important;
+        background: linear-gradient(135deg, rgb(0 30 60 / 60%) 0%, rgb(0 20 40 / 60%) 100%) !important;
+        border: 1.5px solid rgb(6 182 212 / 22%) !important;
+        box-shadow: 0 0 6px rgb(6 182 212 / 8%) !important;
         transition: all 0.25s ease !important;
 
-        svg      { fill: rgb(247 197 59 / 75%) !important; }
-        .dc-text { color: rgb(247 197 59 / 75%) !important; }
+        svg      { fill: rgb(6 182 212 / 75%) !important; }
+        .dc-text { color: rgb(6 182 212 / 75%) !important; }
 
         &:hover {
-            border-color: rgb(247 197 59 / 50%) !important;
-            box-shadow: 0 0 12px rgb(247 197 59 / 20%) !important;
+            border-color: rgb(6 182 212 / 50%) !important;
+            box-shadow: 0 0 12px rgb(6 182 212 / 20%) !important;
         }
     }
 }
