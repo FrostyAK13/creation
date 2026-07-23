@@ -1,0 +1,394 @@
+<xml xmlns="https://developers.google.com/blockly/xml" is_dbot="true" collection="false">
+  <variables>
+    <variable id="ou54:stake">stake</variable>
+    <variable id="ou54:martingale">martingale</variable>
+    <variable id="ou54:take_profit">take_profit</variable>
+    <variable id="ou54:stop_loss">stop_loss</variable>
+    <variable id="ou54:current_stake">current_stake</variable>
+    <variable id="ou54:total_profit">total_profit</variable>
+    <variable id="ou54:is_over_turn">is_over_turn</variable>
+  </variables>
+
+  <!-- ═══ Trade Definition ══════════════════════════════════════════════════ -->
+
+  <block type="trade_definition" id="ou54:trade_def" deletable="false" x="0" y="60">
+    <statement name="TRADE_OPTIONS">
+      <block type="trade_definition_market" id="ou54:market" deletable="false" movable="false">
+        <field name="MARKET_LIST">synthetic_index</field>
+        <field name="SUBMARKET_LIST">random_index</field>
+        <field name="SYMBOL_LIST">1HZ10V</field>
+        <next>
+          <block type="trade_definition_tradetype" id="ou54:tradetype" deletable="false" movable="false">
+            <field name="TRADETYPECAT_LIST">digits</field>
+            <field name="TRADETYPE_LIST">overunder</field>
+            <next>
+              <block type="trade_definition_contracttype" id="ou54:contracttype" deletable="false" movable="false">
+                <field name="TYPE_LIST">both</field>
+                <next>
+                  <block type="trade_definition_candleinterval" id="ou54:candle" deletable="false" movable="false">
+                    <field name="CANDLEINTERVAL_LIST">60</field>
+                    <next>
+                      <block type="trade_definition_restartbuysell" id="ou54:restart" deletable="false" movable="false">
+                        <field name="TIME_MACHINE_ENABLED">FALSE</field>
+                        <next>
+                          <block type="trade_definition_restartonerror" id="ou54:restarterr" deletable="false" movable="false">
+                            <field name="RESTARTONERROR">TRUE</field>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+
+    <statement name="INITIALIZATION">
+      <!-- stake = 0.35 (edit this to change base stake) -->
+      <block type="variables_set" id="ou54:init_stake">
+        <field name="VAR" id="ou54:stake">stake</field>
+        <value name="VALUE">
+          <block type="math_number" id="ou54:stake_num">
+            <field name="NUM">0.35</field>
+          </block>
+        </value>
+        <next>
+          <!-- martingale multiplier = 2 -->
+          <block type="variables_set" id="ou54:init_mart">
+            <field name="VAR" id="ou54:martingale">martingale</field>
+            <value name="VALUE">
+              <block type="math_number" id="ou54:mart_num">
+                <field name="NUM">2</field>
+              </block>
+            </value>
+            <next>
+              <!-- take_profit = 5 -->
+              <block type="variables_set" id="ou54:init_tp">
+                <field name="VAR" id="ou54:take_profit">take_profit</field>
+                <value name="VALUE">
+                  <block type="math_number" id="ou54:tp_num">
+                    <field name="NUM">5</field>
+                  </block>
+                </value>
+                <next>
+                  <!-- stop_loss = 5 -->
+                  <block type="variables_set" id="ou54:init_sl">
+                    <field name="VAR" id="ou54:stop_loss">stop_loss</field>
+                    <value name="VALUE">
+                      <block type="math_number" id="ou54:sl_num">
+                        <field name="NUM">5</field>
+                      </block>
+                    </value>
+                    <next>
+                      <!-- current_stake = stake -->
+                      <block type="variables_set" id="ou54:init_cs">
+                        <field name="VAR" id="ou54:current_stake">current_stake</field>
+                        <value name="VALUE">
+                          <block type="variables_get" id="ou54:init_cs_ref">
+                            <field name="VAR" id="ou54:stake">stake</field>
+                          </block>
+                        </value>
+                        <next>
+                          <!-- total_profit = 0 -->
+                          <block type="variables_set" id="ou54:init_profit">
+                            <field name="VAR" id="ou54:total_profit">total_profit</field>
+                            <value name="VALUE">
+                              <block type="math_number" id="ou54:profit_num">
+                                <field name="NUM">0</field>
+                              </block>
+                            </value>
+                            <next>
+                              <!-- is_over_turn = true (start with Over 5) -->
+                              <block type="variables_set" id="ou54:init_turn">
+                                <field name="VAR" id="ou54:is_over_turn">is_over_turn</field>
+                                <value name="VALUE">
+                                  <block type="logic_boolean" id="ou54:turn_bool">
+                                    <field name="BOOL">TRUE</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+
+  <!-- ═══ After Purchase ════════════════════════════════════════════════════ -->
+
+  <block type="after_purchase" id="ou54:after_purchase" x="714" y="60">
+    <statement name="AFTERPURCHASE_STACK">
+
+      <!-- 1. Accumulate profit/loss from this contract -->
+      <block type="math_change" id="ou54:update_profit">
+        <field name="VAR" id="ou54:total_profit">total_profit</field>
+        <value name="DELTA">
+          <shadow type="math_number" id="ou54:delta_sh">
+            <field name="NUM">1</field>
+          </shadow>
+          <block type="read_details" id="ou54:read_profit">
+            <field name="DETAIL_INDEX">4</field>
+          </block>
+        </value>
+        <next>
+
+          <!-- 2. Flip trade direction: next tick trades the other side -->
+          <block type="variables_set" id="ou54:flip_turn">
+            <field name="VAR" id="ou54:is_over_turn">is_over_turn</field>
+            <value name="VALUE">
+              <block type="logic_negate" id="ou54:negate_turn">
+                <value name="BOOL">
+                  <block type="variables_get" id="ou54:turn_ref">
+                    <field name="VAR" id="ou54:is_over_turn">is_over_turn</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <next>
+
+              <!-- 3. Check Take Profit -->
+              <block type="controls_if" id="ou54:check_tp">
+                <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                <value name="IF0">
+                  <block type="logic_compare" id="ou54:tp_cmp">
+                    <field name="OP">GTE</field>
+                    <value name="A">
+                      <block type="variables_get" id="ou54:tp_a">
+                        <field name="VAR" id="ou54:total_profit">total_profit</field>
+                      </block>
+                    </value>
+                    <value name="B">
+                      <block type="variables_get" id="ou54:tp_b">
+                        <field name="VAR" id="ou54:take_profit">take_profit</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <!-- Take Profit reached: notify and stop -->
+                  <block type="notify" id="ou54:tp_notify">
+                    <field name="NOTIFICATION_TYPE">success</field>
+                    <field name="NOTIFICATION_SOUND">silent</field>
+                    <value name="MESSAGE">
+                      <shadow type="text" id="ou54:tp_msg_sh">
+                        <field name="TEXT">abc</field>
+                      </shadow>
+                      <block type="text" id="ou54:tp_msg">
+                        <field name="TEXT">✅ Take Profit reached! Over 5 / Under 4 bot stopped.</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <statement name="ELSE">
+
+                  <!-- 4. Check Stop Loss -->
+                  <block type="controls_if" id="ou54:check_sl">
+                    <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                    <value name="IF0">
+                      <block type="logic_compare" id="ou54:sl_cmp">
+                        <field name="OP">LTE</field>
+                        <value name="A">
+                          <block type="variables_get" id="ou54:sl_a">
+                            <field name="VAR" id="ou54:total_profit">total_profit</field>
+                          </block>
+                        </value>
+                        <value name="B">
+                          <block type="math_arithmetic" id="ou54:sl_neg">
+                            <field name="OP">MULTIPLY</field>
+                            <value name="A">
+                              <shadow type="math_number" id="ou54:sl_a_sh">
+                                <field name="NUM">1</field>
+                              </shadow>
+                              <block type="variables_get" id="ou54:sl_neg_a">
+                                <field name="VAR" id="ou54:stop_loss">stop_loss</field>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <shadow type="math_number" id="ou54:sl_b_sh">
+                                <field name="NUM">-1</field>
+                              </shadow>
+                              <block type="math_number" id="ou54:sl_neg_b">
+                                <field name="NUM">-1</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <!-- Stop Loss reached: notify and stop -->
+                      <block type="notify" id="ou54:sl_notify">
+                        <field name="NOTIFICATION_TYPE">error</field>
+                        <field name="NOTIFICATION_SOUND">silent</field>
+                        <value name="MESSAGE">
+                          <shadow type="text" id="ou54:sl_msg_sh">
+                            <field name="TEXT">abc</field>
+                          </shadow>
+                          <block type="text" id="ou54:sl_msg">
+                            <field name="TEXT">🛑 Stop Loss reached! Over 5 / Under 4 bot stopped.</field>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                    <statement name="ELSE">
+
+                      <!-- 5. Win → reset stake; Loss → martingale stake -->
+                      <block type="controls_if" id="ou54:check_win">
+                        <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                        <value name="IF0">
+                          <block type="contract_check_result" id="ou54:win_check">
+                            <field name="CHECK_RESULT">win</field>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <!-- Win: reset current_stake to base stake -->
+                          <block type="variables_set" id="ou54:win_reset">
+                            <field name="VAR" id="ou54:current_stake">current_stake</field>
+                            <value name="VALUE">
+                              <block type="variables_get" id="ou54:win_reset_ref">
+                                <field name="VAR" id="ou54:stake">stake</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="trade_again" id="ou54:win_trade_again"></block>
+                            </next>
+                          </block>
+                        </statement>
+                        <statement name="ELSE">
+                          <!-- Loss: current_stake = current_stake * martingale -->
+                          <block type="variables_set" id="ou54:loss_stake">
+                            <field name="VAR" id="ou54:current_stake">current_stake</field>
+                            <value name="VALUE">
+                              <block type="math_arithmetic" id="ou54:loss_mult">
+                                <field name="OP">MULTIPLY</field>
+                                <value name="A">
+                                  <shadow type="math_number" id="ou54:loss_a_sh">
+                                    <field name="NUM">1</field>
+                                  </shadow>
+                                  <block type="variables_get" id="ou54:loss_a">
+                                    <field name="VAR" id="ou54:current_stake">current_stake</field>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <shadow type="math_number" id="ou54:loss_b_sh">
+                                    <field name="NUM">2</field>
+                                  </shadow>
+                                  <block type="variables_get" id="ou54:loss_b">
+                                    <field name="VAR" id="ou54:martingale">martingale</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="trade_again" id="ou54:loss_trade_again"></block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+
+                    </statement>
+                  </block>
+
+                </statement>
+              </block>
+
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+
+  <!-- ═══ Before Purchase ═══════════════════════════════════════════════════ -->
+
+  <block type="before_purchase" id="ou54:before_purchase" deletable="false" x="0" y="880">
+    <statement name="BEFOREPURCHASE_STACK">
+
+      <!--
+        Set trade options for this tick.
+        Prediction: 5 if it is Over turn, 4 if it is Under turn.
+        Stake: current_stake (resets on win, multiplies on loss via martingale).
+      -->
+      <block type="trade_definition_tradeoptions" id="ou54:tradeopts">
+        <mutation xmlns="http://www.w3.org/1999/xhtml" has_first_barrier="false" has_second_barrier="false" has_prediction="true"></mutation>
+        <field name="DURATIONTYPE_LIST">t</field>
+        <value name="DURATION">
+          <shadow type="math_number" id="ou54:dur_sh">
+            <field name="NUM">1</field>
+          </shadow>
+          <block type="math_number" id="ou54:dur_val">
+            <field name="NUM">1</field>
+          </block>
+        </value>
+        <value name="AMOUNT">
+          <shadow type="math_number" id="ou54:amt_sh">
+            <field name="NUM">0.35</field>
+          </shadow>
+          <block type="variables_get" id="ou54:amt_ref">
+            <field name="VAR" id="ou54:current_stake">current_stake</field>
+          </block>
+        </value>
+        <value name="PREDICTION">
+          <shadow type="math_number_positive" id="ou54:pred_sh">
+            <field name="NUM">1</field>
+          </shadow>
+          <!-- if is_over_turn then prediction=5 (Over 5), else prediction=4 (Under 4) -->
+          <block type="logic_ternary" id="ou54:pred_ternary">
+            <value name="IF">
+              <block type="variables_get" id="ou54:pred_turn_ref">
+                <field name="VAR" id="ou54:is_over_turn">is_over_turn</field>
+              </block>
+            </value>
+            <value name="THEN">
+              <block type="math_number" id="ou54:pred_over">
+                <field name="NUM">5</field>
+              </block>
+            </value>
+            <value name="ELSE">
+              <block type="math_number" id="ou54:pred_under">
+                <field name="NUM">4</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <next>
+          <!--
+            Purchase: if is_over_turn → DIGITOVER (Over 5)
+                      else            → DIGITUNDER (Under 4)
+          -->
+          <block type="controls_if" id="ou54:purchase_if">
+            <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+            <value name="IF0">
+              <block type="variables_get" id="ou54:purchase_turn_ref">
+                <field name="VAR" id="ou54:is_over_turn">is_over_turn</field>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="purchase" id="ou54:purchase_over">
+                <field name="PURCHASE_LIST">DIGITOVER</field>
+              </block>
+            </statement>
+            <statement name="ELSE">
+              <block type="purchase" id="ou54:purchase_under">
+                <field name="PURCHASE_LIST">DIGITUNDER</field>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+
+    </statement>
+  </block>
+
+</xml>

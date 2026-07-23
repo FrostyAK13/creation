@@ -138,6 +138,14 @@ const FREE_BOTS: BotEntry[] = [
         tab: 'NORMAL',
         difficulty: 'Beginner',
     },
+    {
+        id: 'frosty_over5_under4',
+        xml_file: 'frosty_over5_under4',
+        name: 'Frosty Over 5 / Under 4',
+        description: 'Trades Over 5 and Under 4 back-to-back on every tick of Volatility 10 (1s). Alternates between both sides each tick with martingale recovery on loss and configurable take-profit and stop-loss.',
+        tab: 'NORMAL',
+        difficulty: 'Intermediate',
+    },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
 
