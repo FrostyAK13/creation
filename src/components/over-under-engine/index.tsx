@@ -149,6 +149,7 @@ const OverUnderEngine: React.FC = observer(() => {
     const [isRunning, setIsRunning]                       = useState(false);
     const [statusMsg, setStatusMsg]                       = useState('Ready to trade');
     const [digits, setDigits]                             = useState<number[]>([]);
+    const [prices, setPrices]                             = useState<string[]>([]);
     const [totalProfit, setTotalProfit]                   = useState(0);
     const [overWins, setOverWins]                         = useState(0);
     const [overLosses, setOverLosses]                     = useState(0);
@@ -364,6 +365,7 @@ const OverUnderEngine: React.FC = observer(() => {
         setLastUnderResult(null);
         setLastEntryDigit(null);
         setDigits([]);
+        setPrices([]);
         setIsWaitingEntry(entryMode);
         setStatusMsg(entryMode ? '👀 Watching for entry digit 4 or 5…' : 'Connecting…');
 
@@ -372,8 +374,13 @@ const OverUnderEngine: React.FC = observer(() => {
             // Live digit ticker
             if (msg?.tick?.quote !== undefined) {
                 const d = getLastDigit(msg.tick.quote);
+                const priceStr = String(msg.tick.quote);
                 setDigits(prev => {
                     const next = [...prev, d];
+                    return next.length > MAX_DIGITS ? next.slice(-MAX_DIGITS) : next;
+                });
+                setPrices(prev => {
+                    const next = [...prev, priceStr];
                     return next.length > MAX_DIGITS ? next.slice(-MAX_DIGITS) : next;
                 });
 
@@ -487,7 +494,19 @@ const OverUnderEngine: React.FC = observer(() => {
                         else              cls += ' oue__digit--neutral';
                         if (isLast)       cls += ' oue__digit--last';
                         if (isEntry && entryMode) cls += ' oue__digit--entry';
-                        return <span key={i} className={cls}>{d}</span>;
+                        const price = prices[i] ?? '';
+                        // Highlight the last digit within the price string
+                        const priceBody = price.slice(0, -1);
+                        const priceLastChar = price.slice(-1);
+                        return (
+                            <span key={i} className={`oue__tick${isLast ? ' oue__tick--last' : ''}`}>
+                                <span className='oue__tick-price'>
+                                    <span className='oue__tick-price-body'>{priceBody}</span>
+                                    <span className={`oue__tick-price-digit${isLast ? ' oue__tick-price-digit--last' : ''}`}>{priceLastChar}</span>
+                                </span>
+                                <span className={cls}>{d}</span>
+                            </span>
+                        );
                     })}
                 </div>
 

@@ -142,6 +142,44 @@
         }
     }
 
+    // ── tick wrapper (price + digit) ────────────────────────────────────────
+
+    &__tick {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        flex-shrink: 0;
+        transition: transform 0.15s ease;
+
+        &--last {
+            transform: scale(1.15);
+            z-index: 1;
+        }
+    }
+
+    &__tick-price {
+        font-family: 'Courier New', monospace;
+        font-size: 0.72rem;
+        line-height: 1;
+        color: var(--text-less-prominent);
+        white-space: nowrap;
+        letter-spacing: 0.01em;
+    }
+
+    &__tick-price-body {
+        opacity: 0.6;
+    }
+
+    &__tick-price-digit {
+        font-weight: 800;
+        color: var(--text-general);
+
+        &--last {
+            color: #f7c53b;
+        }
+    }
+
     &__digit-legend {
         display: flex;
         align-items: center;
