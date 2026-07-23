@@ -337,15 +337,10 @@ const OverUnderEngine: React.FC = observer(() => {
             e.roundInFlight = false;
             e.entryDigit    = null;
 
+            // Stop after every trade — check limits first, then stop with round result
             if (!checkLimits() && e.running) {
-                if (e.useEntryMode) {
-                    // Go back to waiting for the next entry digit
-                    e.waitingForEntry = true;
-                    setIsWaitingEntry(true);
-                    setStatusMsg('👀 Watching for entry digit 4 or 5…');
-                } else {
-                    setTimeout(() => { if (eng.current.running) fireRound(); }, 300);
-                }
+                const sign = roundPnl >= 0 ? '+' : '';
+                stopEngine(`✅ Round complete — P&L: ${sign}${roundPnl.toFixed(2)} | Total: ${sign}${e.totalProfit.toFixed(2)}`);
             }
         }
     }, [checkLimits, fireRound]);
