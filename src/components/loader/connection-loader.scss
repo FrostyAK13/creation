@@ -19,11 +19,26 @@ $dark-bg:      #020408;
     display: flex;
     align-items: center;
     justify-content: center;
-    background:
-        radial-gradient(ellipse 80% 70% at 15% 85%, rgba(26, 111, 255, 0.20) 0%, transparent 55%),
-        radial-gradient(ellipse 70% 60% at 85% 15%, rgba(0, 230, 118, 0.16) 0%, transparent 55%),
-        radial-gradient(ellipse 100% 90% at 50% 50%, #050a0f 0%, #020610 60%, #010205 100%);
+    background: #020408;
     overflow: hidden;
+
+    // ── blurred logo background ───────────────────────────────────────────────
+    // Set via inline style in TSX (avoids Rsbuild bundling the URL)
+
+    &__bg-img {
+        position: absolute;
+        inset: -20px; // slight bleed so blur edges don't show
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        filter: blur(18px) brightness(0.28) saturate(1.4);
+        transform: scale(1.05); // prevent blur edge artifacts
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    // everything inside sits above the blurred bg (exclude the bg-img itself)
+    & > *:not(#{&}__bg-img) { position: relative; z-index: 1; }
 
     // ── ambient radial glow behind card ──────────────────────────────────────
 

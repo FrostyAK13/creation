@@ -47,6 +47,13 @@ const ConnectionLoader = () => {
 
     return (
         <div className='conn-loader'>
+            {/* ── blurred logo background ── */}
+            <div
+                className='conn-loader__bg-img'
+                aria-hidden='true'
+                style={{ backgroundImage: "url('/logo-loader.jpeg')" }}
+            />
+
             {/* ── full-screen ambient glow ── */}
             <div className='conn-loader__bg-glow' aria-hidden='true' />
 
