@@ -6,11 +6,18 @@ import { useStore } from '@/hooks/useStore';
 import { DBOT_TABS } from '@/constants/bot-contents';
 import { LabelPairedCircleStarCaptionBoldIcon } from '@deriv/quill-icons/LabelPaired';
 import { Localize } from '@deriv-com/translations';
+import OverUnderEngine from '@/components/over-under-engine';
 import './free-bots.scss';
 
-type MiniTab = 'NORMAL' | 'PREMIUM';
+type MiniTab = 'NORMAL' | 'PREMIUM' | 'ENGINE';
 
-const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM'];
+const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM', 'ENGINE'];
+
+const TAB_LABELS: Record<MiniTab, string> = {
+    NORMAL: 'NORMAL',
+    PREMIUM: 'PREMIUM',
+    ENGINE: 'OVER/UNDER ENGINE',
+};
 
 const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
     NORMAL: {
@@ -20,6 +27,10 @@ const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
     PREMIUM: {
         badge: '👑',
         cardBorder: 'linear-gradient(135deg, #ffd700 0%, #ff9500 50%, #ffd700 100%)',
+    },
+    ENGINE: {
+        badge: '⚡',
+        cardBorder: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #10b981 100%)',
     },
 };
 
@@ -207,16 +218,18 @@ const FreeBots = observer(() => {
                 {MINI_TABS.map(tab => (
                     <button
                         key={tab}
-                        className={`free-bots__mini-tab${activeTab === tab ? ' free-bots__mini-tab--active' : ''}`}
+                        className={`free-bots__mini-tab${activeTab === tab ? ' free-bots__mini-tab--active' : ''}${tab === 'ENGINE' ? ' free-bots__mini-tab--engine' : ''}`}
                         onClick={() => setActiveTab(tab)}
                     >
                         <span className='free-bots__mini-tab-badge'>{TAB_CONFIG[tab].badge}</span>
-                        {tab}
+                        {TAB_LABELS[tab]}
                     </button>
                 ))}
             </div>
 
-            {visible_bots.length > 0 ? (
+            {activeTab === 'ENGINE' ? (
+                <OverUnderEngine />
+            ) : visible_bots.length > 0 ? (
                 <div className='free-bots__grid'>
                     {visible_bots.map(bot => {
                         const is_loading = importing === bot.id;

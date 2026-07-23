@@ -183,6 +183,15 @@
             color: #f7c53b;
             border-bottom-color: #f7c53b;
         }
+
+        &--engine {
+            &:hover { border-bottom-color: rgb(16 185 129 / 40%); }
+
+            &.free-bots__mini-tab--active {
+                color: #10b981;
+                border-bottom-color: #10b981;
+            }
+        }
     }
 
     &__mini-tab-badge {
