@@ -426,6 +426,9 @@ const OverUnderEngine: React.FC = observer(() => {
 
     const currency    = (client as any)?.currency || 'USD';
     const totalRounds = Math.max(overWins + overLosses, underWins + underLosses);
+    const latestPrice = prices.length > 0 ? prices[prices.length - 1] : null;
+    const latestPriceBody = latestPrice ? latestPrice.slice(0, -1) : '';
+    const latestPriceDigit = latestPrice ? latestPrice.slice(-1) : '';
     const profitPct   = (n: number, total: number) => total > 0 ? Math.round((n / total) * 100) : 0;
     const activeMarket = MARKETS.find(m => m.symbol === symbol) ?? MARKETS[0];
 
@@ -568,6 +571,19 @@ const OverUnderEngine: React.FC = observer(() => {
                         {totalProfit >= 0 ? '+' : ''}{totalProfit.toFixed(2)} {currency}
                     </span>
                 </div>
+
+                <div className='oue__live-price'>
+                    <span className='oue__live-price-label'>Live Price</span>
+                    {latestPrice ? (
+                        <span className='oue__live-price-val'>
+                            <span className='oue__live-price-body'>{latestPriceBody}</span>
+                            <span className='oue__live-price-digit'>{latestPriceDigit}</span>
+                        </span>
+                    ) : (
+                        <span className='oue__live-price-empty'>—</span>
+                    )}
+                </div>
+
                 <div className='oue__rounds'><span className='oue__rounds-label'>Rounds</span><span className='oue__rounds-val'>{totalRounds}</span></div>
                 <div className='oue__rounds'><span className='oue__rounds-label'>Market</span><span className='oue__rounds-val' style={{ fontSize: '1.1rem' }}>{activeMarket.short}</span></div>
             </div>
