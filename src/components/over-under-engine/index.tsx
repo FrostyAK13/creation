@@ -6,10 +6,28 @@ import './over-under-engine.scss';
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const SYMBOL       = '1HZ10V';
-const OVER_BARRIER = '5';   // Win when last digit > 5 (i.e. 6-9)
-const UNDER_BARRIER = '4';  // Win when last digit < 4 (i.e. 0-3)
-const MAX_DIGITS   = 30;
+const OVER_BARRIER  = '5';   // Win when last digit > 5 (i.e. 6-9)
+const UNDER_BARRIER = '4';   // Win when last digit < 4 (i.e. 0-3)
+const MAX_DIGITS    = 30;
+
+interface Market {
+    symbol: string;
+    label:  string;
+    short:  string;
+}
+
+const MARKETS: Market[] = [
+    { symbol: '1HZ10V',  label: 'Volatility 10 (1s)',  short: 'V10 (1s)'  },
+    { symbol: '1HZ25V',  label: 'Volatility 25 (1s)',  short: 'V25 (1s)'  },
+    { symbol: '1HZ50V',  label: 'Volatility 50 (1s)',  short: 'V50 (1s)'  },
+    { symbol: '1HZ75V',  label: 'Volatility 75 (1s)',  short: 'V75 (1s)'  },
+    { symbol: '1HZ100V', label: 'Volatility 100 (1s)', short: 'V100 (1s)' },
+    { symbol: 'R_10',    label: 'Volatility 10',        short: 'V10'       },
+    { symbol: 'R_25',    label: 'Volatility 25',        short: 'V25'       },
+    { symbol: 'R_50',    label: 'Volatility 50',        short: 'V50'       },
+    { symbol: 'R_75',    label: 'Volatility 75',        short: 'V75'       },
+    { symbol: 'R_100',   label: 'Volatility 100',       short: 'V100'      },
+];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -84,6 +102,7 @@ const OverUnderEngine: React.FC = observer(() => {
     const [martingale, setMartingale] = useState(2);
     const [takeProfit, setTakeProfit] = useState(5);
     const [stopLoss, setStopLoss]     = useState(5);
+    const [symbol, setSymbol]         = useState('1HZ10V');
 
     // Display state (driven by engine, synced via setState calls)
     const [isRunning, setIsRunning]             = useState(false);
@@ -102,6 +121,9 @@ const OverUnderEngine: React.FC = observer(() => {
     // Mutable engine state
     const eng = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss));
     const msgSub = useRef<{ unsubscribe: () => void } | null>(null);
+    // Keep symbol accessible inside async callbacks without stale-closure issues
+    const symbolRef = useRef(symbol);
+    useEffect(() => { symbolRef.current = symbol; }, [symbol]);
 
     // ── cleanup helpers ───────────────────────────────────────────────────────
 
@@ -172,7 +194,7 @@ const OverUnderEngine: React.FC = observer(() => {
                 duration: 1,
                 duration_unit: 't',
                 barrier,
-                underlying_symbol: SYMBOL,
+                underlying_symbol: symbolRef.current,
             },
         });
 
@@ -319,7 +341,7 @@ const OverUnderEngine: React.FC = observer(() => {
         // Subscribe to live ticks for digit display
         try {
             const api = api_base.api as any;
-            const tickRes = await api.send({ ticks: SYMBOL, subscribe: 1 });
+            const tickRes = await api.send({ ticks: symbolRef.current, subscribe: 1 });
             eng.current.tickSubId = tickRes?.subscription?.id ?? null;
             setStatusMsg('Connected — firing first round…');
             await fireRound();
@@ -339,9 +361,10 @@ const OverUnderEngine: React.FC = observer(() => {
 
     // ── render ────────────────────────────────────────────────────────────────
 
-    const currency    = (client as any)?.currency || 'USD';
-    const totalRounds = Math.max(overWins + overLosses, underWins + underLosses);
-    const profitPct   = (n: number, total: number) => total > 0 ? Math.round((n / total) * 100) : 0;
+    const currency     = (client as any)?.currency || 'USD';
+    const totalRounds  = Math.max(overWins + overLosses, underWins + underLosses);
+    const profitPct    = (n: number, total: number) => total > 0 ? Math.round((n / total) * 100) : 0;
+    const activeMarket = MARKETS.find(m => m.symbol === symbol) ?? MARKETS[0];
 
     return (
         <div className='oue'>
@@ -451,7 +474,7 @@ const OverUnderEngine: React.FC = observer(() => {
                 </div>
                 <div className='oue__rounds'>
                     <span className='oue__rounds-label'>Market</span>
-                    <span className='oue__rounds-val' style={{ fontSize: '1.1rem' }}>Vol 10 (1s)</span>
+                    <span className='oue__rounds-val' style={{ fontSize: '1.1rem' }}>{activeMarket.short}</span>
                 </div>
             </div>
 
@@ -530,6 +553,24 @@ const OverUnderEngine: React.FC = observer(() => {
                             className='oue__input'
                         />
                     </label>
+                </div>
+
+                {/* ── market selector ── */}
+                <div className='oue__market-selector'>
+                    <span className='oue__market-label'>Market</span>
+                    <div className='oue__market-grid'>
+                        {MARKETS.map(m => (
+                            <button
+                                key={m.symbol}
+                                className={`oue__market-btn${symbol === m.symbol ? ' oue__market-btn--active' : ''}`}
+                                onClick={() => setSymbol(m.symbol)}
+                                disabled={isRunning}
+                                title={m.label}
+                            >
+                                {m.short}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className='oue__action'>
