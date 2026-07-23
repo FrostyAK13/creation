@@ -6,17 +6,15 @@ import { useStore } from '@/hooks/useStore';
 import { DBOT_TABS } from '@/constants/bot-contents';
 import { LabelPairedCircleStarCaptionBoldIcon } from '@deriv/quill-icons/LabelPaired';
 import { Localize } from '@deriv-com/translations';
-import OverUnderEngine from '@/components/over-under-engine';
 import './free-bots.scss';
 
-type MiniTab = 'NORMAL' | 'PREMIUM' | 'ENGINE';
+type MiniTab = 'NORMAL' | 'PREMIUM';
 
-const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM', 'ENGINE'];
+const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM'];
 
 const TAB_LABELS: Record<MiniTab, string> = {
     NORMAL: 'NORMAL',
     PREMIUM: 'PREMIUM',
-    ENGINE: 'OVER/UNDER ENGINE',
 };
 
 const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
@@ -27,10 +25,6 @@ const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
     PREMIUM: {
         badge: '👑',
         cardBorder: 'linear-gradient(135deg, #ffd700 0%, #ff9500 50%, #ffd700 100%)',
-    },
-    ENGINE: {
-        badge: '⚡',
-        cardBorder: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #10b981 100%)',
     },
 };
 

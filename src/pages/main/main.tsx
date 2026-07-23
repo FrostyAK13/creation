@@ -43,6 +43,7 @@ import {
     LabelPairedBarsCaptionRegularIcon,
     LabelPairedCopyCaptionRegularIcon,
     LabelPairedChartCandlestickCaptionRegularIcon,
+    LabelPairedArrowUpArrowDownCaptionBoldIcon,
 } from '@deriv/quill-icons/LabelPaired';
 import { LegacyGuide1pxIcon } from '@deriv/quill-icons/Legacy';
 import { Localize, localize } from '@deriv-com/translations';
@@ -52,6 +53,7 @@ import ChartModal from '../chart/chart-modal';
 import Dashboard from '../dashboard';
 import RunStrategy from '../dashboard/run-strategy';
 import FreeBots from '../free-bots';
+import OverUnderEngine from '@/components/over-under-engine';
 import AnalysisTools from '../analysis';
 import CopyTrading from '../copy-trading';
 import './main.scss';
@@ -90,7 +92,7 @@ const AppWrapper = observer(() => {
     const { clear } = summary_card;
     const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
     const init_render = React.useRef(true);
-    const hash = ['dashboard', 'bot_builder', 'free_bots', 'd_circles', 'analysis_tool', 'market_analyzer', 'chart', 'trading_view', 'copy_trading', 'analysis', 'tutorial'];
+    const hash = ['dashboard', 'bot_builder', 'free_bots', 'over_under_engine', 'd_circles', 'analysis_tool', 'market_analyzer', 'chart', 'trading_view', 'copy_trading', 'analysis', 'tutorial'];
     const { isDesktop } = useDevice();
     const location = useLocation();
     const navigate = useNavigate();
@@ -424,6 +426,21 @@ const AppWrapper = observer(() => {
                                 id='id-free-bots'
                             >
                                 <FreeBots />
+                            </div>
+                            <div
+                                label={
+                                    <>
+                                        <LabelPairedArrowUpArrowDownCaptionBoldIcon
+                                            height='24px'
+                                            width='24px'
+                                            fill='var(--text-general)'
+                                        />
+                                        <Localize i18n_default_text='Over/Under Engine' />
+                                    </>
+                                }
+                                id='id-over-under-engine'
+                            >
+                                <OverUnderEngine />
                             </div>
                             <div
                                 label={
