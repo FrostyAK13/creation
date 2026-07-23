@@ -375,7 +375,40 @@ const OverUnderEngine: React.FC = observer(() => {
                 <div className='oue__title'>
                     <span className='oue__title-icon'>⚡</span>
                     <span>OVER 5 / UNDER 4 ENGINE</span>
-                    <span className='oue__title-sym'>Vol 10 (1s)</span>
+
+                    {/* ── inline market selector ── */}
+                    <div className={`oue__market-selector oue__market-selector--header${marketOpen ? ' oue__market-selector--open' : ''}`}>
+                        <button
+                            className='oue__market-trigger oue__market-trigger--header'
+                            onClick={() => !isRunning && setMarketOpen(o => !o)}
+                            disabled={isRunning}
+                            type='button'
+                            title='Change market'
+                        >
+                            <span className='oue__market-trigger-short'>
+                                {MARKETS.find(m => m.symbol === symbol)?.short ?? symbol}
+                            </span>
+                            <span className={`oue__market-chevron${marketOpen ? ' oue__market-chevron--open' : ''}`}>▼</span>
+                        </button>
+                        {marketOpen && (
+                            <div className='oue__market-dropdown'>
+                                <div className='oue__market-grid'>
+                                    {MARKETS.map(m => (
+                                        <button
+                                            key={m.symbol}
+                                            className={`oue__market-btn${symbol === m.symbol ? ' oue__market-btn--active' : ''}`}
+                                            onClick={() => { setSymbol(m.symbol); setMarketOpen(false); }}
+                                            disabled={isRunning}
+                                            title={m.label}
+                                            type='button'
+                                        >
+                                            {m.short}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className='oue__digits'>
                     {digits.length === 0 ? (
@@ -554,40 +587,6 @@ const OverUnderEngine: React.FC = observer(() => {
                             className='oue__input'
                         />
                     </label>
-                </div>
-
-                {/* ── market selector (collapsible) ── */}
-                <div className={`oue__market-selector${marketOpen ? ' oue__market-selector--open' : ''}${isRunning ? ' oue__market-selector--disabled' : ''}`}>
-                    <button
-                        className='oue__market-trigger'
-                        onClick={() => !isRunning && setMarketOpen(o => !o)}
-                        disabled={isRunning}
-                        type='button'
-                    >
-                        <span className='oue__market-trigger-label'>Market</span>
-                        <span className='oue__market-trigger-value'>
-                            {MARKETS.find(m => m.symbol === symbol)?.label ?? symbol}
-                        </span>
-                        <span className={`oue__market-chevron${marketOpen ? ' oue__market-chevron--open' : ''}`}>▼</span>
-                    </button>
-                    <div className={`oue__market-body${marketOpen ? ' oue__market-body--open' : ''}`}>
-                        <div className='oue__market-body-inner'>
-                            <div className='oue__market-grid'>
-                                {MARKETS.map(m => (
-                                    <button
-                                        key={m.symbol}
-                                        className={`oue__market-btn${symbol === m.symbol ? ' oue__market-btn--active' : ''}`}
-                                        onClick={() => { setSymbol(m.symbol); setMarketOpen(false); }}
-                                        disabled={isRunning}
-                                        title={m.label}
-                                        type='button'
-                                    >
-                                        {m.short}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div className='oue__action'>
