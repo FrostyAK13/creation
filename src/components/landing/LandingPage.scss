@@ -101,6 +101,76 @@
         }
     }
 
+    /* ── Ticker ─────────────────────────────────────────── */
+    &__ticker-bar {
+        background: #111827;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+        height: 32px;
+        display: flex;
+        align-items: center;
+    }
+
+    &__ticker-label {
+        flex-shrink: 0;
+        padding: 0 18px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.3);
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    &__ticker-scroll {
+        overflow: hidden;
+        flex: 1;
+    }
+
+    &__ticker-track {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        animation: ticker-scroll 34s linear infinite;
+
+        &:hover {
+            animation-play-state: paused;
+        }
+    }
+
+    &__ticker-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 24px;
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+
+    &__ticker-name {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    &__ticker-price {
+        font-family: 'Courier New', monospace;
+        font-size: 0.72rem;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    &__ticker-change {
+        font-size: 0.68rem;
+        font-weight: 700;
+
+        &--up   { color: #10b981; }
+        &--down { color: #ef4444; }
+    }
+
     /* ── Hero ───────────────────────────────────────────── */
     &__hero {
         position: relative;
@@ -437,6 +507,11 @@
 @keyframes btn-shimmer {
     0%   { background-position: -200% center; }
     100% { background-position:  200% center; }
+}
+
+@keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 @keyframes testimonial-scroll {

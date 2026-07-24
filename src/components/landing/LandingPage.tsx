@@ -1,8 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { generateOAuthURL } from '@/components/shared/utils/config/config';
 import './LandingPage.scss';
 
 /* ── Types ─────────────────────────────────────────────── */
+interface TickItem {
+    symbol: string;
+    display: string;
+    price: string;
+    change: number;
+    pct: string;
+}
+
 interface Testimonial {
     initials: string;
     name: string;
@@ -14,6 +22,17 @@ interface Testimonial {
 }
 
 /* ── Constants ──────────────────────────────────────────── */
+const SYMBOLS: { symbol: string; display: string }[] = [
+    { symbol: 'BOOM1000', display: 'Boom 1000' },
+    { symbol: 'CRASH500', display: 'Crash 500' },
+    { symbol: 'stpind',   display: 'Step Index' },
+    { symbol: 'R_75',     display: 'Volatility 75' },
+    { symbol: 'R_100',    display: 'Volatility 100' },
+    { symbol: 'BOOM500',  display: 'Boom 500' },
+    { symbol: 'CRASH300', display: 'Crash 300' },
+    { symbol: 'R_50',     display: 'Volatility 50' },
+];
+
 const SIGNUP_URL = 'https://track.deriv.com/_6B2BFQC0E1f1hit6RV3zsGNd7ZgqdRLk/1/';
 
 const TESTIMONIALS: Testimonial[] = [
@@ -56,7 +75,62 @@ const STATS = [
     { value: 'Free',   label: 'Always' },
 ];
 
+/* ── Live ticker hook ───────────────────────────────────── */
+function useLiveTicker(): TickItem[] {
+    const [ticks, setTicks] = useState<TickItem[]>(
+        SYMBOLS.map(s => ({ symbol: s.symbol, display: s.display, price: '—', change: 0, pct: '+0.00%' }))
+    );
+    const prevPrices = useRef<Record<string, number>>({});
+
+    useEffect(() => {
+        const rawId = process.env.NEXT_PUBLIC_DERIV_APP_ID || '';
+        const appId = /^\d+$/.test(rawId) ? rawId : '1089';
+        const ws = new WebSocket(`wss://ws.binaryws.com/websockets/v3?app_id=${appId}`);
+
+        ws.onopen = () => {
+            SYMBOLS.forEach(({ symbol }) => ws.send(JSON.stringify({ ticks: symbol, subscribe: 1 })));
+        };
+
+        ws.onmessage = (event: MessageEvent) => {
+            try {
+                const data = JSON.parse(event.data as string);
+                if (data.msg_type === 'tick' && data.tick) {
+                    const { symbol, quote } = data.tick as { symbol: string; quote: number };
+                    const prev = prevPrices.current[symbol];
+                    const change = prev != null ? quote - prev : 0;
+                    const pct = prev != null && prev !== 0 ? ((change / prev) * 100).toFixed(2) : '0.00';
+                    prevPrices.current[symbol] = quote;
+                    setTicks(prev =>
+                        prev.map(t =>
+                            t.symbol === symbol
+                                ? { ...t, price: quote.toFixed(2), change, pct: `${change >= 0 ? '+' : ''}${pct}%` }
+                                : t
+                        )
+                    );
+                }
+            } catch { /* ignore */ }
+        };
+
+        return () => ws.close();
+    }, []);
+
+    return ticks;
+}
+
 /* ── Small components ───────────────────────────────────── */
+function TickerItem({ item }: { item: TickItem }) {
+    const isUp = item.change >= 0;
+    return (
+        <span className='landing__ticker-item'>
+            <span className='landing__ticker-name'>{item.display}</span>
+            <span className='landing__ticker-price'>{item.price}</span>
+            <span className={`landing__ticker-change landing__ticker-change--${isUp ? 'up' : 'down'}`}>
+                {item.pct}
+            </span>
+        </span>
+    );
+}
+
 function Stars({ count }: { count: number }) {
     return (
         <div className='landing__testimonial-stars'>
@@ -85,6 +159,8 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 
 /* ── Main component ─────────────────────────────────────── */
 export default function LandingPage() {
+    const ticks = useLiveTicker();
+    const doubled = [...ticks, ...ticks];
     const doubledTestimonials = [...TESTIMONIALS, ...TESTIMONIALS];
 
     const handleLogin = useCallback(async () => {
@@ -112,6 +188,16 @@ export default function LandingPage() {
                     <button className='landing__btn-signup' onClick={handleSignup}>Create account</button>
                 </div>
             </header>
+
+            {/* ── Ticker ── */}
+            <div className='landing__ticker-bar'>
+                <span className='landing__ticker-label'>Live Markets</span>
+                <div className='landing__ticker-scroll'>
+                    <div className='landing__ticker-track'>
+                        {doubled.map((item, i) => <TickerItem key={`${item.symbol}-${i}`} item={item} />)}
+                    </div>
+                </div>
+            </div>
 
             {/* ── Hero ── */}
             <section className='landing__hero'>
