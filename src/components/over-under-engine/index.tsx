@@ -134,7 +134,7 @@ function makeInitState(
 // ─── component ────────────────────────────────────────────────────────────────
 
 const OverUnderEngine: React.FC = observer(() => {
-    const { client } = useStore();
+    const { client, dashboard } = useStore();
 
     // Config
     const [stake, setStake]           = useState(0.35);
@@ -480,6 +480,16 @@ const OverUnderEngine: React.FC = observer(() => {
                             {isWaitingEntry && <span className='oue__entry-pulse' />}
                         </span>
                     )}
+
+                    {/* D-Circles shortcut */}
+                    <button
+                        className='oue__dcircles-btn'
+                        onClick={() => (dashboard as any).setDCirclesModalVisibility()}
+                        type='button'
+                        title='Open D-Circles analysis tool'
+                    >
+                        ◎ D-Circles
+                    </button>
 
                     {/* market selector */}
                     <div className={`oue__market-selector oue__market-selector--header${marketOpen ? ' oue__market-selector--open' : ''}`}>
