@@ -43,8 +43,8 @@
 .oue {
     display: flex;
     flex-direction: column;
-    gap: 1.6rem;
-    padding: 2rem;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
     height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
@@ -54,24 +54,24 @@
 
     &__header {
         background: var(--general-section-1);
-        border-radius: 12px;
-        padding: 1.4rem 1.6rem;
+        border-radius: 8px;
+        padding: 0.7rem 0.9rem;
         border: 1px solid var(--general-section-2);
     }
 
     &__title {
         display: flex;
         align-items: center;
-        gap: 0.8rem;
-        font-size: 1.5rem;
+        gap: 0.5rem;
+        font-size: 1rem;
         font-weight: 800;
         letter-spacing: 0.06em;
         color: var(--text-prominent);
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.5rem;
     }
 
     &__title-icon {
-        font-size: 1.8rem;
+        font-size: 1rem;
     }
 
     &__title-sym {
@@ -88,13 +88,13 @@
     &__digits {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
-        min-height: 3.2rem;
+        gap: 0.3rem;
+        min-height: 2rem;
         align-items: center;
     }
 
     &__digit-empty {
-        font-size: 1.2rem;
+        font-size: 0.85rem;
         color: var(--text-less-prominent);
         font-style: italic;
     }
@@ -103,10 +103,10 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 2.6rem;
-        height: 2.6rem;
+        width: 1.8rem;
+        height: 1.8rem;
         border-radius: 50%;
-        font-size: 1.3rem;
+        font-size: 0.85rem;
         font-weight: 800;
         background: var(--general-section-2);
         color: var(--text-general);
@@ -183,9 +183,9 @@
     &__digit-legend {
         display: flex;
         align-items: center;
-        gap: 1.2rem;
-        margin-top: 0.8rem;
-        font-size: 1.1rem;
+        gap: 0.7rem;
+        margin-top: 0.4rem;
+        font-size: 0.72rem;
         color: var(--text-less-prominent);
     }
 
@@ -206,13 +206,13 @@
     &__panels {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1.2rem;
+        gap: 0.6rem;
     }
 
     &__panel {
         background: var(--general-section-1);
-        border-radius: 12px;
-        padding: 1.4rem 1.6rem;
+        border-radius: 8px;
+        padding: 0.65rem 0.9rem;
         border: 2px solid transparent;
         position: relative;
         overflow: hidden;
@@ -253,37 +253,37 @@
     }
 
     &__panel-name {
-        font-size: 1.8rem;
+        font-size: 1.1rem;
         font-weight: 900;
         letter-spacing: 0.06em;
     }
 
     &__panel-win-pct {
-        font-size: 1.1rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        padding: 0.3rem 0.8rem;
+        padding: 0.15rem 0.5rem;
         border-radius: 20px;
     }
 
     &__panel-subtitle {
-        font-size: 1.1rem;
+        font-size: 0.72rem;
         color: var(--text-less-prominent);
-        margin-bottom: 1rem;
+        margin-bottom: 0.4rem;
     }
 
     &__panel-stats {
         display: flex;
-        gap: 1rem;
+        gap: 0.5rem;
     }
 
     &__stat {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
-        padding: 0.6rem 0.8rem;
+        gap: 0.1rem;
+        padding: 0.3rem 0.4rem;
         background: var(--general-section-2);
-        border-radius: 8px;
+        border-radius: 6px;
         text-align: center;
 
         &--win .oue__stat-val  { color: #10b981; }
@@ -291,7 +291,7 @@
     }
 
     &__stat-label {
-        font-size: 1rem;
+        font-size: 0.65rem;
         color: var(--text-less-prominent);
         font-weight: 600;
         text-transform: uppercase;
@@ -299,7 +299,7 @@
     }
 
     &__stat-val {
-        font-size: 1.6rem;
+        font-size: 1rem;
         font-weight: 800;
         color: var(--text-prominent);
         line-height: 1;
@@ -307,11 +307,11 @@
 
     &__badge {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
-        padding: 0.3rem 0.8rem;
-        border-radius: 6px;
-        font-size: 1.1rem;
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.72rem;
         font-weight: 800;
         letter-spacing: 0.06em;
 
@@ -324,22 +324,22 @@
     &__summary {
         display: flex;
         align-items: center;
-        gap: 2rem;
+        gap: 1rem;
         background: var(--general-section-1);
-        border-radius: 10px;
-        padding: 1.2rem 1.6rem;
+        border-radius: 8px;
+        padding: 0.55rem 0.9rem;
         border: 1px solid var(--general-section-2);
     }
 
     &__pnl {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        gap: 0.1rem;
         flex: 1;
     }
 
     &__pnl-label {
-        font-size: 1.1rem;
+        font-size: 0.65rem;
         color: var(--text-less-prominent);
         font-weight: 600;
         text-transform: uppercase;
@@ -347,7 +347,7 @@
     }
 
     &__pnl-val {
-        font-size: 2.4rem;
+        font-size: 1.3rem;
         font-weight: 900;
         color: var(--text-prominent);
         line-height: 1;
@@ -360,13 +360,13 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.2rem;
+        gap: 0.1rem;
         flex: 1;
         text-align: center;
     }
 
     &__live-price-label {
-        font-size: 1.1rem;
+        font-size: 0.65rem;
         color: var(--text-less-prominent);
         font-weight: 600;
         text-transform: uppercase;
@@ -375,7 +375,7 @@
 
     &__live-price-val {
         font-family: 'Courier New', monospace;
-        font-size: 2rem;
+        font-size: 1.1rem;
         font-weight: 800;
         line-height: 1;
         color: var(--text-prominent);
@@ -391,7 +391,7 @@
     }
 
     &__live-price-empty {
-        font-size: 2rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: var(--text-disabled-1);
         line-height: 1;
@@ -400,12 +400,12 @@
     &__rounds {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        gap: 0.1rem;
         text-align: center;
     }
 
     &__rounds-label {
-        font-size: 1.1rem;
+        font-size: 0.65rem;
         color: var(--text-less-prominent);
         font-weight: 600;
         text-transform: uppercase;
@@ -413,7 +413,7 @@
     }
 
     &__rounds-val {
-        font-size: 2rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: var(--text-prominent);
         line-height: 1;
@@ -424,19 +424,19 @@
     &__bars {
         display: flex;
         flex-direction: column;
-        gap: 0.8rem;
+        gap: 0.4rem;
     }
 
     &__bar {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.6rem;
     }
 
     &__bar-label {
-        font-size: 1.1rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        min-width: 7rem;
+        min-width: 5rem;
         color: var(--text-less-prominent);
 
         strong { color: var(--text-prominent); }
@@ -447,7 +447,7 @@
 
     &__bar-track {
         flex: 1;
-        height: 0.6rem;
+        height: 0.4rem;
         background: var(--general-section-2);
         border-radius: 3px;
         overflow: hidden;
@@ -464,10 +464,10 @@
     }
 
     &__bar-pct {
-        font-size: 1.1rem;
+        font-size: 0.72rem;
         font-weight: 700;
         color: var(--text-less-prominent);
-        min-width: 3.5rem;
+        min-width: 3rem;
         text-align: right;
     }
 
@@ -475,27 +475,27 @@
 
     &__controls {
         background: var(--general-section-1);
-        border-radius: 12px;
-        padding: 1.6rem;
+        border-radius: 8px;
+        padding: 0.7rem 0.9rem;
         border: 1px solid var(--general-section-2);
         display: flex;
         flex-direction: column;
-        gap: 1.4rem;
+        gap: 0.65rem;
     }
 
     &__config {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
+        gap: 0.5rem;
     }
 
     &__field {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.25rem;
 
         span {
-            font-size: 1.1rem;
+            font-size: 0.68rem;
             font-weight: 600;
             color: var(--text-less-prominent);
             text-transform: uppercase;
@@ -504,12 +504,12 @@
     }
 
     &__input {
-        padding: 0.6rem 0.8rem;
+        padding: 0.35rem 0.5rem;
         background: var(--general-section-2);
         border: 1.5px solid var(--general-section-3, var(--general-section-2));
-        border-radius: 6px;
+        border-radius: 5px;
         color: var(--text-prominent);
-        font-size: 1.4rem;
+        font-size: 0.95rem;
         font-weight: 700;
         width: 100%;
         box-sizing: border-box;
@@ -529,16 +529,16 @@
     &__action {
         display: flex;
         align-items: center;
-        gap: 1.2rem;
+        gap: 0.7rem;
     }
 
     &__status {
         flex: 1;
-        font-size: 1.2rem;
+        font-size: 0.82rem;
         color: var(--text-less-prominent);
         display: flex;
         align-items: center;
-        gap: 0.6rem;
+        gap: 0.4rem;
 
         &--running {
             color: #10b981;
@@ -547,8 +547,8 @@
 
     &__pulse {
         display: inline-block;
-        width: 0.8rem;
-        height: 0.8rem;
+        width: 0.55rem;
+        height: 0.55rem;
         border-radius: 50%;
         background: #10b981;
         flex-shrink: 0;
@@ -556,10 +556,10 @@
     }
 
     &__btn {
-        padding: 0.9rem 2.4rem;
+        padding: 0.5rem 1.4rem;
         border: none;
-        border-radius: 8px;
-        font-size: 1.4rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
         font-weight: 800;
         cursor: pointer;
         letter-spacing: 0.08em;
@@ -613,14 +613,14 @@
     &__market-trigger {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.4rem 1rem 0.4rem 1.2rem;
+        gap: 0.35rem;
+        padding: 0.25rem 0.7rem 0.25rem 0.8rem;
         cursor: pointer;
         border: 1.5px dashed rgb(255 255 255 / 35%);
-        border-radius: 8px;
+        border-radius: 6px;
         background: rgb(255 255 255 / 4%);
         color: var(--text-general);
-        font-size: 1.2rem;
+        font-size: 0.8rem;
         font-weight: 700;
         white-space: nowrap;
         transition: all 0.18s ease;
@@ -639,7 +639,7 @@
     }
 
     &__market-trigger-short {
-        font-size: 1.2rem;
+        font-size: 0.8rem;
         font-weight: 800;
     }
 
@@ -680,12 +680,12 @@
     }
 
     &__market-btn {
-        padding: 0.5rem 1.1rem;
+        padding: 0.3rem 0.7rem;
         border: 1px solid rgb(255 255 255 / 12%);
-        border-radius: 6px;
+        border-radius: 5px;
         background: rgb(255 255 255 / 5%);
         color: var(--text-general);
-        font-size: 1.15rem;
+        font-size: 0.78rem;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.13s ease;
@@ -744,16 +744,16 @@
     &__entry-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.25rem 0.9rem;
+        gap: 0.3rem;
+        padding: 0.15rem 0.55rem;
         border-radius: 20px;
         background: rgba(247, 197, 59, 0.1);
         border: 1.5px solid rgba(247, 197, 59, 0.35);
-        font-size: 1.1rem;
+        font-size: 0.72rem;
         font-weight: 600;
         color: #f7c53b;
         letter-spacing: 0.02em;
-        margin-left: 0.6rem;
+        margin-left: 0.4rem;
 
         strong {
             font-weight: 900;
