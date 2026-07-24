@@ -138,6 +138,18 @@
         }
     }
 
+    &__ticker-welcome {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 24px 0 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
     &__ticker-item {
         display: inline-flex;
         align-items: center;

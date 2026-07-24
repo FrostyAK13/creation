@@ -66,6 +66,11 @@ const TESTIMONIALS: Testimonial[] = [
         text: 'Finally a bot builder that just works without complex setup.',
         stars: 5, color: '#ec4899',
     },
+    {
+        initials: 'KA', name: 'Kwame Asante',  role: 'Full-Time Trader',  location: 'Ghana',
+        text: 'Every great trader started with their first strategy. Stop waiting — build yours today and let the bot do the work while you sleep.',
+        stars: 5, color: '#6366f1',
+    },
 ];
 
 const STATS = [
@@ -194,6 +199,7 @@ export default function LandingPage() {
                 <span className='landing__ticker-label'>Live Markets</span>
                 <div className='landing__ticker-scroll'>
                     <div className='landing__ticker-track'>
+                        <span className='landing__ticker-welcome'>👋 Welcome to FROSTYDBOT — automate smarter, trade better &nbsp;•&nbsp;</span>
                         {doubled.map((item, i) => <TickerItem key={`${item.symbol}-${i}`} item={item} />)}
                     </div>
                 </div>
