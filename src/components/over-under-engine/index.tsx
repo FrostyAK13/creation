@@ -163,9 +163,12 @@ const OverUnderEngine: React.FC = observer(() => {
     const [lastEntryDigit, setLastEntryDigit]             = useState<number | null>(null);
     const [tradeHistory, setTradeHistory]                 = useState<TradeRecord[]>([]);
 
-    const eng    = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss, entryMode));
-    const msgSub = useRef<{ unsubscribe: () => void } | null>(null);
-    const symbolRef = useRef(symbol);
+    const eng           = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss, entryMode));
+    const msgSub        = useRef<{ unsubscribe: () => void } | null>(null);
+    const passiveSub    = useRef<{ unsubscribe: () => void } | null>(null);
+    const passiveTickId = useRef<string | null>(null);
+    const fireRoundRef  = useRef<() => void>(() => {});
+    const symbolRef     = useRef(symbol);
     useEffect(() => { symbolRef.current = symbol; }, [symbol]);
 
     // ── cleanup ───────────────────────────────────────────────────────────────
@@ -176,12 +179,20 @@ const OverUnderEngine: React.FC = observer(() => {
         }
     }, []);
 
+    // ── passive tick subscription (always on when API ready) ─────────────────
+
+    const stopPassiveSub = useCallback(() => {
+        if (passiveTickId.current && api_base.api) {
+            try { (api_base.api as any).send({ forget: passiveTickId.current }); } catch { /* ignore */ }
+            passiveTickId.current = null;
+        }
+        if (passiveSub.current) { passiveSub.current.unsubscribe(); passiveSub.current = null; }
+    }, []);
+
     const cleanupSubs = useCallback(() => {
         const e = eng.current;
-        forgetId(e.tickSubId);
         forgetId(e.overSubId);
         forgetId(e.underSubId);
-        e.tickSubId  = null;
         e.overSubId  = null;
         e.underSubId = null;
         if (msgSub.current) { msgSub.current.unsubscribe(); msgSub.current = null; }
@@ -281,6 +292,9 @@ const OverUnderEngine: React.FC = observer(() => {
         }
     }, [client]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Keep fireRoundRef in sync so passiveSub's closure always calls the latest version
+    useEffect(() => { fireRoundRef.current = fireRound; }, [fireRound]);
+
     // ── settle ────────────────────────────────────────────────────────────────
 
     const onSettled = useCallback((contractId: number, won: boolean, profit: number) => {
@@ -346,6 +360,41 @@ const OverUnderEngine: React.FC = observer(() => {
         }
     }, [checkLimits, fireRound]);
 
+    // ── passive subscription: stream ticks as soon as a market is chosen ─────
+
+    const startPassiveSub = useCallback(async (sym: string) => {
+        if (!api_base.api) return;
+        stopPassiveSub();
+        setDigits([]);
+        setPrices([]);
+
+        passiveSub.current = (api_base.api as any).onMessage().subscribe((msg: any) => {
+            if (msg?.tick?.quote !== undefined) {
+                const d        = getLastDigit(msg.tick.quote);
+                const priceStr = String(msg.tick.quote);
+                setDigits(prev  => { const n = [...prev,  d];        return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
+                setPrices(prev  => { const n = [...prev,  priceStr]; return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
+
+                // Entry-point trigger (only active while engine is running)
+                const e = eng.current;
+                if (e.running && e.useEntryMode && e.waitingForEntry && !e.roundInFlight) {
+                    if (ENTRY_DIGITS.has(d)) {
+                        e.waitingForEntry = false;
+                        e.entryDigit      = d;
+                        setLastEntryDigit(d);
+                        setIsWaitingEntry(false);
+                        fireRoundRef.current();
+                    }
+                }
+            }
+        });
+
+        try {
+            const r = await (api_base.api as any).send({ ticks: sym, subscribe: 1 });
+            passiveTickId.current = r?.subscription?.id ?? null;
+        } catch { /* ignore — digits simply won't stream */ }
+    }, [stopPassiveSub]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // ── start ─────────────────────────────────────────────────────────────────
 
     const startEngine = useCallback(async () => {
@@ -369,35 +418,12 @@ const OverUnderEngine: React.FC = observer(() => {
         setIsWaitingEntry(entryMode);
         setStatusMsg(entryMode ? '👀 Watching for entry digit 4 or 5…' : 'Connecting…');
 
+        // Restart passive ticks so digit history is clean for this run
+        await startPassiveSub(symbolRef.current);
+
+        // msgSub handles contract results only — ticks are in passiveSub
         if (msgSub.current) msgSub.current.unsubscribe();
         msgSub.current = (api_base.api as any).onMessage().subscribe((msg: any) => {
-            // Live digit ticker
-            if (msg?.tick?.quote !== undefined) {
-                const d = getLastDigit(msg.tick.quote);
-                const priceStr = String(msg.tick.quote);
-                setDigits(prev => {
-                    const next = [...prev, d];
-                    return next.length > MAX_DIGITS ? next.slice(-MAX_DIGITS) : next;
-                });
-                setPrices(prev => {
-                    const next = [...prev, priceStr];
-                    return next.length > MAX_DIGITS ? next.slice(-MAX_DIGITS) : next;
-                });
-
-                // Entry-point trigger
-                const e = eng.current;
-                if (e.running && e.useEntryMode && e.waitingForEntry && !e.roundInFlight) {
-                    if (ENTRY_DIGITS.has(d)) {
-                        e.waitingForEntry = false;
-                        e.entryDigit      = d;
-                        setLastEntryDigit(d);
-                        setIsWaitingEntry(false);
-                        fireRound();
-                    }
-                }
-            }
-
-            // Contract result
             if (msg?.proposal_open_contract) {
                 const poc = msg.proposal_open_contract;
                 if (poc.status === 'won' || poc.status === 'lost') {
@@ -407,10 +433,6 @@ const OverUnderEngine: React.FC = observer(() => {
         });
 
         try {
-            const api = api_base.api as any;
-            const tickRes = await api.send({ ticks: symbolRef.current, subscribe: 1 });
-            eng.current.tickSubId = tickRes?.subscription?.id ?? null;
-
             if (!entryMode) {
                 setStatusMsg('Connected — firing first round…');
                 await fireRound();
@@ -418,9 +440,19 @@ const OverUnderEngine: React.FC = observer(() => {
         } catch (err: any) {
             stopEngine(`⚠ ${err?.error?.message || err?.message || 'Failed to start'}`);
         }
-    }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, stopEngine]);
+    }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, startPassiveSub, stopEngine]);
 
-    useEffect(() => () => { eng.current.running = false; cleanupSubs(); }, [cleanupSubs]);
+    // Start passive ticks whenever the selected symbol changes (or on first mount)
+    useEffect(() => {
+        startPassiveSub(symbol);
+    }, [symbol]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Teardown on unmount — kill everything including the passive subscription
+    useEffect(() => () => {
+        eng.current.running = false;
+        cleanupSubs();
+        stopPassiveSub();
+    }, [cleanupSubs, stopPassiveSub]);
 
     // ── render ────────────────────────────────────────────────────────────────
 
@@ -487,7 +519,7 @@ const OverUnderEngine: React.FC = observer(() => {
                 {/* digit row */}
                 <div className='oue__digits'>
                     {digits.length === 0 ? (
-                        <span className='oue__digit-empty'>Start engine to see live digits</span>
+                        <span className='oue__digit-empty'>{api_base.api ? 'Connecting to market…' : 'Log in to see live digits'}</span>
                     ) : digits.map((d, i) => {
                         const isLast    = i === digits.length - 1;
                         const isEntry   = ENTRY_DIGITS.has(d);
