@@ -21,6 +21,16 @@ interface Testimonial {
     color: string;
 }
 
+/* ── Hero rotating quotes ───────────────────────────────── */
+const HERO_QUOTES: { plain: string; em: string }[] = [
+    { plain: 'One Workspace.',        em: 'Limitless Strategies.' },
+    { plain: 'Automate Smarter.',     em: 'Trade Better.' },
+    { plain: 'Build Once.',           em: 'Run Forever.' },
+    { plain: 'Your Strategy.',        em: 'Your Edge.' },
+    { plain: 'Less Screen Time.',     em: 'More Profit.' },
+    { plain: 'Set Your Rules.',       em: 'Let the Bot Win.' },
+];
+
 /* ── Constants ──────────────────────────────────────────── */
 const SYMBOLS: { symbol: string; display: string }[] = [
     { symbol: 'BOOM1000', display: 'Boom 1000' },
@@ -165,6 +175,19 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 /* ── Main component ─────────────────────────────────────── */
 export default function LandingPage() {
     const ticks = useLiveTicker();
+    const [quoteIdx, setQuoteIdx] = useState(0);
+    const [quoteVisible, setQuoteVisible] = useState(true);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setQuoteVisible(false);
+            setTimeout(() => {
+                setQuoteIdx(i => (i + 1) % HERO_QUOTES.length);
+                setQuoteVisible(true);
+            }, 400);
+        }, 3500);
+        return () => clearInterval(interval);
+    }, []);
     const doubled = [...ticks, ...ticks];
     const doubledTestimonials = [...TESTIMONIALS, ...TESTIMONIALS];
 
@@ -208,8 +231,8 @@ export default function LandingPage() {
             {/* ── Hero ── */}
             <section className='landing__hero'>
                 <div className='landing__hero-badge'>Free bots, automation, and trading tools in one workspace</div>
-                <h1 className='landing__hero-title'>
-                    One Workspace. <em>Limitless Strategies.</em>
+                <h1 className={`landing__hero-title landing__hero-title--${quoteVisible ? 'visible' : 'hidden'}`}>
+                    {HERO_QUOTES[quoteIdx].plain} <em>{HERO_QUOTES[quoteIdx].em}</em>
                 </h1>
                 <p className='landing__hero-subtitle'>
                     Free trading bots and professional tools. Build, load, and run automated strategies
