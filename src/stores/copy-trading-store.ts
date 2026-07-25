@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import { CopyAccount, CopyTradeLog, CopyTradingService } from '@/services/copy-trading.service';
 
 export type FollowerEntry = {
@@ -26,6 +26,9 @@ export default class CopyTradingStore {
     // ── trade log ────────────────────────────────────────────────────────────
     trade_log: CopyTradeLog[] = [];
 
+    // ── service errors (shown in UI) ──────────────────────────────────────────
+    error_messages: string[] = [];
+
     // ── internal ─────────────────────────────────────────────────────────────
     private service: CopyTradingService | null = null;
 
@@ -40,9 +43,11 @@ export default class CopyTradingStore {
             is_running: observable,
             stake_multiplier: observable,
             trade_log: observable,
+            error_messages: observable,
 
             setLeaderToken: action,
             connectLeader: action,
+            disconnectLeader: action,
             setNewFollowerToken: action,
             addFollower: action,
             removeFollower: action,
@@ -50,6 +55,7 @@ export default class CopyTradingStore {
             stopCopying: action,
             setStakeMultiplier: action,
             clearLog: action,
+            dismissError: action,
         });
     }
 
@@ -77,12 +83,31 @@ export default class CopyTradingStore {
                     }
                 })
             );
-            this.leader_account = account;
-            this.leader_status = 'connected';
+            runInAction(() => {
+                this.leader_account = account;
+                this.leader_status = 'connected';
+            });
         } catch (e: any) {
-            this.leader_status = 'error';
-            this.leader_error = e?.message ?? 'Connection failed';
+            runInAction(() => {
+                this.leader_status = 'error';
+                this.leader_error = e?.message ?? 'Connection failed';
+            });
         }
+    };
+
+    /**
+     * Disconnect the leader and reset back to idle so a new token can be entered.
+     */
+    disconnectLeader = () => {
+        if (this.is_running) {
+            this.service?.stopCopying();
+            this.is_running = false;
+        }
+        this.service?.disconnectLeader();
+        this.leader_account = null;
+        this.leader_status = 'idle';
+        this.leader_error = '';
+        this.leader_token = '';
     };
 
     setNewFollowerToken = (token: string) => {
@@ -115,17 +140,21 @@ export default class CopyTradingStore {
                     }
                 })
             );
-            const idx = this.followers.findIndex(f => f.token === token);
-            if (idx >= 0) {
-                this.followers[idx].account = account;
-                this.followers[idx].status = 'connected';
-            }
+            runInAction(() => {
+                const idx = this.followers.findIndex(f => f.token === token);
+                if (idx >= 0) {
+                    this.followers[idx].account = account;
+                    this.followers[idx].status = 'connected';
+                }
+            });
         } catch (e: any) {
-            const idx = this.followers.findIndex(f => f.token === token);
-            if (idx >= 0) {
-                this.followers[idx].status = 'error';
-                this.followers[idx].error = e?.message ?? 'Connection failed';
-            }
+            runInAction(() => {
+                const idx = this.followers.findIndex(f => f.token === token);
+                if (idx >= 0) {
+                    this.followers[idx].status = 'error';
+                    this.followers[idx].error = e?.message ?? 'Connection failed';
+                }
+            });
         }
     };
 
@@ -134,21 +163,17 @@ export default class CopyTradingStore {
         this.followers = this.followers.filter(f => f.token !== token);
     };
 
-    startCopying = async () => {
+    startCopying = () => {
         if (this.is_running) return;
-        if (this.leader_status !== 'connected') {
-            await this.connectLeader();
-            // MobX re-assignment after async: re-read via cast to avoid TS narrowing error
-            if ((this.leader_status as string) !== 'connected') return;
-        }
-        if (this.followers.length === 0) return;
+        if (this.leader_status !== 'connected') return;
+        if (this.followers.filter(f => f.status === 'connected').length === 0) return;
 
         if (this.service) {
             this.service.stakeMultiplier = this.stake_multiplier;
         }
 
         try {
-            await this.service!.startCopying();
+            this.service!.startCopying();
             this.is_running = true;
         } catch (e: any) {
             this.leader_error = e?.message ?? 'Failed to start';
@@ -169,6 +194,10 @@ export default class CopyTradingStore {
         this.trade_log = [];
     };
 
+    dismissError = (idx: number) => {
+        this.error_messages.splice(idx, 1);
+    };
+
     // ── private ───────────────────────────────────────────────────────────────
 
     private ensureService() {
@@ -178,8 +207,16 @@ export default class CopyTradingStore {
                     this.trade_log.unshift(log);
                 }),
                 action((msg: string) => {
-                    // Append errors as synthetic log entries
                     console.error('[CopyTrading]', msg);
+                    this.error_messages.unshift(msg);
+                    // Auto-dismiss after 8 s
+                    setTimeout(
+                        action(() => {
+                            const i = this.error_messages.indexOf(msg);
+                            if (i >= 0) this.error_messages.splice(i, 1);
+                        }),
+                        8000
+                    );
                 })
             );
         }

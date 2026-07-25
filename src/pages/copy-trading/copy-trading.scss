@@ -1,4 +1,4 @@
-// ── Copy Trading v2 — themed to FROSTYDBOT (dark + gold) ────────────────────
+// ── Copy Trading — FrostyDBot themed (gold primary, dark/light adaptive) ─────
 
 .ct2 {
     display: flex;
@@ -6,6 +6,53 @@
     width: 100%;
     min-height: 100%;
     background: var(--general-main-1);
+    position: relative;
+
+    // ── error toasts ──────────────────────────────────────────────────────────
+
+    &__toasts {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        padding: 1rem 2.4rem 0;
+    }
+
+    &__toast {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.8rem 1.2rem;
+        background: var(--transparent-danger);
+        border: 1px solid var(--status-danger);
+        border-radius: 0.5rem;
+        color: var(--status-danger);
+        font-size: 1.2rem;
+        animation: ct2-slide-in 0.2s ease;
+    }
+
+    &__toast-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__toast-close {
+        flex-shrink: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--status-danger);
+        display: flex;
+        align-items: center;
+        padding: 0.2rem;
+        opacity: 0.7;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 
     // ── hero ──────────────────────────────────────────────────────────────────
 
@@ -13,7 +60,8 @@
         background: linear-gradient(
             135deg,
             var(--general-main-2) 0%,
-            rgba(247, 197, 59, 0.06) 100%
+            rgba(247, 197, 59, 0.08) 60%,
+            rgba(139, 92, 246, 0.05) 100%
         );
         border-bottom: 1px solid var(--general-section-1);
         padding: 3.2rem 3.6rem 2.8rem;
@@ -23,11 +71,25 @@
         gap: 2rem;
         position: relative;
         overflow: hidden;
+
+        // subtle grid overlay
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--brand-primary) 0.5px, transparent 0.5px),
+                linear-gradient(90deg, var(--brand-primary) 0.5px, transparent 0.5px);
+            background-size: 32px 32px;
+            opacity: 0.03;
+            pointer-events: none;
+        }
     }
 
     &__hero-content {
         flex: 1;
         min-width: 0;
+        position: relative;
     }
 
     &__live-badge {
@@ -35,21 +97,21 @@
         align-items: center;
         gap: 0.6rem;
         background: rgba(247, 197, 59, 0.12);
-        border: 1px solid rgba(247, 197, 59, 0.3);
-        color: var(--brand-red-coral);
-        font-size: 1.1rem;
+        border: 1px solid rgba(247, 197, 59, 0.35);
+        color: var(--brand-primary);
+        font-size: 1.05rem;
         font-weight: 700;
-        letter-spacing: 0.07em;
-        padding: 0.3rem 1rem 0.3rem 0.8rem;
+        letter-spacing: 0.1em;
+        padding: 0.35rem 1rem 0.35rem 0.8rem;
         border-radius: 2rem;
         margin-bottom: 1.6rem;
     }
 
     &__live-dot {
-        width: 0.6rem;
-        height: 0.6rem;
+        width: 0.55rem;
+        height: 0.55rem;
         border-radius: 50%;
-        background: var(--brand-red-coral);
+        background: var(--brand-primary);
         animation: ct2-pulse 1.4s ease-in-out infinite;
         flex-shrink: 0;
     }
@@ -62,7 +124,7 @@
         color: var(--text-prominent);
 
         &--accent {
-            color: var(--brand-red-coral);
+            color: var(--brand-primary);
         }
     }
 
@@ -97,7 +159,7 @@
     &__stat-label {
         font-size: 1rem;
         font-weight: 600;
-        letter-spacing: 0.07em;
+        letter-spacing: 0.08em;
         color: var(--text-less-prominent);
         text-transform: uppercase;
     }
@@ -149,17 +211,20 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
     }
 
     &__deco-ring {
         width: 10rem;
         height: 10rem;
         border-radius: 50%;
-        background: rgba(247, 197, 59, 0.06);
-        border: 1.5px solid rgba(247, 197, 59, 0.2);
+        background: rgba(247, 197, 59, 0.07);
+        border: 1.5px solid rgba(247, 197, 59, 0.25);
         display: flex;
         align-items: center;
         justify-content: center;
+        color: var(--brand-primary);
+        box-shadow: 0 0 32px rgba(247, 197, 59, 0.1);
     }
 
     // ── body layout ───────────────────────────────────────────────────────────
@@ -201,6 +266,11 @@
         display: flex;
         flex-direction: column;
         gap: 1.4rem;
+        transition: border-color 0.2s;
+
+        &:hover {
+            border-color: rgba(247, 197, 59, 0.2);
+        }
 
         &--tall {
             min-height: 32rem;
@@ -223,7 +293,7 @@
 
         &--gold {
             background: rgba(247, 197, 59, 0.12);
-            color: var(--brand-red-coral);
+            color: var(--brand-primary);
         }
 
         &--grey {
@@ -278,6 +348,7 @@
         padding: 0.5rem 1rem;
         border-radius: 0.5rem;
         background: var(--general-section-1);
+        border: 1px solid rgba(247, 197, 59, 0.2);
         font-size: 1.2rem;
     }
 
@@ -288,6 +359,25 @@
 
     &__acct-bal {
         color: var(--text-less-prominent);
+        flex: 1;
+    }
+
+    &__disconnect-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-less-prominent);
+        display: flex;
+        align-items: center;
+        padding: 0.3rem;
+        border-radius: 0.3rem;
+        transition: color 0.15s, background 0.15s;
+        margin-left: auto;
+
+        &:hover {
+            color: var(--status-danger);
+            background: var(--transparent-danger);
+        }
     }
 
     &__acct-badge {
@@ -328,16 +418,17 @@
         min-width: 0;
         height: 3.6rem;
         padding: 0 1.2rem;
-        border-radius: 0.4rem;
+        border-radius: 0.5rem;
         border: 1px solid var(--border-normal);
         background: var(--general-main-1);
         color: var(--text-general);
         font-size: 1.25rem;
         outline: none;
-        transition: border-color 0.15s;
+        transition: border-color 0.15s, box-shadow 0.15s;
 
         &:focus {
-            border-color: var(--brand-red-coral);
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 2px rgba(247, 197, 59, 0.15);
         }
 
         &::placeholder {
@@ -353,7 +444,7 @@
     &__add-btn {
         height: 3.6rem;
         padding: 0 1.6rem;
-        border-radius: 0.4rem;
+        border-radius: 0.5rem;
         border: none;
         background: var(--button-primary-default);
         color: var(--general-main-1);
@@ -361,36 +452,21 @@
         font-weight: 700;
         cursor: pointer;
         white-space: nowrap;
-        transition: opacity 0.15s;
+        transition: opacity 0.15s, transform 0.1s;
         flex-shrink: 0;
 
         &:hover:not(:disabled) {
-            opacity: 0.85;
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         &:disabled {
             opacity: 0.32;
             cursor: not-allowed;
-        }
-    }
-
-    // ── sync checkbox ─────────────────────────────────────────────────────────
-
-    &__sync-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 1.2rem;
-        color: var(--text-general);
-        cursor: pointer;
-        white-space: nowrap;
-        flex-shrink: 0;
-
-        input[type='checkbox'] {
-            width: 1.5rem;
-            height: 1.5rem;
-            accent-color: var(--brand-red-coral);
-            cursor: pointer;
         }
     }
 
@@ -414,16 +490,17 @@
         width: 6rem;
         height: 3rem;
         padding: 0 0.8rem;
-        border-radius: 0.4rem;
+        border-radius: 0.5rem;
         border: 1px solid var(--border-normal);
         background: var(--general-main-1);
         color: var(--text-general);
         font-size: 1.25rem;
         text-align: right;
         outline: none;
+        transition: border-color 0.15s;
 
         &:focus {
-            border-color: var(--brand-red-coral);
+            border-color: var(--brand-primary);
         }
 
         &:disabled {
@@ -445,22 +522,28 @@
         gap: 0.7rem;
         width: 100%;
         height: 4rem;
-        border-radius: 0.4rem;
+        border-radius: 0.5rem;
         border: none;
         background: var(--button-primary-default);
         color: var(--general-main-1);
         font-size: 1.35rem;
         font-weight: 700;
         cursor: pointer;
-        transition: opacity 0.15s;
+        transition: opacity 0.15s, transform 0.1s;
 
         &:hover:not(:disabled) {
-            opacity: 0.85;
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         &:disabled {
             opacity: 0.32;
             cursor: not-allowed;
+            transform: none;
         }
 
         &--stop {
@@ -474,7 +557,7 @@
     &__link-btn {
         background: none;
         border: none;
-        color: var(--brand-red-coral);
+        color: var(--brand-primary);
         font-size: 1.2rem;
         font-weight: 600;
         cursor: pointer;
@@ -611,6 +694,7 @@
         gap: 1.2rem;
         padding: 4rem 2rem;
         text-align: center;
+        color: var(--text-less-prominent);
 
         p {
             margin: 0;
@@ -648,8 +732,10 @@
         display: flex;
         flex-direction: column;
         border: 1px solid var(--general-section-1);
-        border-radius: 0.4rem;
+        border-radius: 0.5rem;
         overflow: hidden;
+        max-height: 40rem;
+        overflow-y: auto;
     }
 
     &__log-row {
@@ -685,7 +771,8 @@
     &__log-stake {
         font-size: 1.2rem;
         font-family: monospace;
-        color: var(--text-general);
+        color: var(--brand-primary);
+        font-weight: 600;
         white-space: nowrap;
     }
 
@@ -724,5 +811,17 @@
 
     50% {
         opacity: 0.35;
+    }
+}
+
+@keyframes ct2-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

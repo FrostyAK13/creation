@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/hooks/useStore';
 import { localize } from '@deriv-com/translations';
@@ -50,17 +50,23 @@ const IconTag = () => (
         <line x1='7' y1='7' x2='7.01' y2='7' />
     </svg>
 );
-const IconSun = () => (
-    <svg width='52' height='52' viewBox='0 0 24 24' fill='none' stroke='#FF6B2C' strokeWidth='1.5' opacity='0.7'>
-        <circle cx='12' cy='12' r='5' />
-        <line x1='12' y1='1' x2='12' y2='3' />
-        <line x1='12' y1='21' x2='12' y2='23' />
-        <line x1='4.22' y1='4.22' x2='5.64' y2='5.64' />
-        <line x1='18.36' y1='18.36' x2='19.78' y2='19.78' />
-        <line x1='1' y1='12' x2='3' y2='12' />
-        <line x1='21' y1='12' x2='23' y2='12' />
-        <line x1='4.22' y1='19.78' x2='5.64' y2='18.36' />
-        <line x1='18.36' y1='5.64' x2='19.78' y2='4.22' />
+const IconCopy = () => (
+    <svg width='52' height='52' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' opacity='0.8'>
+        <circle cx='12' cy='12' r='3' />
+        <path d='M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83' />
+    </svg>
+);
+const IconDisconnect = () => (
+    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5'>
+        <path d='M18.36 6.64a9 9 0 1 1-12.73 0' />
+        <line x1='12' y1='2' x2='12' y2='12' />
+    </svg>
+);
+const IconAlert = () => (
+    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+        <circle cx='12' cy='12' r='10' />
+        <line x1='12' y1='8' x2='12' y2='12' />
+        <line x1='12' y1='16' x2='12.01' y2='16' />
     </svg>
 );
 
@@ -76,8 +82,7 @@ const fmtDate = (ts: number) =>
 const CopyTrading = observer(() => {
     const store = useStore();
     const ct = store.copy_trading;
-    const [syncEnabled, setSyncEnabled] = useState(false);
-    const [showLeaderInput, setShowLeaderInput] = useState(false);
+    const [showLeaderInput, setShowLeaderInput] = React.useState(false);
 
     const handleFollowerKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') ct.addFollower();
@@ -95,6 +100,25 @@ const CopyTrading = observer(() => {
 
     return (
         <div className='ct2'>
+            {/* ── error toasts ──────────────────────────────────────────────── */}
+            {(ct.error_messages?.length ?? 0) > 0 && (
+                <div className='ct2__toasts'>
+                    {ct.error_messages.map((msg, i) => (
+                        <div key={i} className='ct2__toast'>
+                            <IconAlert />
+                            <span className='ct2__toast-text'>{msg}</span>
+                            <button
+                                className='ct2__toast-close'
+                                onClick={() => ct.dismissError(i)}
+                                aria-label={localize('Dismiss')}
+                            >
+                                <IconClose />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* ── hero ─────────────────────────────────────────────────────── */}
             <div className='ct2__hero'>
                 <div className='ct2__hero-content'>
@@ -138,7 +162,7 @@ const CopyTrading = observer(() => {
 
                 <div className='ct2__hero-deco'>
                     <div className='ct2__deco-ring'>
-                        <IconSun />
+                        <IconCopy />
                     </div>
                 </div>
             </div>
@@ -161,8 +185,36 @@ const CopyTrading = observer(() => {
                             )}
                         </p>
 
-                        {/* Leader token (collapsible) */}
-                        {!showLeaderInput && ct.leader_status !== 'connected' ? (
+                        {/* Leader token */}
+                        {ct.leader_status === 'connected' ? (
+                            // Connected state: show chip + disconnect button
+                            <div className='ct2__leader-section'>
+                                <div className='ct2__leader-chip'>
+                                    <span className={`ct2__acct-badge ct2__acct-badge--${ct.leader_account?.is_virtual ? 'demo' : 'real'}`}>
+                                        {ct.leader_account?.is_virtual ? localize('Demo') : localize('Real')}
+                                    </span>
+                                    <span className='ct2__acct-id'>{ct.leader_account?.loginid}</span>
+                                    <span className='ct2__acct-bal'>
+                                        {ct.leader_account
+                                            ? fmtBalance(ct.leader_account.balance, ct.leader_account.currency)
+                                            : ''}
+                                    </span>
+                                    {!ct.is_running && (
+                                        <button
+                                            className='ct2__disconnect-btn'
+                                            title={localize('Disconnect leader')}
+                                            onClick={() => {
+                                                ct.disconnectLeader();
+                                                setShowLeaderInput(false);
+                                            }}
+                                        >
+                                            <IconDisconnect />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : !showLeaderInput && ct.leader_status !== 'error' ? (
+                            // Collapsed state
                             <button
                                 className='ct2__link-btn'
                                 onClick={() => setShowLeaderInput(true)}
@@ -170,6 +222,7 @@ const CopyTrading = observer(() => {
                                 {localize('+ Set leader (demo) token')}
                             </button>
                         ) : (
+                            // Input state (shown, or in error)
                             <div className='ct2__leader-section'>
                                 <div className='ct2__token-row'>
                                     <input
@@ -179,31 +232,18 @@ const CopyTrading = observer(() => {
                                         value={ct.leader_token}
                                         onChange={e => ct.setLeaderToken(e.target.value)}
                                         onKeyDown={handleLeaderKeyDown}
-                                        disabled={ct.is_running || ct.leader_status === 'connected'}
+                                        disabled={ct.is_running || ct.leader_status === 'connecting'}
                                     />
-                                    {ct.leader_status !== 'connected' && (
-                                        <button
-                                            className='ct2__add-btn'
-                                            onClick={() => ct.connectLeader()}
-                                            disabled={!ct.leader_token || ct.leader_status === 'connecting' || ct.is_running}
-                                        >
-                                            {ct.leader_status === 'connecting'
-                                                ? localize('…')
-                                                : localize('Connect')}
-                                        </button>
-                                    )}
+                                    <button
+                                        className='ct2__add-btn'
+                                        onClick={() => ct.connectLeader()}
+                                        disabled={!ct.leader_token || ct.leader_status === 'connecting' || ct.is_running}
+                                    >
+                                        {ct.leader_status === 'connecting'
+                                            ? localize('…')
+                                            : localize('Connect')}
+                                    </button>
                                 </div>
-                                {ct.leader_account && (
-                                    <div className='ct2__leader-chip'>
-                                        <span className={`ct2__acct-badge ct2__acct-badge--${ct.leader_account.is_virtual ? 'demo' : 'real'}`}>
-                                            {ct.leader_account.is_virtual ? localize('Demo') : localize('Real')}
-                                        </span>
-                                        <span className='ct2__acct-id'>{ct.leader_account.loginid}</span>
-                                        <span className='ct2__acct-bal'>
-                                            {fmtBalance(ct.leader_account.balance, ct.leader_account.currency)}
-                                        </span>
-                                    </div>
-                                )}
                                 {ct.leader_error && (
                                     <span className='ct2__error-text'>{ct.leader_error}</span>
                                 )}
@@ -249,7 +289,7 @@ const CopyTrading = observer(() => {
                                 disabled={ct.is_running}
                             />
                             <span className='ct2__multiplier-hint'>
-                                {localize('(1.0 = same stake, 0.5 = half, 2.0 = double)')}
+                                {localize('(1.0 = same, 0.5 = half, 2.0 = double)')}
                             </span>
                         </div>
 
@@ -270,18 +310,9 @@ const CopyTrading = observer(() => {
                             >
                                 {localize('Add')}
                             </button>
-                            <label className='ct2__sync-label'>
-                                <input
-                                    type='checkbox'
-                                    checked={syncEnabled}
-                                    onChange={e => setSyncEnabled(e.target.checked)}
-                                    disabled={ct.is_running}
-                                />
-                                {localize('Sync')}
-                            </label>
                         </div>
 
-                        {ct.is_running ? (
+                        {canStop ? (
                             <button
                                 className='ct2__primary-btn ct2__primary-btn--stop'
                                 onClick={() => ct.stopCopying()}
@@ -311,7 +342,7 @@ const CopyTrading = observer(() => {
                         )}
                     </div>
 
-                    {/* Trade log (compact, inside left column) */}
+                    {/* Trade log */}
                     {ct.trade_log.length > 0 && (
                         <div className='ct2__card'>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -370,7 +401,7 @@ const CopyTrading = observer(() => {
                                 <IconTag />
                                 <p>
                                     {localize(
-                                        'No accounts linked yet. Add a client API token or create accounts in settings.'
+                                        'No accounts linked yet. Add a client API token to start replicating trades.'
                                     )}
                                 </p>
                             </div>

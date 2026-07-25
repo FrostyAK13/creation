@@ -185,6 +185,7 @@ export class CopyTradingService {
         { api: InstanceType<typeof DerivAPIBasic>; ws: WebSocket; account: CopyAccount }
     > = new Map();
 
+    // Subscription returned by sendAndGetSource().subscribe() — has .unsubscribe()
     private txSubscription: { unsubscribe: () => void } | null = null;
 
     private onTrade: OnTradeCallback;
@@ -208,6 +209,15 @@ export class CopyTradingService {
         return conn.account;
     }
 
+    /** Disconnect and tear down the leader connection. */
+    disconnectLeader() {
+        this.stopCopying();
+        if (this.leaderConn) {
+            this.leaderConn.ws.close();
+            this.leaderConn = null;
+        }
+    }
+
     /** Authorize a follower account. */
     async addFollower(token: string, onDisconnect?: (loginid: string) => void): Promise<CopyAccount> {
         if (this.followerConns.has(token)) {
@@ -227,19 +237,28 @@ export class CopyTradingService {
         }
     }
 
-    /** Start listening to the leader's transaction stream and copying trades. */
-    async startCopying() {
+    /**
+     * Start listening to the leader's transaction stream and copying trades.
+     *
+     * Uses sendAndGetSource() so the subscription Observable only receives
+     * messages belonging to this specific subscription request — avoiding
+     * cross-contamination with concurrent API calls (proposals, contract details, etc.).
+     */
+    startCopying() {
         if (!this.leaderConn) throw new Error('Leader not connected');
         // Guard: ensure only one subscription active at a time
         if (this.txSubscription) this.stopCopying();
 
-        // Subscribe to leader's transaction stream
-        await this.leaderConn.api.send({ transaction: 1, subscribe: 1 });
+        // sendAndGetSource sends the request and returns an Observable that
+        // emits only responses for this subscription (identified by req_id).
+        const source = (this.leaderConn.api as any).sendAndGetSource({
+            transaction: 1,
+            subscribe: 1,
+        });
 
-        this.txSubscription = this.leaderConn.api.onMessage().subscribe((raw: any) => {
-            const msg = typeof raw === 'string' ? JSON.parse(raw) : raw?.data ? JSON.parse(raw.data) : raw;
+        this.txSubscription = source.subscribe((msg: any) => {
             if (msg?.msg_type === 'transaction' && msg?.transaction?.action === 'buy') {
-                this.handleLeaderBuy(msg.transaction).catch(e => {
+                this.handleLeaderBuy(msg.transaction).catch((e: any) => {
                     this.onError(`Error replicating trade: ${e?.message ?? e}`);
                 });
             }
@@ -256,7 +275,9 @@ export class CopyTradingService {
         if (this.leaderConn?.api) {
             try {
                 this.leaderConn.api.send({ forget_all: 'transaction' }).catch(() => {});
-            } catch (_) { /* ignore */ }
+            } catch (_) {
+                /* ignore */
+            }
         }
     }
 
@@ -269,13 +290,6 @@ export class CopyTradingService {
     }
 
     // ── private ────────────────────────────────────────────────────────────
-
-    private disconnectLeader() {
-        if (this.leaderConn) {
-            this.leaderConn.ws.close();
-            this.leaderConn = null;
-        }
-    }
 
     private async handleLeaderBuy(tx: any) {
         if (!this.leaderConn) return;
