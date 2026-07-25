@@ -1,5 +1,15 @@
 // ─── Over/Under Engine ────────────────────────────────────────────────────────
 
+@keyframes oue-cyan-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+}
+
+@keyframes oue-text-shine {
+    0%   { background-position: 200% center; }
+    100% { background-position: -200% center; }
+}
+
 @keyframes oue-pulse-over {
     0%, 100% { box-shadow: 0 0 0 0 rgb(16 185 129 / 0%), 0 4px 20px rgb(0 0 0 / 30%); }
     50%       { box-shadow: 0 0 0 6px rgb(16 185 129 / 18%), 0 8px 32px rgb(16 185 129 / 12%); }
@@ -1376,5 +1386,388 @@
         &__history-result      { font-size: 0.82rem; }
         &__history-time        { font-size: 0.82rem; }
         &__history-id          { font-size: 0.8rem; }
+    }
+}
+
+// ─── Light theme ──────────────────────────────────────────────────────────────
+
+body.theme--light {
+    .oue {
+        background:
+            radial-gradient(ellipse 80% 50% at 50% -10%, rgb(6 182 212 / 8%) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 80% 100%, rgb(6 182 212 / 5%) 0%, transparent 50%),
+            linear-gradient(160deg, #eef6fb 0%, #f5f9fc 50%, #edf3f8 100%);
+        background-attachment: local;
+
+        // dot-grid overlay (same as dashboard)
+        &::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgb(6 182 212 / 12%) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        > * { position: relative; z-index: 1; }
+
+        // ── shimmer card mixin ───────────────────────────────────────────────
+        .oue__header,
+        .oue__summary,
+        .oue__controls,
+        .oue__history {
+            background: linear-gradient(145deg, #ffffff 0%, #f0f8ff 100%);
+            border: 1.5px solid rgb(6 182 212 / 25%);
+            box-shadow: 0 2px 16px rgb(6 182 212 / 8%), 0 1px 4px rgb(0 0 0 / 4%);
+            overflow: hidden;
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    105deg,
+                    transparent 30%,
+                    rgb(6 182 212 / 6%) 50%,
+                    transparent 70%
+                );
+                background-size: 200% 100%;
+                animation: oue-cyan-shimmer 4s linear infinite;
+                pointer-events: none;
+            }
+
+            &:hover {
+                border-color: rgb(6 182 212 / 45%);
+                box-shadow: 0 4px 24px rgb(6 182 212 / 14%), 0 1px 4px rgb(0 0 0 / 4%);
+            }
+        }
+
+        // ── panels keep their semantic over/under colors ─────────────────────
+        .oue__panel {
+            background: linear-gradient(145deg, #ffffff 0%, #f4fbff 100%);
+            box-shadow: 0 2px 12px rgb(0 0 0 / 5%);
+            overflow: hidden;
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    105deg,
+                    transparent 30%,
+                    rgb(255 255 255 / 35%) 50%,
+                    transparent 70%
+                );
+                background-size: 200% 100%;
+                animation: oue-cyan-shimmer 4s linear infinite;
+                pointer-events: none;
+            }
+
+            &--over {
+                border-color: rgb(16 185 129 / 35%);
+                box-shadow: 0 2px 12px rgb(16 185 129 / 8%);
+                &:hover { border-color: rgb(16 185 129 / 55%); box-shadow: 0 4px 20px rgb(16 185 129 / 14%); }
+            }
+
+            &--under {
+                border-color: rgb(59 130 246 / 35%);
+                box-shadow: 0 2px 12px rgb(59 130 246 / 8%);
+                &:hover { border-color: rgb(59 130 246 / 55%); box-shadow: 0 4px 20px rgb(59 130 246 / 14%); }
+            }
+        }
+
+        // ── title shimmer text ───────────────────────────────────────────────
+        .oue__title {
+            color: #0e7490;
+
+            > span:nth-child(2) {
+                background: linear-gradient(
+                    90deg,
+                    #0e7490 0%,
+                    #06b6d4 30%,
+                    #22d3ee 50%,
+                    #06b6d4 70%,
+                    #0e7490 100%
+                );
+                background-size: 200% auto;
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: oue-text-shine 4s linear infinite;
+            }
+        }
+
+        // ── stats inner cells ────────────────────────────────────────────────
+        .oue__stat {
+            background: rgb(6 182 212 / 6%);
+            border: 1px solid rgb(6 182 212 / 12%);
+        }
+
+        // ── input focus ──────────────────────────────────────────────────────
+        .oue__input:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgb(6 182 212 / 15%);
+        }
+
+        // ── market trigger ───────────────────────────────────────────────────
+        .oue__market-trigger {
+            border-color: rgb(6 182 212 / 30%);
+            background: rgb(6 182 212 / 5%);
+
+            &:hover:not(:disabled) {
+                border-color: rgb(6 182 212 / 60%);
+                background: rgb(6 182 212 / 10%);
+                color: #0e7490;
+            }
+        }
+
+        .oue__market-selector--open .oue__market-trigger--header {
+            border-color: #06b6d4;
+            background: rgb(6 182 212 / 12%);
+            color: #0e7490;
+        }
+
+        // ── history table sticky header ──────────────────────────────────────
+        .oue__history-table th {
+            background: linear-gradient(145deg, #ffffff 0%, #f0f8ff 100%);
+            border-bottom-color: rgb(6 182 212 / 20%);
+            color: #0e7490;
+        }
+
+        .oue__history-header {
+            border-bottom-color: rgb(6 182 212 / 20%);
+        }
+
+        // ── entry-waiting ────────────────────────────────────────────────────
+        .oue__entry-toggle {
+            border-top-color: rgb(6 182 212 / 20%);
+        }
+
+        // ── D-Circles button ─────────────────────────────────────────────────
+        .oue__dcircles-btn {
+            border-color: rgb(6 182 212 / 35%);
+            background: rgb(6 182 212 / 6%);
+            color: #0891b2;
+
+            &:hover {
+                background: rgb(6 182 212 / 14%);
+                border-color: rgb(6 182 212 / 65%);
+                color: #0e7490;
+            }
+        }
+    }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+
+body.theme--dark {
+    .oue {
+        background:
+            radial-gradient(ellipse 80% 50% at 50% -10%, rgb(6 182 212 / 10%) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 80% 100%, rgb(6 182 212 / 6%) 0%, transparent 50%),
+            linear-gradient(160deg, #030d1a 0%, #000d1f 50%, #020b17 100%);
+        background-attachment: local;
+
+        &::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgb(6 182 212 / 8%) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        > * { position: relative; z-index: 1; }
+
+        // ── shimmer card mixin ───────────────────────────────────────────────
+        .oue__header,
+        .oue__summary,
+        .oue__controls,
+        .oue__history {
+            background: linear-gradient(145deg, rgb(0 25 50 / 80%) 0%, rgb(0 13 31 / 70%) 100%);
+            border: 1.5px solid rgb(6 182 212 / 20%);
+            box-shadow: 0 2px 20px rgb(0 0 0 / 40%), inset 0 1px 0 rgb(6 182 212 / 8%);
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(8px);
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    105deg,
+                    transparent 30%,
+                    rgb(6 182 212 / 5%) 50%,
+                    transparent 70%
+                );
+                background-size: 200% 100%;
+                animation: oue-cyan-shimmer 4s linear infinite;
+                pointer-events: none;
+            }
+
+            &:hover {
+                border-color: rgb(6 182 212 / 40%);
+                box-shadow: 0 4px 28px rgb(0 0 0 / 50%), 0 0 0 1px rgb(6 182 212 / 10%), inset 0 1px 0 rgb(6 182 212 / 12%);
+            }
+        }
+
+        // ── panels ──────────────────────────────────────────────────────────
+        .oue__panel {
+            background: linear-gradient(145deg, rgb(0 20 40 / 75%) 0%, rgb(0 10 25 / 65%) 100%);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    105deg,
+                    transparent 30%,
+                    rgb(255 255 255 / 2%) 50%,
+                    transparent 70%
+                );
+                background-size: 200% 100%;
+                animation: oue-cyan-shimmer 4s linear infinite;
+                pointer-events: none;
+            }
+
+            &--over {
+                border-color: rgb(16 185 129 / 30%);
+                box-shadow: 0 2px 16px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(16 185 129 / 8%);
+                &:hover { border-color: rgb(16 185 129 / 50%); box-shadow: 0 4px 24px rgb(0 0 0 / 45%), 0 0 12px rgb(16 185 129 / 10%); }
+            }
+
+            &--under {
+                border-color: rgb(59 130 246 / 30%);
+                box-shadow: 0 2px 16px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(59 130 246 / 8%);
+                &:hover { border-color: rgb(59 130 246 / 50%); box-shadow: 0 4px 24px rgb(0 0 0 / 45%), 0 0 12px rgb(59 130 246 / 10%); }
+            }
+        }
+
+        // ── title shimmer text ───────────────────────────────────────────────
+        .oue__title {
+            > span:nth-child(2) {
+                background: linear-gradient(
+                    90deg,
+                    #22d3ee 0%,
+                    #67e8f9 30%,
+                    #a5f3fc 50%,
+                    #67e8f9 70%,
+                    #22d3ee 100%
+                );
+                background-size: 200% auto;
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: oue-text-shine 4s linear infinite;
+                filter: drop-shadow(0 0 6px rgb(6 182 212 / 50%));
+            }
+        }
+
+        // ── stats inner cells ────────────────────────────────────────────────
+        .oue__stat {
+            background: rgb(6 182 212 / 8%);
+            border: 1px solid rgb(6 182 212 / 14%);
+        }
+
+        // ── labels / secondary text ──────────────────────────────────────────
+        .oue__pnl-label,
+        .oue__live-price-label,
+        .oue__rounds-label,
+        .oue__stat-label,
+        .oue__bar-label,
+        .oue__bar-pct {
+            color: rgb(6 182 212 / 55%);
+        }
+
+        // ── live price digit accent ──────────────────────────────────────────
+        .oue__live-price-digit {
+            color: #22d3ee;
+            text-shadow: 0 0 8px rgb(6 182 212 / 50%);
+        }
+
+        // ── input focus ──────────────────────────────────────────────────────
+        .oue__input {
+            background: rgb(6 182 212 / 6%);
+            border-color: rgb(6 182 212 / 18%);
+
+            &:focus {
+                border-color: #06b6d4;
+                box-shadow: 0 0 0 2px rgb(6 182 212 / 20%);
+            }
+        }
+
+        // ── market trigger ───────────────────────────────────────────────────
+        .oue__market-trigger {
+            border-color: rgb(6 182 212 / 25%);
+            background: rgb(6 182 212 / 6%);
+
+            &:hover:not(:disabled) {
+                border-color: rgb(6 182 212 / 55%);
+                background: rgb(6 182 212 / 12%);
+                color: #22d3ee;
+            }
+        }
+
+        .oue__market-selector--open .oue__market-trigger--header {
+            border-color: #06b6d4;
+            background: rgb(6 182 212 / 14%);
+            color: #22d3ee;
+        }
+
+        // ── history table sticky header ──────────────────────────────────────
+        .oue__history-table th {
+            background: linear-gradient(145deg, rgb(0 25 50 / 90%) 0%, rgb(0 13 31 / 85%) 100%);
+            border-bottom-color: rgb(6 182 212 / 20%);
+            color: rgb(6 182 212 / 70%);
+        }
+
+        .oue__history-header {
+            border-bottom-color: rgb(6 182 212 / 18%);
+        }
+
+        .oue__history-title {
+            color: #e0f7fa;
+        }
+
+        // ── wl divider ───────────────────────────────────────────────────────
+        .oue__wl-divider {
+            background: rgb(6 182 212 / 20%);
+        }
+
+        // ── entry toggle divider ─────────────────────────────────────────────
+        .oue__entry-toggle {
+            border-top-color: rgb(6 182 212 / 18%);
+        }
+
+        // ── D-Circles button ─────────────────────────────────────────────────
+        .oue__dcircles-btn {
+            border-color: rgb(6 182 212 / 30%);
+            background: rgb(6 182 212 / 6%);
+            color: #22d3ee;
+
+            &:hover {
+                background: rgb(6 182 212 / 14%);
+                border-color: rgb(6 182 212 / 60%);
+                color: #67e8f9;
+            }
+        }
+
+        // ── legend text ──────────────────────────────────────────────────────
+        .oue__digit-legend {
+            color: rgb(6 182 212 / 50%);
+        }
+
+        // ── bars ─────────────────────────────────────────────────────────────
+        .oue__bar-track {
+            background: rgb(6 182 212 / 10%);
+        }
     }
 }
