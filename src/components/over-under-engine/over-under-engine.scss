@@ -709,12 +709,19 @@
         right: 0;
         z-index: 100;
         background: var(--general-main-2, #1a2332);
-        border: 1.5px solid rgb(16 185 129 / 40%);
+        border: 1px solid rgb(255 255 255 / 10%);
         border-radius: 10px;
-        padding: 0.8rem;
-        box-shadow: 0 8px 32px rgb(0 0 0 / 45%), 0 0 0 1px rgb(16 185 129 / 15%);
+        padding: 0.6rem 0;
+        box-shadow: 0 8px 32px rgb(0 0 0 / 50%);
         animation: oue-dropdown-in 0.15s ease-out;
-        min-width: 22rem;
+        min-width: 20rem;
+        max-height: 22rem;
+        overflow-y: auto;
+
+        /* subtle scrollbar */
+        &::-webkit-scrollbar       { width: 4px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 15%); border-radius: 2px; }
     }
 
     @keyframes oue-dropdown-in {
@@ -722,41 +729,106 @@
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    &__market-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+    &__market-category {
+        padding: 0.5rem 1rem 0.35rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-less-prominent);
+        opacity: 0.7;
     }
 
-    &__market-btn {
-        padding: 0.3rem 0.7rem;
-        border: 1px solid rgb(255 255 255 / 12%);
-        border-radius: 5px;
-        background: rgb(255 255 255 / 5%);
-        color: var(--text-general);
-        font-size: 0.78rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.13s ease;
-        white-space: nowrap;
+    &__market-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
 
-        &:hover:not(:disabled) {
-            background: rgb(255 255 255 / 10%);
-            border-color: rgb(255 255 255 / 28%);
-            color: var(--text-prominent);
+    &__market-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.5rem 0.85rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: background 0.12s ease;
+        text-align: left;
+
+        // active: outlined card like the screenshot
+        &--active {
+            .oue__market-code {
+                background: rgb(124 58 237 / 15%);
+                border-color: rgb(124 58 237 / 50%);
+                color: #a78bfa;
+            }
+
+            .oue__market-name {
+                color: var(--text-prominent);
+                font-weight: 600;
+            }
+
+            // outer border wrapping the whole row
+            outline: 1.5px solid rgb(124 58 237 / 55%);
+            outline-offset: -1px;
+            border-radius: 8px;
+            background: rgb(124 58 237 / 6%);
         }
 
-        &--active {
-            background: linear-gradient(135deg, rgb(16 185 129 / 22%), rgb(59 130 246 / 18%));
-            border-color: #10b981;
-            color: #10b981;
-            box-shadow: 0 0 0 1px rgb(16 185 129 / 25%);
+        &:hover:not(:disabled):not(.oue__market-row--active) {
+            background: rgb(255 255 255 / 5%);
         }
 
         &:disabled {
             opacity: 0.45;
             cursor: not-allowed;
         }
+    }
+
+    &__market-code {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 6px;
+        background: rgb(255 255 255 / 6%);
+        border: 1px solid rgb(255 255 255 / 12%);
+        flex-shrink: 0;
+        transition: background 0.12s, border-color 0.12s;
+    }
+
+    &__market-code-main {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--text-prominent);
+        line-height: 1.1;
+    }
+
+    &__market-code-sub {
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: var(--text-less-prominent);
+        line-height: 1;
+    }
+
+    &__market-name {
+        flex: 1;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--text-general);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__market-active-icon {
+        font-size: 0.85rem;
+        color: #a78bfa;
+        flex-shrink: 0;
     }
 
     // ── entry badge (header title) ───────────────────────────────────────────

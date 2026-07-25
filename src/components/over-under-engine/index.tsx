@@ -13,19 +13,19 @@ const MAX_DIGITS    = 30;
 /** Digits that act as entry triggers */
 const ENTRY_DIGITS = new Set([4, 5]);
 
-interface Market { symbol: string; label: string; short: string; }
+interface Market { symbol: string; label: string; short: string; code: string; }
 
 const MARKETS: Market[] = [
-    { symbol: '1HZ10V',  label: 'Volatility 10 (1s)',  short: 'V10 (1s)'  },
-    { symbol: '1HZ25V',  label: 'Volatility 25 (1s)',  short: 'V25 (1s)'  },
-    { symbol: '1HZ50V',  label: 'Volatility 50 (1s)',  short: 'V50 (1s)'  },
-    { symbol: '1HZ75V',  label: 'Volatility 75 (1s)',  short: 'V75 (1s)'  },
-    { symbol: '1HZ100V', label: 'Volatility 100 (1s)', short: 'V100 (1s)' },
-    { symbol: 'R_10',    label: 'Volatility 10',        short: 'V10'       },
-    { symbol: 'R_25',    label: 'Volatility 25',        short: 'V25'       },
-    { symbol: 'R_50',    label: 'Volatility 50',        short: 'V50'       },
-    { symbol: 'R_75',    label: 'Volatility 75',        short: 'V75'       },
-    { symbol: 'R_100',   label: 'Volatility 100',       short: 'V100'      },
+    { symbol: '1HZ10V',  label: 'Volatility 10 (1s) Index',  short: 'V10 (1s)',  code: '10\n(1s)'  },
+    { symbol: '1HZ25V',  label: 'Volatility 25 (1s) Index',  short: 'V25 (1s)',  code: '25\n(1s)'  },
+    { symbol: '1HZ50V',  label: 'Volatility 50 (1s) Index',  short: 'V50 (1s)',  code: '50\n(1s)'  },
+    { symbol: '1HZ75V',  label: 'Volatility 75 (1s) Index',  short: 'V75 (1s)',  code: '75\n(1s)'  },
+    { symbol: '1HZ100V', label: 'Volatility 100 (1s) Index', short: 'V100 (1s)', code: '100\n(1s)' },
+    { symbol: 'R_10',    label: 'Volatility 10 Index',        short: 'V10',       code: '10'        },
+    { symbol: 'R_25',    label: 'Volatility 25 Index',        short: 'V25',       code: '25'        },
+    { symbol: 'R_50',    label: 'Volatility 50 Index',        short: 'V50',       code: '50'        },
+    { symbol: 'R_75',    label: 'Volatility 75 Index',        short: 'V75',       code: '75'        },
+    { symbol: 'R_100',   label: 'Volatility 100 Index',       short: 'V100',      code: '100'       },
 ];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -511,19 +511,28 @@ const OverUnderEngine: React.FC = observer(() => {
                         </button>
                         {marketOpen && (
                             <div className='oue__market-dropdown'>
-                                <div className='oue__market-grid'>
-                                    {MARKETS.map(m => (
-                                        <button
-                                            key={m.symbol}
-                                            className={`oue__market-btn${symbol === m.symbol ? ' oue__market-btn--active' : ''}`}
-                                            onClick={() => { setSymbol(m.symbol); setMarketOpen(false); }}
-                                            disabled={isRunning}
-                                            title={m.label}
-                                            type='button'
-                                        >
-                                            {m.short}
-                                        </button>
-                                    ))}
+                                <div className='oue__market-category'>CONTINUOUS INDICES</div>
+                                <div className='oue__market-list'>
+                                    {MARKETS.map(m => {
+                                        const isActive = symbol === m.symbol;
+                                        const [codeMain, codeSub] = m.code.split('\n');
+                                        return (
+                                            <button
+                                                key={m.symbol}
+                                                className={`oue__market-row${isActive ? ' oue__market-row--active' : ''}`}
+                                                onClick={() => { setSymbol(m.symbol); setMarketOpen(false); }}
+                                                disabled={isRunning}
+                                                type='button'
+                                            >
+                                                <span className='oue__market-code'>
+                                                    <span className='oue__market-code-main'>{codeMain}</span>
+                                                    {codeSub && <span className='oue__market-code-sub'>{codeSub}</span>}
+                                                </span>
+                                                <span className='oue__market-name'>{m.label}</span>
+                                                {isActive && <span className='oue__market-active-icon'>⚡</span>}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
