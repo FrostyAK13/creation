@@ -3,10 +3,8 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useLocation, useNavigate } from 'react-router-dom';
-import AnalysisToolModal from '@/components/analysis-tool/analysis-tool-modal';
 import DCirclesModal from '@/components/d-circles/d-circles-modal';
 import ChunkLoader from '@/components/loader/chunk-loader';
-import MarketAnalyzerModal from '@/components/market-analyzer/market-analyzer-modal';
 import { generateOAuthURL } from '@/components/shared';
 import DesktopWrapper from '@/components/shared_ui/desktop-wrapper';
 import Dialog from '@/components/shared_ui/dialog';
@@ -40,9 +38,7 @@ import {
     LabelPairedCircleStarCaptionBoldIcon,
     LabelPairedMagnifyingGlassPlusCaptionRegularIcon,
     LabelPairedCircleCaptionRegularIcon,
-    LabelPairedBarsCaptionRegularIcon,
     LabelPairedCopyCaptionRegularIcon,
-    LabelPairedChartCandlestickCaptionRegularIcon,
     LabelPairedArrowUpArrowDownCaptionBoldIcon,
 } from '@deriv/quill-icons/LabelPaired';
 import { LegacyGuide1pxIcon } from '@deriv/quill-icons/Legacy';
@@ -158,7 +154,7 @@ const AppWrapper = observer(() => {
 
     React.useEffect(() => {
         const el_dashboard = document.getElementById('id-dbot-dashboard');
-        const el_tutorial = document.getElementById('id-market-analyzer');
+        const el_tutorial = document.getElementById('id-tutorials');
 
         const observer_dashboard = new window.IntersectionObserver(
             ([entry]) => {
@@ -465,46 +461,6 @@ const AppWrapper = observer(() => {
                             <div
                                 label={
                                     <>
-                                        <LabelPairedBarsCaptionRegularIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='Analysis Tool' />
-                                    </>
-                                }
-                                id='id-analysis-tool'
-                            >
-                                <iframe
-                                    src='https://frostytraders.vercel.app/'
-                                    title='Analysis Tool'
-                                    style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                                    allow='clipboard-read; clipboard-write'
-                                />
-                            </div>
-                            <div
-                                label={
-                                    <>
-                                        <LabelPairedChartCandlestickCaptionRegularIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='Market Analyzer' />
-                                    </>
-                                }
-                                id='id-market-analyzer'
-                            >
-                                <iframe
-                                    src='https://bot-analysis-tool-belex.web.app'
-                                    title='Market Analyzer'
-                                    style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                                    allow='clipboard-read; clipboard-write'
-                                />
-                            </div>
-                            <div
-                                label={
-                                    <>
                                         <LabelPairedChartLineCaptionRegularIcon
                                             height='24px'
                                             width='24px'
@@ -612,8 +568,6 @@ const AppWrapper = observer(() => {
                 <TradingViewModal />
             </DesktopWrapper>
             <DCirclesModal />
-            <AnalysisToolModal />
-            <MarketAnalyzerModal />
             <MobileWrapper>{!is_open && <RunPanel />}</MobileWrapper>
             <Dialog
                 cancel_button_text={cancel_button_text || localize('Cancel')}

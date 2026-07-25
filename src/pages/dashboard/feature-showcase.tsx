@@ -4,8 +4,6 @@ import Text from '@/components/shared_ui/text';
 import { DBOT_TABS } from '@/constants/bot-contents';
 import { useStore } from '@/hooks/useStore';
 import {
-    LabelPairedBarsMdRegularIcon,
-    LabelPairedChartCandlestickMdRegularIcon,
     LabelPairedCircleStarMdRegularIcon,
     LabelPairedCloneMdRegularIcon,
     LabelPairedGraduationCapMdRegularIcon,
@@ -36,18 +34,6 @@ const FeatureShowcase = observer(() => {
             tab: DBOT_TABS.D_CIRCLES,
         },
         {
-            id: 'analysis-tool',
-            icon: <LabelPairedBarsMdRegularIcon />,
-            title: <Localize i18n_default_text='Analysis Tool' />,
-            tab: DBOT_TABS.ANALYSIS_TOOL,
-        },
-        {
-            id: 'market-analyzer',
-            icon: <LabelPairedChartCandlestickMdRegularIcon />,
-            title: <Localize i18n_default_text='Market Analyzer' />,
-            tab: DBOT_TABS.MARKET_ANALYZER,
-        },
-        {
             id: 'free-bots',
             icon: <LabelPairedCloneMdRegularIcon />,
             title: <Localize i18n_default_text='Free Bots' />,
@@ -74,15 +60,14 @@ const FeatureShowcase = observer(() => {
     ];
 
     const left = features.slice(0, 3);
-    const right = features.slice(3, 6);
-    const square = features[6];
+    const right = features.slice(3);
 
-    const renderCard = (feature: TFeature, index: number, is_square = false) => (
+    const renderCard = (feature: TFeature, index: number) => (
         <button
             key={feature.id}
             type='button'
             style={{ '--card-index': index } as React.CSSProperties}
-            className={`feature-showcase__card${is_square ? ' feature-showcase__card--square' : ''}`}
+            className='feature-showcase__card'
             onClick={() => setActiveTab(feature.tab)}
             data-testid={`dt_feature_showcase_${feature.id}`}
         >
@@ -107,7 +92,6 @@ const FeatureShowcase = observer(() => {
             <div className='feature-showcase__col feature-showcase__col--left'>
                 {left.map((feature, index) => renderCard(feature, index))}
             </div>
-            <div className='feature-showcase__square-slot'>{renderCard(square, 6, true)}</div>
             <div className='feature-showcase__col feature-showcase__col--right'>
                 {right.map((feature, index) => renderCard(feature, index + 3))}
             </div>
