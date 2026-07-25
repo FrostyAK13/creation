@@ -46,17 +46,18 @@ function nowTime(): string {
 // ─── types ────────────────────────────────────────────────────────────────────
 
 export interface TradeRecord {
-    id:           number;
-    time:         string;
-    entryDigit:   number | null;   // digit that triggered this round (null = no entry mode)
-    overResult:   'won' | 'lost';
-    overStake:    number;
-    overProfit:   number;          // signed (positive = won, negative = lost)
-    underResult:  'won' | 'lost';
-    underStake:   number;
-    underProfit:  number;
-    roundPnl:     number;          // overProfit + underProfit
-    runningTotal: number;
+    id:               number;
+    time:             string;
+    entryDigit:       number | null;   // digit that triggered this round (null = no entry mode)
+    settlementDigit:  number | null;   // last digit at round close (determined outcome)
+    overResult:       'won' | 'lost';
+    overStake:        number;
+    overProfit:       number;          // signed (positive = won, negative = lost)
+    underResult:      'won' | 'lost';
+    underStake:       number;
+    underProfit:      number;
+    roundPnl:         number;          // overProfit + underProfit
+    runningTotal:     number;
 }
 
 interface EngineState {
@@ -163,12 +164,13 @@ const OverUnderEngine: React.FC = observer(() => {
     const [lastEntryDigit, setLastEntryDigit]             = useState<number | null>(null);
     const [tradeHistory, setTradeHistory]                 = useState<TradeRecord[]>([]);
 
-    const eng           = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss, entryMode));
-    const msgSub        = useRef<{ unsubscribe: () => void } | null>(null);
-    const passiveSub    = useRef<{ unsubscribe: () => void } | null>(null);
-    const passiveTickId = useRef<string | null>(null);
-    const fireRoundRef  = useRef<() => void>(() => {});
-    const symbolRef     = useRef(symbol);
+    const eng              = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss, entryMode));
+    const msgSub           = useRef<{ unsubscribe: () => void } | null>(null);
+    const passiveSub       = useRef<{ unsubscribe: () => void } | null>(null);
+    const passiveTickId    = useRef<string | null>(null);
+    const fireRoundRef     = useRef<() => void>(() => {});
+    const symbolRef        = useRef(symbol);
+    const latestDigitRef   = useRef<number | null>(null);   // always the most recent tick digit
     useEffect(() => { symbolRef.current = symbol; }, [symbol]);
 
     // ── cleanup ───────────────────────────────────────────────────────────────
@@ -334,17 +336,18 @@ const OverUnderEngine: React.FC = observer(() => {
             const roundPnl = round2(overP + underP);
 
             const record: TradeRecord = {
-                id:           e.roundCounter,
-                time:         nowTime(),
-                entryDigit:   e.useEntryMode ? e.entryDigit : null,
-                overResult:   overP  >= 0 ? 'won' : 'lost',
-                overStake:    e.currentRoundOverStake,
-                overProfit:   overP,
-                underResult:  underP >= 0 ? 'won' : 'lost',
-                underStake:   e.currentRoundUnderStake,
-                underProfit:  underP,
+                id:               e.roundCounter,
+                time:             nowTime(),
+                entryDigit:       e.useEntryMode ? e.entryDigit : null,
+                settlementDigit:  latestDigitRef.current,
+                overResult:       overP  >= 0 ? 'won' : 'lost',
+                overStake:        e.currentRoundOverStake,
+                overProfit:       overP,
+                underResult:      underP >= 0 ? 'won' : 'lost',
+                underStake:       e.currentRoundUnderStake,
+                underProfit:      underP,
                 roundPnl,
-                runningTotal: e.totalProfit,
+                runningTotal:     e.totalProfit,
             };
 
             setTradeHistory(prev => [record, ...prev]);
@@ -372,6 +375,7 @@ const OverUnderEngine: React.FC = observer(() => {
             if (msg?.tick?.quote !== undefined) {
                 const d        = getLastDigit(msg.tick.quote);
                 const priceStr = String(msg.tick.quote);
+                latestDigitRef.current = d;
                 setDigits(prev  => { const n = [...prev,  d];        return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
                 setPrices(prev  => { const n = [...prev,  priceStr]; return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
 
@@ -582,10 +586,20 @@ const OverUnderEngine: React.FC = observer(() => {
                         <span className='oue__panel-win-pct'>{profitPct(overWins, overWins + overLosses)}% win</span>
                     </div>
                     <div className='oue__panel-subtitle'>Digit must be 6, 7, 8, or 9</div>
+                    {/* prominent wins / losses counters */}
+                    <div className='oue__wl-row'>
+                        <div className='oue__wl oue__wl--win'>
+                            <span className='oue__wl-num'>{overWins}</span>
+                            <span className='oue__wl-label'>WINS</span>
+                        </div>
+                        <div className='oue__wl-divider' />
+                        <div className='oue__wl oue__wl--loss'>
+                            <span className='oue__wl-num'>{overLosses}</span>
+                            <span className='oue__wl-label'>LOSSES</span>
+                        </div>
+                    </div>
                     <div className='oue__panel-stats'>
                         <div className='oue__stat'><span className='oue__stat-label'>Stake</span><span className='oue__stat-val'>{overCurrentStake.toFixed(2)}</span></div>
-                        <div className='oue__stat oue__stat--win'><span className='oue__stat-label'>Wins</span><span className='oue__stat-val'>{overWins}</span></div>
-                        <div className='oue__stat oue__stat--loss'><span className='oue__stat-label'>Losses</span><span className='oue__stat-val'>{overLosses}</span></div>
                     </div>
                     {lastOverResult && <div className={`oue__badge oue__badge--${lastOverResult}`}>{lastOverResult === 'won' ? '✓ WIN' : '✗ LOSS'}</div>}
                 </div>
@@ -596,10 +610,20 @@ const OverUnderEngine: React.FC = observer(() => {
                         <span className='oue__panel-win-pct'>{profitPct(underWins, underWins + underLosses)}% win</span>
                     </div>
                     <div className='oue__panel-subtitle'>Digit must be 0, 1, 2, or 3</div>
+                    {/* prominent wins / losses counters */}
+                    <div className='oue__wl-row'>
+                        <div className='oue__wl oue__wl--win'>
+                            <span className='oue__wl-num'>{underWins}</span>
+                            <span className='oue__wl-label'>WINS</span>
+                        </div>
+                        <div className='oue__wl-divider' />
+                        <div className='oue__wl oue__wl--loss'>
+                            <span className='oue__wl-num'>{underLosses}</span>
+                            <span className='oue__wl-label'>LOSSES</span>
+                        </div>
+                    </div>
                     <div className='oue__panel-stats'>
                         <div className='oue__stat'><span className='oue__stat-label'>Stake</span><span className='oue__stat-val'>{underCurrentStake.toFixed(2)}</span></div>
-                        <div className='oue__stat oue__stat--win'><span className='oue__stat-label'>Wins</span><span className='oue__stat-val'>{underWins}</span></div>
-                        <div className='oue__stat oue__stat--loss'><span className='oue__stat-label'>Losses</span><span className='oue__stat-val'>{underLosses}</span></div>
                     </div>
                     {lastUnderResult && <div className={`oue__badge oue__badge--${lastUnderResult}`}>{lastUnderResult === 'won' ? '✓ WIN' : '✗ LOSS'}</div>}
                 </div>
@@ -728,6 +752,7 @@ const OverUnderEngine: React.FC = observer(() => {
                                     <th>#</th>
                                     <th>Time</th>
                                     {tradeHistory.some(r => r.entryDigit !== null) && <th>Entry</th>}
+                                    <th>Digit</th>
                                     <th>Over 5</th>
                                     <th>O. Stake</th>
                                     <th>O. P&amp;L</th>
@@ -741,6 +766,8 @@ const OverUnderEngine: React.FC = observer(() => {
                             <tbody>
                                 {tradeHistory.map(r => {
                                     const showEntry = tradeHistory.some(h => h.entryDigit !== null);
+                                    const d = r.settlementDigit;
+                                    const digitCls = d === null ? '' : d > 5 ? 'oue__history-digit--over' : d < 4 ? 'oue__history-digit--under' : 'oue__history-digit--neutral';
                                     return (
                                         <tr key={r.id} className={r.roundPnl >= 0 ? 'oue__history-row--pos' : 'oue__history-row--neg'}>
                                             <td className='oue__history-id'>{r.id}</td>
@@ -752,6 +779,11 @@ const OverUnderEngine: React.FC = observer(() => {
                                                         : <span className='oue__history-na'>—</span>}
                                                 </td>
                                             )}
+                                            <td>
+                                                {d !== null
+                                                    ? <span className={`oue__history-digit ${digitCls}`}>{d}</span>
+                                                    : <span className='oue__history-na'>—</span>}
+                                            </td>
                                             <td><span className={`oue__history-result oue__history-result--${r.overResult}`}>{r.overResult === 'won' ? '✓ W' : '✗ L'}</span></td>
                                             <td className='oue__history-num'>{r.overStake.toFixed(2)}</td>
                                             <td className={`oue__history-num ${r.overProfit >= 0 ? 'oue__history-pos' : 'oue__history-neg'}`}>

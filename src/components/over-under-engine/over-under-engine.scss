@@ -201,6 +201,55 @@
         &--under   { background: #60a5fa; }
     }
 
+    // ── prominent win / loss counters ───────────────────────────────────────
+
+    &__wl-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin: 0.5rem 0 0.4rem;
+    }
+
+    &__wl {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.1rem;
+        padding: 0.4rem 0.2rem;
+        border-radius: 6px;
+
+        &--win  { background: rgb(16 185 129 / 10%); }
+        &--loss { background: rgb(239 68 68 / 10%); }
+    }
+
+    &__wl-num {
+        font-size: 1.6rem;
+        font-weight: 900;
+        line-height: 1;
+
+        .oue__wl--win  & { color: #10b981; }
+        .oue__wl--loss & { color: #ef4444; }
+    }
+
+    &__wl-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+
+        .oue__wl--win  & { color: rgb(16 185 129 / 70%); }
+        .oue__wl--loss & { color: rgb(239 68 68 / 70%); }
+    }
+
+    &__wl-divider {
+        width: 1px;
+        height: 2.4rem;
+        background: var(--general-section-2);
+        margin: 0 0.5rem;
+        flex-shrink: 0;
+    }
+
     // ── two side panels ─────────────────────────────────────────────────────
 
     &__panels {
@@ -1004,6 +1053,21 @@
         &--neg {
             td:first-child { border-left: 2px solid rgba(239, 68, 68, 0.4); }
         }
+    }
+
+    &__history-digit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 50%;
+        font-weight: 900;
+        font-size: 1rem;
+
+        &--over    { background: rgb(16 185 129 / 18%); color: #10b981; border: 1.5px solid rgb(16 185 129 / 40%); }
+        &--under   { background: rgb(59 130 246 / 18%); color: #60a5fa; border: 1.5px solid rgb(59 130 246 / 40%); }
+        &--neutral { background: var(--general-section-2); color: var(--text-less-prominent); border: 1.5px solid transparent; }
     }
 
     &__history-id {
