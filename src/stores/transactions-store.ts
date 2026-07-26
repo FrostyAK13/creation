@@ -136,11 +136,14 @@ export default class TransactionsStore {
 
         const same_contract_index = this.elements[current_account]?.findIndex(c => {
             if (typeof c.data === 'string') return false;
-            return (
-                c.type === transaction_elements.CONTRACT &&
-                c.data?.transaction_ids &&
-                c.data.transaction_ids.buy === data.transaction_ids?.buy
-            );
+
+            const same_buy_transaction =
+                data.transaction_ids?.buy != null &&
+                c.data?.transaction_ids?.buy != null &&
+                c.data.transaction_ids.buy === data.transaction_ids.buy;
+            const same_contract = data.contract_id != null && c.data?.contract_id === data.contract_id;
+
+            return c.type === transaction_elements.CONTRACT && (same_buy_transaction || same_contract);
         });
 
         if (same_contract_index === -1) {
@@ -167,9 +170,22 @@ export default class TransactionsStore {
             });
         } else {
             // If data belongs to existing contract in memory, update it.
+            // Keep the pending buy reference when a later contract update does
+            // not include transaction_ids. The transaction list uses that
+            // reference as its stable row key.
+            const previous_data = this.elements[current_account]?.[same_contract_index]?.data;
+            const updated_contract =
+                typeof previous_data === 'object' && previous_data
+                    ? {
+                          ...previous_data,
+                          ...contract,
+                          transaction_ids: contract.transaction_ids ?? previous_data.transaction_ids,
+                      }
+                    : contract;
+
             this.elements[current_account]?.splice(same_contract_index, 1, {
                 type: transaction_elements.CONTRACT,
-                data: contract,
+                data: updated_contract,
             });
         }
 

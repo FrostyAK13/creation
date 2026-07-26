@@ -290,6 +290,34 @@ const OverUnderEngine: React.FC = observer(() => {
             e.overContractId  = overRes?.buy?.contract_id  ?? null;
             e.underContractId = underRes?.buy?.contract_id ?? null;
 
+            // Add both contracts as soon as the buys succeed. The shared
+            // transaction area otherwise only receives the final won/lost
+            // update, which makes active Over/Under trades invisible.
+            const recordPendingBuy = (response: any, contract_type: string, barrier: string, amount: number) => {
+                const buy = response?.buy;
+                if (!buy?.contract_id) return;
+
+                transactions.onBotContractEvent({
+                    ...buy,
+                    contract_id: buy.contract_id,
+                    contract_type,
+                    barrier,
+                    underlying_symbol: symbolRef.current,
+                    currency: buy.currency ?? currency,
+                    buy_price: buy.buy_price ?? amount,
+                    date_start: buy.date_start ?? buy.purchase_time ?? Math.floor(Date.now() / 1000),
+                    status: 'open',
+                    profit: 0,
+                    transaction_ids: {
+                        ...(buy.transaction_ids ?? {}),
+                        buy: buy.transaction_id ?? buy.transaction_ids?.buy ?? buy.contract_id,
+                    },
+                } as any);
+            };
+
+            recordPendingBuy(overRes, 'DIGITOVER', OVER_BARRIER, e.currentRoundOverStake);
+            recordPendingBuy(underRes, 'DIGITUNDER', UNDER_BARRIER, e.currentRoundUnderStake);
+
             if (e.overContractId) {
                 const r = await api.send({ proposal_open_contract: 1, contract_id: e.overContractId, subscribe: 1 });
                 e.overSubId = r?.subscription?.id ?? null;
