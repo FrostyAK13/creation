@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/hooks/useStore';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
+import { contract_stages } from '@/constants/contract-stage';
+import { localize } from '@deriv-com/translations';
 import './over-under-engine.scss';
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -136,7 +138,7 @@ function makeInitState(
 // ─── component ────────────────────────────────────────────────────────────────
 
 const OverUnderEngine: React.FC = observer(() => {
-    const { client, dashboard, transactions } = useStore();
+    const { client, dashboard, transactions, run_panel, summary_card, ui } = useStore();
 
     // Config
     const [stake, setStake]           = useState(0.35);
@@ -242,7 +244,13 @@ const OverUnderEngine: React.FC = observer(() => {
         setIsRunning(false);
         setIsWaitingEntry(false);
         setStatusMsg(reason);
-    }, [cleanupSubs]);
+
+        // Mirror run-panel stop: reset global running state and re-enable account switching
+        run_panel.setIsRunning(false);
+        run_panel.setContractStage(contract_stages.NOT_RUNNING);
+        (ui as any)?.setAccountSwitcherDisabledMessage?.();
+        (ui as any)?.setPromptHandler?.(false);
+    }, [cleanupSubs, run_panel, ui]);
 
     // ── limits ────────────────────────────────────────────────────────────────
 
@@ -454,6 +462,17 @@ const OverUnderEngine: React.FC = observer(() => {
         setIsWaitingEntry(entryMode);
         setStatusMsg(entryMode ? '👀 Watching for entry digit 4 or 5…' : 'Connecting…');
 
+        // Mirror run-panel start: activate global running state, open drawer, disable account switching
+        run_panel.run_id = `run-${Date.now()}`;
+        summary_card.clear();
+        run_panel.setIsRunning(true);
+        run_panel.setContractStage(contract_stages.STARTING);
+        run_panel.toggleDrawer(true);
+        (ui as any)?.setAccountSwitcherDisabledMessage?.(
+            localize('Account switching is disabled while your bot is running. Please stop your bot before switching accounts.')
+        );
+        (ui as any)?.setPromptHandler?.(true);
+
         // Restart passive ticks so digit history is clean for this run
         await startPassiveSub(symbolRef.current);
 
@@ -478,7 +497,7 @@ const OverUnderEngine: React.FC = observer(() => {
         } catch (err: any) {
             stopEngine(`⚠ ${err?.error?.message || err?.message || 'Failed to start'}`);
         }
-    }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, startPassiveSub, stopEngine, transactions]);
+    }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, startPassiveSub, stopEngine, transactions, run_panel, summary_card, ui]);
 
     // Start passive ticks whenever the selected symbol changes (or on first mount)
     useEffect(() => {
