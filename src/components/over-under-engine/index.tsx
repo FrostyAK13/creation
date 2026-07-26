@@ -164,6 +164,8 @@ const OverUnderEngine: React.FC = observer(() => {
     const [lastEntryDigit, setLastEntryDigit]             = useState<number | null>(null);
     const [tradeHistory, setTradeHistory]                 = useState<TradeRecord[]>([]);
 
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
+
     const eng              = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss, entryMode));
     const msgSub           = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveSub       = useRef<{ unsubscribe: () => void } | null>(null);
@@ -171,7 +173,29 @@ const OverUnderEngine: React.FC = observer(() => {
     const fireRoundRef     = useRef<() => void>(() => {});
     const symbolRef        = useRef(symbol);
     const latestDigitRef   = useRef<number | null>(null);   // always the most recent tick digit
+    const marketTriggerRef = useRef<HTMLButtonElement>(null);
     useEffect(() => { symbolRef.current = symbol; }, [symbol]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        if (!marketOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (marketTriggerRef.current && !marketTriggerRef.current.closest('.oue__market-selector')?.contains(e.target as Node)) {
+                setMarketOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [marketOpen]);
+
+    const openMarket = useCallback(() => {
+        if (isRunning) return;
+        if (!marketOpen && marketTriggerRef.current) {
+            const rect = marketTriggerRef.current.getBoundingClientRect();
+            setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+        }
+        setMarketOpen(o => !o);
+    }, [isRunning, marketOpen]);
 
     // ── cleanup ───────────────────────────────────────────────────────────────
 
@@ -498,8 +522,9 @@ const OverUnderEngine: React.FC = observer(() => {
                     {/* market selector */}
                     <div className={`oue__market-selector oue__market-selector--header${marketOpen ? ' oue__market-selector--open' : ''}`}>
                         <button
+                            ref={marketTriggerRef}
                             className='oue__market-trigger oue__market-trigger--header'
-                            onClick={() => !isRunning && setMarketOpen(o => !o)}
+                            onClick={openMarket}
                             disabled={isRunning}
                             type='button'
                             title='Change market'
@@ -509,8 +534,11 @@ const OverUnderEngine: React.FC = observer(() => {
                             </span>
                             <span className={`oue__market-chevron${marketOpen ? ' oue__market-chevron--open' : ''}`}>▼</span>
                         </button>
-                        {marketOpen && (
-                            <div className='oue__market-dropdown'>
+                        {marketOpen && dropdownPos && (
+                            <div
+                                className='oue__market-dropdown'
+                                style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, left: 'auto', transform: 'none' }}
+                            >
                                 <div className='oue__market-category'>CONTINUOUS INDICES</div>
                                 <div className='oue__market-list'>
                                     {MARKETS.map(m => {
