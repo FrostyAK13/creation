@@ -1211,6 +1211,9 @@
     @media (max-width: 640px) {
         padding: 0.6rem;
         gap: 0.5rem;
+        max-width: 100%;
+        margin-inline: 0;
+        -webkit-overflow-scrolling: touch;
 
         // ── header / title ─────────────────────────────────────────────────
         &__header { padding: 0.5rem 0.65rem; }
@@ -1325,8 +1328,8 @@
         &__history-id          { font-size: 0.68rem; }
     }
 
-    // Scale down for medium/short viewports so the engine fits without scrolling
-    @media (max-height: 900px), (max-width: 1400px) {
+    // Scale down for medium/short viewports — explicitly exclude mobile (≤ 640px)
+    @media (max-height: 900px) and (min-width: 641px), (min-width: 641px) and (max-width: 1400px) {
         gap: 0.5rem;
         padding: 0.6rem 0.8rem;
 
