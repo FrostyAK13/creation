@@ -175,15 +175,17 @@ const OverUnderEngine: React.FC = observer(() => {
     const symbolRef        = useRef(symbol);
     const latestDigitRef   = useRef<number | null>(null);   // always the most recent tick digit
     const marketTriggerRef = useRef<HTMLButtonElement>(null);
+    const marketDropdownRef = useRef<HTMLDivElement>(null);
     useEffect(() => { symbolRef.current = symbol; }, [symbol]);
 
-    // Close dropdown on outside click
+    // Close dropdown on outside click — must exclude both the trigger and the portaled dropdown
     useEffect(() => {
         if (!marketOpen) return;
         const handler = (e: MouseEvent) => {
-            if (marketTriggerRef.current && !marketTriggerRef.current.closest('.oue__market-selector')?.contains(e.target as Node)) {
-                setMarketOpen(false);
-            }
+            const target = e.target as Node;
+            const inTrigger  = marketTriggerRef.current?.closest('.oue__market-selector')?.contains(target);
+            const inDropdown = marketDropdownRef.current?.contains(target);
+            if (!inTrigger && !inDropdown) setMarketOpen(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
@@ -542,6 +544,7 @@ const OverUnderEngine: React.FC = observer(() => {
                         </button>
                         {marketOpen && dropdownPos && createPortal(
                             <div
+                                ref={marketDropdownRef}
                                 className='oue__market-dropdown'
                                 style={{ top: dropdownPos.top, left: dropdownPos.left, right: 'auto' }}
                             >
