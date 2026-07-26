@@ -136,7 +136,7 @@ function makeInitState(
 // ─── component ────────────────────────────────────────────────────────────────
 
 const OverUnderEngine: React.FC = observer(() => {
-    const { client, dashboard } = useStore();
+    const { client, dashboard, transactions } = useStore();
 
     // Config
     const [stake, setStake]           = useState(0.35);
@@ -463,6 +463,8 @@ const OverUnderEngine: React.FC = observer(() => {
             if (msg?.proposal_open_contract) {
                 const poc = msg.proposal_open_contract;
                 if (poc.status === 'won' || poc.status === 'lost') {
+                    // Push settled contract into the shared Transactions widget
+                    transactions.onBotContractEvent(poc);
                     onSettled(poc.contract_id, poc.status === 'won', parseFloat(poc.profit ?? '0'));
                 }
             }
@@ -476,7 +478,7 @@ const OverUnderEngine: React.FC = observer(() => {
         } catch (err: any) {
             stopEngine(`⚠ ${err?.error?.message || err?.message || 'Failed to start'}`);
         }
-    }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, startPassiveSub, stopEngine]);
+    }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, startPassiveSub, stopEngine, transactions]);
 
     // Start passive ticks whenever the selected symbol changes (or on first mount)
     useEffect(() => {
