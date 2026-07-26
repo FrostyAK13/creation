@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/hooks/useStore';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
@@ -539,7 +540,7 @@ const OverUnderEngine: React.FC = observer(() => {
                             </span>
                             <span className={`oue__market-chevron${marketOpen ? ' oue__market-chevron--open' : ''}`}>▼</span>
                         </button>
-                        {marketOpen && dropdownPos && (
+                        {marketOpen && dropdownPos && createPortal(
                             <div
                                 className='oue__market-dropdown'
                                 style={{ top: dropdownPos.top, left: dropdownPos.left, right: 'auto' }}
@@ -567,7 +568,8 @@ const OverUnderEngine: React.FC = observer(() => {
                                         );
                                     })}
                                 </div>
-                            </div>
+                            </div>,
+                            document.body
                         )}
                     </div>
                 </div>
