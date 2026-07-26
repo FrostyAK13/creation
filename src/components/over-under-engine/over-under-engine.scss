@@ -715,10 +715,8 @@
     }
 
     &__market-dropdown {
-        position: absolute;
-        top: calc(100% + 0.6rem);
-        right: 0;
-        z-index: 100;
+        position: fixed;
+        z-index: 9999;
         background: var(--general-main-2, #1a2332);
         border: 1px solid rgb(255 255 255 / 10%);
         border-radius: 10px;

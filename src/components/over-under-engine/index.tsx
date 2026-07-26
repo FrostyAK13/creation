@@ -192,7 +192,12 @@ const OverUnderEngine: React.FC = observer(() => {
         if (isRunning) return;
         if (!marketOpen && marketTriggerRef.current) {
             const rect = marketTriggerRef.current.getBoundingClientRect();
-            setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+            const DROPDOWN_W = 320; // min-width: 20rem ≈ 320px
+            const MARGIN = 8;
+            // Align right edge of dropdown with right edge of trigger, then clamp inside viewport
+            let left = rect.right - DROPDOWN_W;
+            left = Math.max(MARGIN, Math.min(left, window.innerWidth - DROPDOWN_W - MARGIN));
+            setDropdownPos({ top: rect.bottom + 8, right: -1, left });
         }
         setMarketOpen(o => !o);
     }, [isRunning, marketOpen]);
@@ -537,7 +542,7 @@ const OverUnderEngine: React.FC = observer(() => {
                         {marketOpen && dropdownPos && (
                             <div
                                 className='oue__market-dropdown'
-                                style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, left: 'auto', transform: 'none' }}
+                                style={{ top: dropdownPos.top, left: dropdownPos.left, right: 'auto' }}
                             >
                                 <div className='oue__market-category'>CONTINUOUS INDICES</div>
                                 <div className='oue__market-list'>
