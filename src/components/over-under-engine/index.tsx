@@ -42,26 +42,7 @@ function round2(n: number): number {
     return Math.round(n * 100) / 100;
 }
 
-function nowTime(): string {
-    return new Date().toLocaleTimeString('en-GB', { hour12: false });
-}
-
 // ─── types ────────────────────────────────────────────────────────────────────
-
-export interface TradeRecord {
-    id:               number;
-    time:             string;
-    entryDigit:       number | null;   // digit that triggered this round (null = no entry mode)
-    settlementDigit:  number | null;   // last digit at round close (determined outcome)
-    overResult:       'won' | 'lost';
-    overStake:        number;
-    overProfit:       number;          // signed (positive = won, negative = lost)
-    underResult:      'won' | 'lost';
-    underStake:       number;
-    underProfit:      number;
-    roundPnl:         number;          // overProfit + underProfit
-    runningTotal:     number;
-}
 
 interface EngineState {
     running:              boolean;
@@ -165,7 +146,6 @@ const OverUnderEngine: React.FC = observer(() => {
     const [lastUnderResult, setLastUnderResult]           = useState<'won' | 'lost' | null>(null);
     const [isWaitingEntry, setIsWaitingEntry]             = useState(false);
     const [lastEntryDigit, setLastEntryDigit]             = useState<number | null>(null);
-    const [tradeHistory, setTradeHistory]                 = useState<TradeRecord[]>([]);
 
     const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
 
@@ -368,29 +348,12 @@ const OverUnderEngine: React.FC = observer(() => {
             setUnderCurrentStake(e.underStake);
         }
 
-        // Both sides done — log history, decide next step
+        // Both sides done — decide next step
         if (e.overSettled && e.underSettled) {
             e.roundCounter++;
             const overP   = e.overRoundProfit  ?? 0;
             const underP  = e.underRoundProfit ?? 0;
             const roundPnl = round2(overP + underP);
-
-            const record: TradeRecord = {
-                id:               e.roundCounter,
-                time:             nowTime(),
-                entryDigit:       e.useEntryMode ? e.entryDigit : null,
-                settlementDigit:  latestDigitRef.current,
-                overResult:       overP  >= 0 ? 'won' : 'lost',
-                overStake:        e.currentRoundOverStake,
-                overProfit:       overP,
-                underResult:      underP >= 0 ? 'won' : 'lost',
-                underStake:       e.currentRoundUnderStake,
-                underProfit:      underP,
-                roundPnl,
-                runningTotal:     e.totalProfit,
-            };
-
-            setTradeHistory(prev => [record, ...prev]);
 
             e.roundInFlight = false;
             e.entryDigit    = null;
@@ -793,89 +756,6 @@ const OverUnderEngine: React.FC = observer(() => {
                 </div>
             </div>
 
-            {/* ── trade history ── */}
-            <div className='oue__history'>
-                <div className='oue__history-header'>
-                    <span className='oue__history-title'>📋 Trade History</span>
-                    <span className='oue__history-count'>{tradeHistory.length} trade{tradeHistory.length !== 1 ? 's' : ''}</span>
-                    <button
-                        className='oue__history-reset'
-                        onClick={() => setTradeHistory([])}
-                        disabled={tradeHistory.length === 0}
-                        type='button'
-                    >
-                        ↺ Reset
-                    </button>
-                </div>
-
-                {tradeHistory.length === 0 ? (
-                    <div className='oue__history-empty'>
-                        No trades yet — start the engine to record history
-                    </div>
-                ) : (
-                    <div className='oue__history-scroll'>
-                        <table className='oue__history-table'>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Time</th>
-                                    {tradeHistory.some(r => r.entryDigit !== null) && <th>Entry</th>}
-                                    <th>Digit</th>
-                                    <th>Over 5</th>
-                                    <th>O. Stake</th>
-                                    <th>O. P&amp;L</th>
-                                    <th>Under 4</th>
-                                    <th>U. Stake</th>
-                                    <th>U. P&amp;L</th>
-                                    <th>Round</th>
-                                    <th>Running</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tradeHistory.map(r => {
-                                    const showEntry = tradeHistory.some(h => h.entryDigit !== null);
-                                    const d = r.settlementDigit;
-                                    const digitCls = d === null ? '' : d > 5 ? 'oue__history-digit--over' : d < 4 ? 'oue__history-digit--under' : 'oue__history-digit--neutral';
-                                    return (
-                                        <tr key={r.id} className={r.roundPnl >= 0 ? 'oue__history-row--pos' : 'oue__history-row--neg'}>
-                                            <td className='oue__history-id'>{r.id}</td>
-                                            <td className='oue__history-time'>{r.time}</td>
-                                            {showEntry && (
-                                                <td>
-                                                    {r.entryDigit !== null
-                                                        ? <span className='oue__history-entry-digit'>{r.entryDigit}</span>
-                                                        : <span className='oue__history-na'>—</span>}
-                                                </td>
-                                            )}
-                                            <td>
-                                                {d !== null
-                                                    ? <span className={`oue__history-digit ${digitCls}`}>{d}</span>
-                                                    : <span className='oue__history-na'>—</span>}
-                                            </td>
-                                            <td><span className={`oue__history-result oue__history-result--${r.overResult}`}>{r.overResult === 'won' ? '✓ W' : '✗ L'}</span></td>
-                                            <td className='oue__history-num'>{r.overStake.toFixed(2)}</td>
-                                            <td className={`oue__history-num ${r.overProfit >= 0 ? 'oue__history-pos' : 'oue__history-neg'}`}>
-                                                {r.overProfit >= 0 ? '+' : ''}{r.overProfit.toFixed(2)}
-                                            </td>
-                                            <td><span className={`oue__history-result oue__history-result--${r.underResult}`}>{r.underResult === 'won' ? '✓ W' : '✗ L'}</span></td>
-                                            <td className='oue__history-num'>{r.underStake.toFixed(2)}</td>
-                                            <td className={`oue__history-num ${r.underProfit >= 0 ? 'oue__history-pos' : 'oue__history-neg'}`}>
-                                                {r.underProfit >= 0 ? '+' : ''}{r.underProfit.toFixed(2)}
-                                            </td>
-                                            <td className={`oue__history-num oue__history-round ${r.roundPnl >= 0 ? 'oue__history-pos' : 'oue__history-neg'}`}>
-                                                {r.roundPnl >= 0 ? '+' : ''}{r.roundPnl.toFixed(2)}
-                                            </td>
-                                            <td className={`oue__history-num ${r.runningTotal >= 0 ? 'oue__history-pos' : 'oue__history-neg'}`}>
-                                                {r.runningTotal >= 0 ? '+' : ''}{r.runningTotal.toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
 
         </div>
     );

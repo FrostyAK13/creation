@@ -1017,194 +1017,6 @@
         }
     }
 
-    // ── trade history ────────────────────────────────────────────────────────
-
-    &__history {
-        background: var(--general-section-1);
-        border-radius: 12px;
-        border: 1px solid var(--general-section-2);
-        overflow: hidden;
-    }
-
-    &__history-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.2rem 1.6rem;
-        border-bottom: 1px solid var(--general-section-2);
-    }
-
-    &__history-title {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--text-prominent);
-        letter-spacing: 0.02em;
-        flex: 1;
-    }
-
-    &__history-count {
-        font-size: 1.1rem;
-        color: var(--text-less-prominent);
-        font-weight: 600;
-    }
-
-    &__history-reset {
-        padding: 0.4rem 1.2rem;
-        border-radius: 6px;
-        border: 1.5px solid var(--border-normal);
-        background: transparent;
-        color: var(--text-less-prominent);
-        font-size: 1.15rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.18s ease;
-        letter-spacing: 0.03em;
-
-        &:hover:not(:disabled) {
-            border-color: #ef4444;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.07);
-        }
-
-        &:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
-    }
-
-    &__history-empty {
-        padding: 2.4rem;
-        text-align: center;
-        font-size: 1.2rem;
-        color: var(--text-less-prominent);
-        font-style: italic;
-    }
-
-    &__history-scroll {
-        max-height: 28rem;
-        overflow-y: auto;
-        overflow-x: auto;
-
-        /* subtle scrollbar */
-        &::-webkit-scrollbar       { width: 5px; height: 5px; }
-        &::-webkit-scrollbar-track { background: transparent; }
-        &::-webkit-scrollbar-thumb { background: var(--general-section-2); border-radius: 3px; }
-    }
-
-    &__history-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 1.15rem;
-
-        th {
-            position: sticky;
-            top: 0;
-            background: var(--general-section-1);
-            padding: 0.7rem 1rem;
-            text-align: left;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-less-prominent);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            white-space: nowrap;
-            border-bottom: 1px solid var(--general-section-2);
-            z-index: 1;
-        }
-
-        td {
-            padding: 0.6rem 1rem;
-            border-bottom: 1px solid var(--border-divider);
-            white-space: nowrap;
-            color: var(--text-general);
-        }
-
-        tbody tr {
-            transition: background 0.12s;
-
-            &:hover { background: var(--general-hover); }
-            &:last-child td { border-bottom: none; }
-        }
-    }
-
-    &__history-row {
-        &--pos { /* positive round — subtle green row tint */
-            td:first-child { border-left: 2px solid rgba(16, 185, 129, 0.4); }
-        }
-        &--neg {
-            td:first-child { border-left: 2px solid rgba(239, 68, 68, 0.4); }
-        }
-    }
-
-    &__history-digit {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.8rem;
-        height: 1.8rem;
-        border-radius: 50%;
-        font-weight: 900;
-        font-size: 1rem;
-
-        &--over    { background: rgb(16 185 129 / 18%); color: #10b981; border: 1.5px solid rgb(16 185 129 / 40%); }
-        &--under   { background: rgb(59 130 246 / 18%); color: #60a5fa; border: 1.5px solid rgb(59 130 246 / 40%); }
-        &--neutral { background: var(--general-section-2); color: var(--text-less-prominent); border: 1.5px solid transparent; }
-    }
-
-    &__history-id {
-        font-weight: 700;
-        color: var(--text-less-prominent);
-        font-size: 1rem;
-    }
-
-    &__history-time {
-        font-family: 'Courier New', monospace;
-        font-size: 1.05rem;
-        color: var(--text-less-prominent);
-    }
-
-    &__history-entry-digit {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 50%;
-        background: rgba(247, 197, 59, 0.15);
-        border: 1.5px solid rgba(247, 197, 59, 0.4);
-        color: #f7c53b;
-        font-weight: 800;
-        font-size: 1.15rem;
-    }
-
-    &__history-na {
-        color: var(--text-disabled);
-    }
-
-    &__history-result {
-        display: inline-block;
-        padding: 0.15rem 0.6rem;
-        border-radius: 4px;
-        font-weight: 800;
-        font-size: 1.05rem;
-
-        &--won  { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        &--lost { background: rgba(239, 68, 68, 0.12);  color: #ef4444; }
-    }
-
-    &__history-num {
-        font-family: 'Courier New', monospace;
-        font-weight: 600;
-        text-align: right;
-    }
-
-    &__history-pos { color: #10b981; }
-    &__history-neg { color: #ef4444; }
-
-    &__history-round {
-        font-weight: 800;
-    }
-
     // ── responsive ──────────────────────────────────────────────────────────
 
     // ── mobile (≤ 640 px) ───────────────────────────────────────────────────
@@ -1307,25 +1119,6 @@
         &__toggle       { width: 3rem; height: 1.7rem; }
         &__toggle-thumb { width: 1.1rem; height: 1.1rem; }
 
-        // ── trade history ───────────────────────────────────────────────────
-        &__history-header { padding: 0.55rem 0.75rem; gap: 0.4rem; }
-        &__history-title  { font-size: 0.88rem; }
-        &__history-count  { font-size: 0.75rem; }
-        &__history-reset  { font-size: 0.75rem; padding: 0.25rem 0.6rem; }
-        &__history-empty  { font-size: 0.82rem; padding: 1.2rem; }
-        &__history-scroll {
-            max-height: 14rem;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        &__history-table  { font-size: 0.78rem; min-width: 36rem; }
-        &__history-table th { font-size: 0.65rem; padding: 0.4rem 0.5rem; }
-        &__history-table td { font-size: 0.72rem; padding: 0.35rem 0.5rem; white-space: nowrap; }
-        &__history-entry-digit { width: 1.3rem; height: 1.3rem; font-size: 0.75rem; }
-        &__history-digit       { width: 1.3rem; height: 1.3rem; font-size: 0.75rem; }
-        &__history-result      { font-size: 0.72rem; padding: 0.1rem 0.35rem; }
-        &__history-time        { font-size: 0.7rem; }
-        &__history-id          { font-size: 0.68rem; }
     }
 
     // Scale down for medium/short viewports — explicitly exclude mobile (≤ 640px)
@@ -1375,19 +1168,6 @@
         &__entry-waiting { font-size: 0.9rem; padding: 0.4rem 0.7rem; margin-top: 0.5rem; }
         &__entry-last    { font-size: 0.85rem; }
 
-        &__history-header { padding: 0.7rem 1rem; gap: 0.7rem; }
-        &__history-title  { font-size: 1rem; }
-        &__history-count  { font-size: 0.85rem; }
-        &__history-reset  { font-size: 0.85rem; padding: 0.3rem 0.8rem; }
-        &__history-empty  { font-size: 0.9rem; padding: 1.6rem; }
-        &__history-scroll { max-height: 18rem; }
-        &__history-table  { font-size: 0.88rem; }
-        &__history-table th { font-size: 0.75rem; padding: 0.5rem 0.7rem; }
-        &__history-table td { font-size: 0.82rem; padding: 0.4rem 0.7rem; }
-        &__history-entry-digit { width: 1.5rem; height: 1.5rem; font-size: 0.88rem; }
-        &__history-result      { font-size: 0.82rem; }
-        &__history-time        { font-size: 0.82rem; }
-        &__history-id          { font-size: 0.8rem; }
     }
 }
 
@@ -1417,8 +1197,7 @@ body.theme--light {
         // ── shimmer card mixin ───────────────────────────────────────────────
         .oue__header,
         .oue__summary,
-        .oue__controls,
-        .oue__history {
+        .oue__controls {
             background: linear-gradient(145deg, #ffffff 0%, #f0f8ff 100%);
             border: 1.5px solid rgb(6 182 212 / 25%);
             box-shadow: 0 2px 16px rgb(6 182 212 / 8%), 0 1px 4px rgb(0 0 0 / 4%);
@@ -1532,17 +1311,6 @@ body.theme--light {
             color: #0e7490;
         }
 
-        // ── history table sticky header ──────────────────────────────────────
-        .oue__history-table th {
-            background: linear-gradient(145deg, #ffffff 0%, #f0f8ff 100%);
-            border-bottom-color: rgb(6 182 212 / 20%);
-            color: #0e7490;
-        }
-
-        .oue__history-header {
-            border-bottom-color: rgb(6 182 212 / 20%);
-        }
-
         // ── entry-waiting ────────────────────────────────────────────────────
         .oue__entry-toggle {
             border-top-color: rgb(6 182 212 / 20%);
@@ -1588,8 +1356,7 @@ body.theme--dark {
         // ── shimmer card mixin ───────────────────────────────────────────────
         .oue__header,
         .oue__summary,
-        .oue__controls,
-        .oue__history {
+        .oue__controls {
             background: linear-gradient(145deg, rgb(0 25 50 / 80%) 0%, rgb(0 13 31 / 70%) 100%);
             border: 1.5px solid rgb(6 182 212 / 20%);
             box-shadow: 0 2px 20px rgb(0 0 0 / 40%), inset 0 1px 0 rgb(6 182 212 / 8%);
@@ -1722,21 +1489,6 @@ body.theme--dark {
             border-color: #06b6d4;
             background: rgb(6 182 212 / 14%);
             color: #22d3ee;
-        }
-
-        // ── history table sticky header ──────────────────────────────────────
-        .oue__history-table th {
-            background: linear-gradient(145deg, rgb(0 25 50 / 90%) 0%, rgb(0 13 31 / 85%) 100%);
-            border-bottom-color: rgb(6 182 212 / 20%);
-            color: rgb(6 182 212 / 70%);
-        }
-
-        .oue__history-header {
-            border-bottom-color: rgb(6 182 212 / 18%);
-        }
-
-        .oue__history-title {
-            color: #e0f7fa;
         }
 
         // ── wl divider ───────────────────────────────────────────────────────
