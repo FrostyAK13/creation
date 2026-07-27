@@ -59,7 +59,6 @@ const MobileMenu = ({ onLogout }: TMobileMenuProps) => {
     const openLanguageSetting = () => showModal('MobileLanguagesDrawer');
     const isLanguageSettingVisible = Boolean(isModalOpenFor('MobileLanguagesDrawer'));
 
-    if (isDesktop) return null;
     // [AI] Hide mobile menu if there are no menu items to display
     if (!hasMenuItems) return null;
     // [/AI]
