@@ -158,10 +158,10 @@ const OverUnderEngine: React.FC = observer(() => {
     const { client, dashboard, transactions, run_panel, summary_card, ui } = useStore();
 
     // Config
-    const [stake, setStake]           = useState(0.35);
-    const [martingale, setMartingale] = useState(2);
-    const [takeProfit, setTakeProfit] = useState(5);
-    const [stopLoss, setStopLoss]     = useState(5);
+    const [stake, setStake]           = useState(0.5);
+    const [martingale]                = useState(2);
+    const [takeProfit]                = useState(5);
+    const [stopLoss]                  = useState(5);
     const [symbol, setSymbol]         = useState('1HZ10V');
     const [marketOpen, setMarketOpen] = useState(false);
     const [entryMode, setEntryMode]   = useState(true);
@@ -176,8 +176,8 @@ const OverUnderEngine: React.FC = observer(() => {
     const [overLosses, setOverLosses]                     = useState(0);
     const [underWins, setUnderWins]                       = useState(0);
     const [underLosses, setUnderLosses]                   = useState(0);
-    const [overCurrentStake, setOverCurrentStake]         = useState(0.35);
-    const [underCurrentStake, setUnderCurrentStake]       = useState(0.35);
+    const [overCurrentStake, setOverCurrentStake]         = useState(0.5);
+    const [underCurrentStake, setUnderCurrentStake]       = useState(0.5);
     const [lastOverResult, setLastOverResult]             = useState<'won' | 'lost' | null>(null);
     const [lastUnderResult, setLastUnderResult]           = useState<'won' | 'lost' | null>(null);
     const [isWaitingEntry, setIsWaitingEntry]             = useState(false);
@@ -787,42 +787,13 @@ const OverUnderEngine: React.FC = observer(() => {
                 <div className='oue__rounds'><span className='oue__rounds-label'>Market</span><span className='oue__rounds-val' style={{ fontSize: '1.1rem' }}>{activeMarket.short}</span></div>
             </div>
 
-            {/* ── TP/SL bars ── */}
-            <div className='oue__bars'>
-                <div className='oue__bar'>
-                    <span className='oue__bar-label oue__bar-label--tp'>TP&nbsp;<strong>+{takeProfit}</strong></span>
-                    <div className='oue__bar-track'>
-                        <div className='oue__bar-fill oue__bar-fill--tp' style={{ width: `${Math.min(100, Math.max(0, (totalProfit / takeProfit) * 100))}%` }} />
-                    </div>
-                    <span className='oue__bar-pct'>{Math.min(100, Math.max(0, Math.round((totalProfit / takeProfit) * 100)))}%</span>
-                </div>
-                <div className='oue__bar'>
-                    <span className='oue__bar-label oue__bar-label--sl'>SL&nbsp;<strong>-{stopLoss}</strong></span>
-                    <div className='oue__bar-track'>
-                        <div className='oue__bar-fill oue__bar-fill--sl' style={{ width: `${Math.min(100, Math.max(0, (-totalProfit / stopLoss) * 100))}%` }} />
-                    </div>
-                    <span className='oue__bar-pct'>{Math.min(100, Math.max(0, Math.round((-totalProfit / stopLoss) * 100)))}%</span>
-                </div>
-            </div>
 
             {/* ── controls ── */}
             <div className='oue__controls'>
                 <div className='oue__config'>
                     <label className='oue__field'>
                         <span>Stake ({currency})</span>
-                        <input type='number' min='0.35' step='0.05' value={stake} onChange={e => setStake(parseFloat(e.target.value) || 0.35)} disabled={isRunning} className='oue__input' />
-                    </label>
-                    <label className='oue__field'>
-                        <span>Martingale ×</span>
-                        <input type='number' min='1' max='10' step='0.5' value={martingale} onChange={e => setMartingale(parseFloat(e.target.value) || 2)} disabled={isRunning} className='oue__input' />
-                    </label>
-                    <label className='oue__field'>
-                        <span>Take Profit</span>
-                        <input type='number' min='0.5' step='0.5' value={takeProfit} onChange={e => setTakeProfit(parseFloat(e.target.value) || 5)} disabled={isRunning} className='oue__input' />
-                    </label>
-                    <label className='oue__field'>
-                        <span>Stop Loss</span>
-                        <input type='number' min='0.5' step='0.5' value={stopLoss} onChange={e => setStopLoss(parseFloat(e.target.value) || 5)} disabled={isRunning} className='oue__input' />
+                        <input type='number' min='0' step='0.05' value={stake} onChange={e => setStake(parseFloat(e.target.value) || 0)} disabled={isRunning} className='oue__input' />
                     </label>
                 </div>
 
