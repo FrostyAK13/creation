@@ -1,3 +1,4 @@
 - [Copy Trading architecture](copy-trading-arch.md) — service/store/page pattern; tokens memory-only, never logged in full.
 - [Tab system pattern](tab-system.md) — adding a tab requires 4 coordinated edits across constants, store, page, and main.tsx.
 - [npm install firewall fix](npm-install-firewall.md) — E405 fetching npm-10.9.8.tgz on fresh install; fix is delete package-lock.json + node_modules, reinstall.
+- [Deriv websocket envelopes](deriv-websocket-envelopes.md) — API observable messages arrive under `message.data`; normalize before reading tick or contract payloads.

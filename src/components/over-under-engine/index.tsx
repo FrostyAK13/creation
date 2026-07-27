@@ -33,9 +33,33 @@ const MARKETS: Market[] = [
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function getLastDigit(quote: number | string): number {
-    const s = String(quote);
+function getDecimalPlaces(pipSize: number): number {
+    if (!Number.isFinite(pipSize) || pipSize <= 0) return 0;
+    // api_base.pip_sizes stores the already-normalized decimal count
+    // (for example 3 means three places), while some tick payloads expose
+    // the increment itself (for example 0.001).
+    if (Number.isInteger(pipSize) && pipSize >= 1) return pipSize;
+    const asString = pipSize.toString();
+    if (asString.includes('e-')) return Number(asString.split('e-')[1]);
+    return asString.split('.')[1]?.length ?? 0;
+}
+
+function formatQuote(quote: number | string, pipSize?: number): string {
+    const value = Number(quote);
+    if (!Number.isFinite(value)) return String(quote);
+    const decimalPlaces = getDecimalPlaces(Number(pipSize));
+    return decimalPlaces > 0 ? value.toFixed(decimalPlaces) : String(value);
+}
+
+function getLastDigit(quote: number | string, pipSize?: number): number {
+    const s = formatQuote(quote, pipSize);
     return parseInt(s[s.length - 1], 10);
+}
+
+function getApiData(message: any): any {
+    // The Deriv API observable emits { data: response }; keeping the fallback
+    // makes this component tolerant of the direct response shape used by mocks.
+    return message?.data ?? message;
 }
 
 function round2(n: number): number {
@@ -147,7 +171,7 @@ const OverUnderEngine: React.FC = observer(() => {
     const [isWaitingEntry, setIsWaitingEntry]             = useState(false);
     const [lastEntryDigit, setLastEntryDigit]             = useState<number | null>(null);
 
-    const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
 
     const eng              = useRef<EngineState>(makeInitState(stake, martingale, takeProfit, stopLoss, entryMode));
     const msgSub           = useRef<{ unsubscribe: () => void } | null>(null);
@@ -182,7 +206,7 @@ const OverUnderEngine: React.FC = observer(() => {
             // Align right edge of dropdown with right edge of trigger, then clamp inside viewport
             let left = rect.right - DROPDOWN_W;
             left = Math.max(MARGIN, Math.min(left, window.innerWidth - DROPDOWN_W - MARGIN));
-            setDropdownPos({ top: rect.bottom + 8, right: -1, left });
+            setDropdownPos({ top: rect.bottom + 8, left });
         }
         setMarketOpen(o => !o);
     }, [isRunning, marketOpen]);
@@ -352,6 +376,9 @@ const OverUnderEngine: React.FC = observer(() => {
         const isOver  = contractId === e.overContractId;
         const isUnder = contractId === e.underContractId;
         if (!isOver && !isUnder) return;
+        // A subscribed proposal_open_contract can repeat the terminal status.
+        // Settle each side exactly once.
+        if ((isOver && e.overSettled) || (isUnder && e.underSettled)) return;
 
         e.totalProfit = round2(e.totalProfit + profit);
         setTotalProfit(e.totalProfit);
@@ -403,9 +430,14 @@ const OverUnderEngine: React.FC = observer(() => {
         setPrices([]);
 
         passiveSub.current = (api_base.api as any).onMessage().subscribe((msg: any) => {
-            if (msg?.tick?.quote !== undefined) {
-                const d        = getLastDigit(msg.tick.quote);
-                const priceStr = String(msg.tick.quote);
+            const data = getApiData(msg);
+            const tick = data?.msg_type === 'tick' ? data.tick : data?.tick;
+            if (tick?.quote !== undefined && (!tick.symbol || tick.symbol === sym)) {
+                // Numeric quotes can lose trailing zeroes (for example 123.450),
+                // so use Deriv's pip size before reading the final digit.
+                const pipSize = Number(tick.pip_size ?? (api_base as any).pip_sizes?.[sym]);
+                const priceStr = formatQuote(tick.quote, pipSize);
+                const d        = getLastDigit(priceStr);
                 latestDigitRef.current = d;
                 setDigits(prev  => { const n = [...prev,  d];        return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
                 setPrices(prev  => { const n = [...prev,  priceStr]; return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
@@ -427,7 +459,14 @@ const OverUnderEngine: React.FC = observer(() => {
         try {
             const r = await (api_base.api as any).send({ ticks: sym, subscribe: 1 });
             passiveTickId.current = r?.subscription?.id ?? null;
-        } catch { /* ignore — digits simply won't stream */ }
+        } catch {
+            // Do not leave a dead Rx subscription behind; the readiness poll
+            // below can retry once the API connection is available.
+            if (passiveSub.current) {
+                passiveSub.current.unsubscribe();
+                passiveSub.current = null;
+            }
+        }
     }, [stopPassiveSub]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── start ─────────────────────────────────────────────────────────────────
@@ -470,8 +509,9 @@ const OverUnderEngine: React.FC = observer(() => {
         // msgSub handles contract results only — ticks are in passiveSub
         if (msgSub.current) msgSub.current.unsubscribe();
         msgSub.current = (api_base.api as any).onMessage().subscribe((msg: any) => {
-            if (msg?.proposal_open_contract) {
-                const poc = msg.proposal_open_contract;
+            const data = getApiData(msg);
+            if (data?.msg_type === 'proposal_open_contract' && data.proposal_open_contract) {
+                const poc = data.proposal_open_contract;
                 if (poc.status === 'won' || poc.status === 'lost') {
                     // Push settled contract into the shared Transactions widget
                     transactions.onBotContractEvent(poc);
@@ -490,10 +530,31 @@ const OverUnderEngine: React.FC = observer(() => {
         }
     }, [stake, martingale, takeProfit, stopLoss, entryMode, fireRound, onSettled, startPassiveSub, stopEngine, transactions, run_panel, summary_card, ui]);
 
-    // Start passive ticks whenever the selected symbol changes (or on first mount)
+    // Start passive ticks whenever the selected symbol changes (or on first
+    // mount). The engine can render before authentication finishes, so retry
+    // until api_base has a live API instead of permanently showing an empty
+    // digit strip.
     useEffect(() => {
-        startPassiveSub(symbol);
-    }, [symbol]); // eslint-disable-line react-hooks/exhaustive-deps
+        let cancelled = false;
+        let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+        const ensureSubscription = () => {
+            if (cancelled) return;
+            if (!api_base.api) {
+                retryTimer = setTimeout(ensureSubscription, 500);
+                return;
+            }
+            if (!passiveSub.current) {
+                startPassiveSub(symbol);
+            }
+        };
+
+        ensureSubscription();
+        return () => {
+            cancelled = true;
+            if (retryTimer) clearTimeout(retryTimer);
+        };
+    }, [symbol, startPassiveSub]);
 
     // Teardown on unmount — kill everything including the passive subscription
     useEffect(() => () => {
