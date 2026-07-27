@@ -45,15 +45,27 @@ function getDecimalPlaces(pipSize: number): number {
 }
 
 function formatQuote(quote: number | string, pipSize?: number): string {
-    const value = Number(quote);
-    if (!Number.isFinite(value)) return String(quote);
+    const rawQuote = String(quote).trim();
+    const value = Number(rawQuote);
+    if (!Number.isFinite(value)) return rawQuote;
+
     const decimalPlaces = getDecimalPlaces(Number(pipSize));
-    return decimalPlaces > 0 ? value.toFixed(decimalPlaces) : String(value);
+    if (decimalPlaces === 0) return rawQuote;
+
+    // Do not use toFixed here: it rounds a quote before the last digit is
+    // read (for example 123.4567 would become 123.457). Deriv quotes already
+    // carry the market precision; when a numeric quote has lost trailing
+    // zeroes, pad them back without changing any supplied digits.
+    const [integerPart, decimalPart = ''] = rawQuote.split('.');
+    if (decimalPart.length >= decimalPlaces) return rawQuote;
+    return `${integerPart}.${decimalPart.padEnd(decimalPlaces, '0')}`;
 }
 
-function getLastDigit(quote: number | string, pipSize?: number): number {
+function getLastDigit(quote: number | string, pipSize?: number): number | null {
     const s = formatQuote(quote, pipSize);
-    return parseInt(s[s.length - 1], 10);
+    const lastChar = s[s.length - 1];
+    const digit = Number(lastChar);
+    return Number.isInteger(digit) && digit >= 0 && digit <= 9 ? digit : null;
 }
 
 function getApiData(message: any): any {
@@ -438,6 +450,7 @@ const OverUnderEngine: React.FC = observer(() => {
                 const pipSize = Number(tick.pip_size ?? (api_base as any).pip_sizes?.[sym]);
                 const priceStr = formatQuote(tick.quote, pipSize);
                 const d        = getLastDigit(priceStr);
+                if (d === null) return;
                 latestDigitRef.current = d;
                 setDigits(prev  => { const n = [...prev,  d];        return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
                 setPrices(prev  => { const n = [...prev,  priceStr]; return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
