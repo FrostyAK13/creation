@@ -189,6 +189,9 @@ const OverUnderEngine: React.FC = observer(() => {
     const msgSub           = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveSub       = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveTickId    = useRef<string | null>(null);
+    // Set to true when stopPassiveSub is called before the subscription ID has
+    // arrived — signals that the next resolved ID must be immediately forgotten.
+    const pendingForget    = useRef<boolean>(false);
     const fireRoundRef     = useRef<() => void>(() => {});
     const symbolRef        = useRef(symbol);
     const latestDigitRef   = useRef<number | null>(null);   // always the most recent tick digit
@@ -237,6 +240,10 @@ const OverUnderEngine: React.FC = observer(() => {
         if (passiveTickId.current && api_base.api) {
             try { (api_base.api as any).send({ forget: passiveTickId.current }); } catch { /* ignore */ }
             passiveTickId.current = null;
+        } else {
+            // The subscription ID hasn't arrived yet — flag it so startPassiveSub
+            // can forget the server-side subscription as soon as the ID resolves.
+            pendingForget.current = true;
         }
         if (passiveSub.current) { passiveSub.current.unsubscribe(); passiveSub.current = null; }
     }, []);
@@ -437,6 +444,7 @@ const OverUnderEngine: React.FC = observer(() => {
 
     const startPassiveSub = useCallback(async (sym: string) => {
         if (!api_base.api) return;
+        pendingForget.current = false; // reset before stopping so stopPassiveSub can set it fresh
         stopPassiveSub();
         setDigits([]);
         setPrices([]);
@@ -471,7 +479,19 @@ const OverUnderEngine: React.FC = observer(() => {
 
         try {
             const r = await (api_base.api as any).send({ ticks: sym, subscribe: 1 });
-            passiveTickId.current = r?.subscription?.id ?? null;
+            const subId = r?.subscription?.id ?? null;
+            if (pendingForget.current) {
+                // stopPassiveSub was called while we were waiting for this ID —
+                // the Rx subscription is already gone, but the server-side
+                // subscription is still live. Forget it immediately so we don't
+                // accumulate duplicate server subscriptions.
+                pendingForget.current = false;
+                if (subId && api_base.api) {
+                    try { (api_base.api as any).send({ forget: subId }); } catch { /* ignore */ }
+                }
+            } else {
+                passiveTickId.current = subId;
+            }
         } catch {
             // Do not leave a dead Rx subscription behind; the readiness poll
             // below can retry once the API connection is available.
