@@ -1114,7 +1114,12 @@
 
         // ── digit strip ────────────────────────────────────────────────────
         &__digit { width: 1.4rem; height: 1.4rem; font-size: 0.9rem; }
-        &__tick-price { font-size: 0.75rem; }
+
+        // Hide the price text on mobile — showing price+digit columns causes
+        // alternating price/circle rows when wrapping, which looks like
+        // duplicate digits. Circles-only is cleaner and avoids confusion.
+        &__tick-price { display: none; }
+
         &__digit-legend { font-size: 0.75rem; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.2rem; }
         &__entry-waiting { font-size: 1rem; padding: 0.35rem 0.6rem; flex-wrap: wrap; }
 
