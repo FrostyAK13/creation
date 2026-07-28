@@ -1059,6 +1059,13 @@
         margin-inline: 0;
         -webkit-overflow-scrolling: touch;
 
+        // The tab panel sets height:100% on direct children, which pins .oue
+        // to the viewport height. Make it scroll internally so the user can
+        // reach the Start Engine button by swiping up.
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+
         // ── header / title ─────────────────────────────────────────────────
         &__header { padding: 0.5rem 0.65rem; }
 
