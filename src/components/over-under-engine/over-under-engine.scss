@@ -1257,6 +1257,13 @@ body.theme--light {
             }
         }
 
+        // On mobile the header must grow to show all wrapped digit rows — the
+        // shimmer ::after is position:absolute so it stays contained even with
+        // overflow:visible on the parent.
+        @media (max-width: 640px) {
+            .oue__header { overflow: visible; }
+        }
+
         // ── panels keep their semantic over/under colors ─────────────────────
         .oue__panel {
             background: linear-gradient(145deg, #ffffff 0%, #f4fbff 100%);
@@ -1415,6 +1422,13 @@ body.theme--dark {
                 border-color: rgb(6 182 212 / 40%);
                 box-shadow: 0 4px 28px rgb(0 0 0 / 50%), 0 0 0 1px rgb(6 182 212 / 10%), inset 0 1px 0 rgb(6 182 212 / 12%);
             }
+        }
+
+        // On mobile the header must grow to show all wrapped digit rows — the
+        // shimmer ::after is position:absolute so it stays contained even with
+        // overflow:visible on the parent.
+        @media (max-width: 640px) {
+            .oue__header { overflow: visible; }
         }
 
         // ── panels ──────────────────────────────────────────────────────────
