@@ -61,6 +61,10 @@
     width: 100%;
     margin-inline: auto;
 
+    // Fill the full tab-content height so nothing is wasted below the controls.
+    height: 100%;
+    min-height: 0;
+
     // Keep the engine anchored to the left on laptop/desktop screens instead
     // of centering the fixed-width panel in the tab content.
     @media (min-width: 641px) {
@@ -75,6 +79,12 @@
         border-radius: 8px;
         padding: 0.7rem 0.9rem;
         border: 1px solid var(--general-section-2);
+
+        // Grow to fill all space the fixed-height siblings leave behind.
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     &__title {
@@ -108,7 +118,17 @@
         flex-wrap: wrap;
         gap: 0.3rem;
         min-height: 2rem;
-        align-items: center;
+        align-items: flex-start;
+        align-content: flex-start;
+
+        // Grow to fill all space the title/legend leave behind inside the header.
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 0.4rem;
+
+        &::-webkit-scrollbar       { width: 4px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 15%); border-radius: 2px; }
     }
 
     &__digit-empty {
