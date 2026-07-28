@@ -1066,6 +1066,11 @@
         overflow-y: auto;
         overflow-x: hidden;
 
+        // The fixed "Run / Bot is not running" bar at the bottom of the mobile
+        // screen is ~5rem tall. Add clearance so the Start Engine button is
+        // fully visible when the user scrolls to the bottom.
+        padding-bottom: 6rem;
+
         // ── header / title ─────────────────────────────────────────────────
         &__header { padding: 0.5rem 0.65rem; }
 
