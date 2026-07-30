@@ -8,14 +8,15 @@ import { LabelPairedCircleStarCaptionBoldIcon } from '@deriv/quill-icons/LabelPa
 import { Localize } from '@deriv-com/translations';
 import './free-bots.scss';
 
-type MiniTab = 'NORMAL' | 'PREMIUM' | 'CLASSICS';
+type MiniTab = 'NORMAL' | 'PREMIUM' | 'CLASSICS' | 'FROSTY_OLD';
 
-const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM', 'CLASSICS'];
+const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM', 'CLASSICS', 'FROSTY_OLD'];
 
 const TAB_LABELS: Record<MiniTab, string> = {
     NORMAL: 'NORMAL',
     PREMIUM: 'PREMIUM',
     CLASSICS: 'CLASSICS',
+    FROSTY_OLD: 'FROSTY OLD BOTS',
 };
 
 const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
@@ -30,6 +31,10 @@ const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
     CLASSICS: {
         badge: '🏛️',
         cardBorder: 'linear-gradient(135deg, #cd7f32 0%, #8b4513 50%, #cd7f32 100%)',
+    },
+    FROSTY_OLD: {
+        badge: '⚡',
+        cardBorder: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #a78bfa 100%)',
     },
 };
 
@@ -146,6 +151,63 @@ const FREE_BOTS: BotEntry[] = [
         name: 'Frosty Tick Scalper',
         description: 'Trades Rise (CALL) on every single tick of Volatility 100 (1s). Doubles stake on loss (martingale ×2) and resets on win. Stops automatically when take-profit or stop-loss is hit.',
         tab: 'NORMAL',
+        difficulty: 'Beginner',
+    },
+    // ─── FROSTY OLD BOTS ─────────────────────────────────────────────────────────
+    {
+        id: 'frosty_old_even_odd_shifter',
+        xml_file: 'frosty_old_even_odd_shifter',
+        name: 'Even/Odd Shifter',
+        description: 'Classic Even/Odd strategy that shifts trade direction after each loss. Configurable stake, take-profit, and stop-loss with smooth martingale recovery.',
+        tab: 'FROSTY_OLD',
+        difficulty: 'Beginner',
+    },
+    {
+        id: 'frosty_old_speed_bot',
+        xml_file: 'frosty_old_speed_bot',
+        name: 'Speed Bot ⚡',
+        description: 'High-speed digit strategy built for rapid trade execution on Volatility indices. Lightweight logic with take-profit and stop-loss controls.',
+        tab: 'FROSTY_OLD',
+        difficulty: 'Beginner',
+    },
+    {
+        id: 'frosty_old_auto_c4_volt_2',
+        xml_file: 'frosty_old_auto_c4_volt_2',
+        name: 'Auto C4 Volt 2 ⚡',
+        description: 'Automated C4 Volt version 2 — multi-condition entry strategy with systematic recovery and configurable stake management on Volatility indices.',
+        tab: 'FROSTY_OLD',
+        difficulty: 'Intermediate',
+    },
+    {
+        id: 'frosty_old_under_9_spike',
+        xml_file: 'frosty_old_under_9_spike',
+        name: 'Under 9 Spike ⚡',
+        description: 'Digit-under-9 spike strategy targeting high-probability entry windows. Features multi-level martingale recovery and configurable profit and loss limits.',
+        tab: 'FROSTY_OLD',
+        difficulty: 'Intermediate',
+    },
+    {
+        id: 'frosty_old_entry_point',
+        xml_file: 'frosty_old_entry_point',
+        name: 'Entry Point Frosty 👉',
+        description: 'Entry-point precision strategy that waits for the optimal digit signal before trading. Configurable entry digit, stake, take-profit, and stop-loss.',
+        tab: 'FROSTY_OLD',
+        difficulty: 'Intermediate',
+    },
+    {
+        id: 'frosty_old_over_under_digit_flow',
+        xml_file: 'frosty_old_over_under_digit_flow',
+        name: 'Over/Under Digit Flow',
+        description: 'Updated Over/Under digit flow strategy tracking digit patterns to time trades. Adaptive entry logic with martingale recovery and configurable thresholds.',
+        tab: 'FROSTY_OLD',
+        difficulty: 'Advanced',
+    },
+    {
+        id: 'frosty_old_alpha_version',
+        xml_file: 'frosty_old_alpha_version',
+        name: 'Alpha Version',
+        description: 'The original Frosty Alpha — one of the earliest Frosty strategies. A foundational Over/Under bot with core martingale recovery and basic take-profit and stop-loss logic.',
+        tab: 'FROSTY_OLD',
         difficulty: 'Beginner',
     },
     // ─── CLASSICS ────────────────────────────────────────────────────────────────
@@ -285,7 +347,7 @@ const FreeBots = observer(() => {
                         return (
                             <div
                                 key={bot.id}
-                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card--classics' : ' free-bots__card--normal-tab'}`}
+                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card--classics' : bot.tab === 'FROSTY_OLD' ? ' free-bots__card--frosty-old' : ' free-bots__card--normal-tab'}`}
                                 style={{ '--card-border': cfg.cardBorder } as React.CSSProperties}
                             >
                                 <div className='free-bots__card-icon-row'>
@@ -296,10 +358,12 @@ const FreeBots = observer(() => {
                                         className='free-bots__card-special-tag'
                                         style={
                                             bot.tab === 'PREMIUM'
-                                                ? { color: '#f7a800', background: 'rgb(247 168 0 / 12%)', borderColor: '#f7a800' + '40' }
+                                                ? { color: '#f7a800', background: 'rgb(247 168 0 / 12%)', borderColor: '#f7a80040' }
                                                 : bot.tab === 'CLASSICS'
                                                 ? { color: '#cd7f32', background: 'rgb(205 127 50 / 12%)', borderColor: '#cd7f3240' }
-                                                : { color: '#3b82f6', background: 'rgb(59 130 246 / 12%)', borderColor: '#3b82f6' + '40' }
+                                                : bot.tab === 'FROSTY_OLD'
+                                                ? { color: '#a78bfa', background: 'rgb(167 139 250 / 12%)', borderColor: '#a78bfa40' }
+                                                : { color: '#3b82f6', background: 'rgb(59 130 246 / 12%)', borderColor: '#3b82f640' }
                                         }
                                     >
                                         <span>{cfg.badge}</span>
@@ -320,7 +384,7 @@ const FreeBots = observer(() => {
                                     <p className='free-bots__card-description'>{bot.description}</p>
                                 </div>
                                 <button
-                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card-btn--classics' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
+                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card-btn--classics' : bot.tab === 'FROSTY_OLD' ? ' free-bots__card-btn--frosty-old' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
                                     onClick={() => handleImport(bot)}
                                     disabled={is_loading}
                                 >
