@@ -113,7 +113,7 @@ const DigitMatcher: React.FC = () => {
         if (id && api_base.api) {
             try {
                 (api_base.api as any).send({ forget: id });
-            } catch {
+            } catch (_e) {
                 // ignore
             }
         }
@@ -123,7 +123,7 @@ const DigitMatcher: React.FC = () => {
         if (passiveTickId.current && api_base.api) {
             try {
                 (api_base.api as any).send({ forget: passiveTickId.current });
-            } catch {
+            } catch (_e) {
                 // ignore
             }
             passiveTickId.current = null;
@@ -207,12 +207,12 @@ const DigitMatcher: React.FC = () => {
                                     status: 'open',
                                     date_start: buy.date_start ?? Math.floor(Date.now() / 1000),
                                 }, ...prev].slice(0, 5));
-                            } catch {
+                            } catch (_e) {
                                 // ignore
                             }
                             try {
                                 run_panel.setContractStage(contract_stages.PURCHASE_SENT);
-                            } catch {
+                            } catch (_e) {
                                 // ignore when store not present
                             }
                         }).catch(() => {
@@ -220,7 +220,7 @@ const DigitMatcher: React.FC = () => {
                         });
                     }
                 }
-            } catch {
+            } catch (_e) {
                 // defensive: swallow errors to avoid breaking tick stream
             }
         });
@@ -232,7 +232,7 @@ const DigitMatcher: React.FC = () => {
             } else if (response?.subscription?.id) {
                 passiveTickId.current = response.subscription.id;
             }
-        } catch {
+        } catch (_e) {
             setStatusMsg(localize('Unable to subscribe to ticks.')); 
         }
     }, [forgetId]);
@@ -267,7 +267,7 @@ const DigitMatcher: React.FC = () => {
                 run_panel?.setIsRunning(false);
                 run_panel?.setContractStage(contract_stages.NOT_RUNNING);
                 (ui as any)?.setPromptHandler?.(false);
-            } catch {
+            } catch (_e) {
                 // ignore cleanup errors
             }
         };
@@ -291,7 +291,7 @@ const DigitMatcher: React.FC = () => {
                 run_panel.setActiveTabIndex(1);
                 // invoke store stop which handles clearing/stop flow
                 if (typeof run_panel.onStopBotClick === 'function') run_panel.onStopBotClick();
-            } catch {
+            } catch (_e) {
                 // ignore store stop failures
             }
             setIsRunning(false);
@@ -315,7 +315,7 @@ const DigitMatcher: React.FC = () => {
                 localize('Account switching is disabled while your bot is running. Please stop your bot before switching accounts.')
             );
             (ui as any)?.setPromptHandler?.(true);
-        } catch {
+} catch (_e) {
             // ignore when stores are not available
         }
 
@@ -342,7 +342,7 @@ const DigitMatcher: React.FC = () => {
                                 return prev.map((t) => (t.contract_id === poc.contract_id ? { ...t, status: poc.status, profit: poc.profit } : t));
                             });
                             run_panel.setContractStage(contract_stages.CONTRACT_CLOSED);
-                        } catch {
+                        } catch (_e) {
                             // ignore
                         }
                     }
