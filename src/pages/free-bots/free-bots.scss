@@ -867,6 +867,12 @@
             }
         }
 
+        &--evenodd {
+            &::before {
+                background: linear-gradient(135deg, #f7c53b 0%, #06b6d4 50%, #f7c53b 100%);
+            }
+        }
+
         &--normal {
             &::before {
                 background: linear-gradient(135deg, #f7c53b 0%, #3b82f6 50%, #f7c53b 100%);

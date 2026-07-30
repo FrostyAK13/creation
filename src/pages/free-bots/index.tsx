@@ -328,7 +328,7 @@ const FreeBots = observer(() => {
                 {MINI_TABS.map(tab => (
                     <button
                         key={tab}
-                        className={`free-bots__mini-tab${activeTab === tab ? ' free-bots__mini-tab--active' : ''}${tab === 'ENGINE' ? ' free-bots__mini-tab--engine' : ''}`}
+                        className={`free-bots__mini-tab${activeTab === tab ? ' free-bots__mini-tab--active' : ''}`}
                         onClick={() => setActiveTab(tab)}
                     >
                         <span className='free-bots__mini-tab-badge'>{TAB_CONFIG[tab].badge}</span>
@@ -337,9 +337,7 @@ const FreeBots = observer(() => {
                 ))}
             </div>
 
-            {activeTab === 'ENGINE' ? (
-                <OverUnderEngine />
-            ) : visible_bots.length > 0 ? (
+            {visible_bots.length > 0 ? (
                 <div className='free-bots__grid'>
                     {visible_bots.map(bot => {
                         const is_loading = importing === bot.id;
@@ -347,7 +345,7 @@ const FreeBots = observer(() => {
                         return (
                             <div
                                 key={bot.id}
-                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card--classics' : bot.tab === 'FROSTY_OLD' ? ' free-bots__card--frosty-old' : ' free-bots__card--normal-tab'}`}
+                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card--classics' : ' free-bots__card--normal-tab'}`}
                                 style={{ '--card-border': cfg.cardBorder } as React.CSSProperties}
                             >
                                 <div className='free-bots__card-icon-row'>
@@ -361,8 +359,6 @@ const FreeBots = observer(() => {
                                                 ? { color: '#f7a800', background: 'rgb(247 168 0 / 12%)', borderColor: '#f7a80040' }
                                                 : bot.tab === 'CLASSICS'
                                                 ? { color: '#cd7f32', background: 'rgb(205 127 50 / 12%)', borderColor: '#cd7f3240' }
-                                                : bot.tab === 'FROSTY_OLD'
-                                                ? { color: '#a78bfa', background: 'rgb(167 139 250 / 12%)', borderColor: '#a78bfa40' }
                                                 : { color: '#3b82f6', background: 'rgb(59 130 246 / 12%)', borderColor: '#3b82f640' }
                                         }
                                     >
@@ -384,7 +380,7 @@ const FreeBots = observer(() => {
                                     <p className='free-bots__card-description'>{bot.description}</p>
                                 </div>
                                 <button
-                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card-btn--classics' : bot.tab === 'FROSTY_OLD' ? ' free-bots__card-btn--frosty-old' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
+                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card-btn--classics' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
                                     onClick={() => handleImport(bot)}
                                     disabled={is_loading}
                                 >
