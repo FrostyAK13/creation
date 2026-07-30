@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton';
 import { localize } from '@deriv-com/translations';
+import { useStore } from '@/hooks/useStore';
+import { contract_stages } from '@/constants/contract-stage';
 import './digit-matcher.scss';
 
 const DIGITS = Array.from({ length: 10 }, (_, i) => i);
@@ -48,7 +50,9 @@ function getLastDigit(quote: number | string, pipSize?: number): number | null {
     return Number.isInteger(digit) && digit >= 0 && digit <= 9 ? digit : null;
 }
 
+
 const DigitMatcher: React.FC = () => {
+    const { client, transactions, run_panel, summary_card, ui } = useStore();
     const [symbol, setSymbol] = useState('1HZ10V');
     const [marketOpen, setMarketOpen] = useState(false);
     const [digits, setDigits] = useState<number[]>([]);
@@ -59,12 +63,15 @@ const DigitMatcher: React.FC = () => {
     const [statusMsg, setStatusMsg] = useState(localize('Connecting to live Deriv ticks…'));
     const [isRunning, setIsRunning] = useState(true);
     const [stake, setStake] = useState<number>(0.5);
+    const [recentTrades, setRecentTrades] = useState<any[]>([]);
     const windowSize = MAX_DIGITS;
 
     const passiveSub = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveTickId = useRef<string | null>(null);
     const passiveApiRef = useRef<any>(null);
     const pendingForget = useRef<boolean>(false);
+    const msgSub = useRef<{ unsubscribe: () => void } | null>(null);
+    const lastBuyTickRef = useRef<number | null>(null);
     const marketTriggerRef = useRef<HTMLButtonElement>(null);
     const marketDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -133,6 +140,74 @@ const DigitMatcher: React.FC = () => {
             setLatestPrice(quote);
             setCurrentDigit(digit);
             setStatusMsg(localize('Live tick stream active'));
+
+            // Auto-place a buy when engine is running and digit matches selection
+            try {
+                if (isRunning && selectedDigits.has(digit) && api_base.api) {
+                    // avoid multiple buys for the same tick epoch
+                    if (lastBuyTickRef.current !== (tick.epoch ?? tick.time)) {
+                        lastBuyTickRef.current = tick.epoch ?? tick.time ?? Date.now();
+                        const api = api_base.api as any;
+                        const currency = (api_base as any).account_info?.currency || (client as any)?.currency || 'USD';
+                        const makeBuy = (contract_type: string, barrier: string, amount: number) => ({
+                            buy: '1',
+                            price: amount,
+                            parameters: {
+                                amount,
+                                basis: 'stake',
+                                contract_type,
+                                currency,
+                                duration: 1,
+                                duration_unit: 't',
+                                barrier,
+                                underlying_symbol: sym,
+                            },
+                        });
+
+                        api.send(makeBuy('DIGITMATCH', String(digit), stake)).then((res: any) => {
+                            const buy = res?.buy;
+                            if (!buy?.contract_id) return;
+                            transactions.onBotContractEvent({
+                                ...buy,
+                                contract_id: buy.contract_id,
+                                contract_type: 'DIGITMATCH',
+                                barrier: String(digit),
+                                underlying_symbol: sym,
+                                currency: buy.currency ?? currency,
+                                buy_price: buy.buy_price ?? stake,
+                                date_start: buy.date_start ?? buy.purchase_time ?? Math.floor(Date.now() / 1000),
+                                status: 'open',
+                                profit: 0,
+                                transaction_ids: {
+                                    ...(buy.transaction_ids ?? {}),
+                                    buy: buy.transaction_id ?? buy.transaction_ids?.buy ?? buy.contract_id,
+                                },
+                            } as any);
+                            // Add to local recent trades list
+                            try {
+                                setRecentTrades((prev) => [{
+                                    contract_id: buy.contract_id,
+                                    barrier: String(digit),
+                                    buy_price: buy.buy_price ?? stake,
+                                    status: 'open',
+                                    date_start: buy.date_start ?? Math.floor(Date.now() / 1000),
+                                }, ...prev].slice(0, 5));
+                            } catch {
+                                // ignore
+                            }
+                            try {
+                                run_panel.setContractStage(contract_stages.PURCHASE_SENT);
+                            } catch {
+                                // ignore when store not present
+                            }
+                        }).catch(() => {
+                            // ignore buy failure
+                        });
+                    }
+                }
+            } catch {
+                // defensive: swallow errors to avoid breaking tick stream
+            }
         });
 
         try {
@@ -172,6 +247,20 @@ const DigitMatcher: React.FC = () => {
 
     useEffect(() => () => stopPassiveSub(), [stopPassiveSub]);
 
+    useEffect(() => {
+        return () => {
+            try {
+                stopPassiveSub();
+                if (msgSub.current) msgSub.current.unsubscribe();
+                run_panel?.setIsRunning(false);
+                run_panel?.setContractStage(contract_stages.NOT_RUNNING);
+                (ui as any)?.setPromptHandler?.(false);
+            } catch {
+                // ignore cleanup errors
+            }
+        };
+    }, [stopPassiveSub, run_panel, ui]);
+
     const toggleDigit = useCallback((digit: number) => {
         setSelectedDigits((current) => {
             const next = new Set(current);
@@ -194,9 +283,48 @@ const DigitMatcher: React.FC = () => {
             return;
         }
 
+        // Mirror run-panel start: activate global running state and open drawer
+        try {
+            run_panel.run_id = `run-${Date.now()}`;
+            summary_card.clear();
+            run_panel.setIsRunning(true);
+            run_panel.setContractStage(contract_stages.STARTING);
+            run_panel.toggleDrawer(true);
+            (ui as any)?.setAccountSwitcherDisabledMessage?.(
+                localize('Account switching is disabled while your bot is running. Please stop your bot before switching accounts.')
+            );
+            (ui as any)?.setPromptHandler?.(true);
+        } catch {
+            // ignore when stores are not available
+        }
+
         setIsRunning(true);
         setStatusMsg(localize('Analyzer running... loading latest ticks.'));
-    }, [isRunning, stopPassiveSub]);
+
+        // Listen for settled contract events and push to transactions
+        if (msgSub.current) msgSub.current.unsubscribe();
+        if ((api_base as any).onMessage) {
+            msgSub.current = (api_base.api as any).onMessage().subscribe((m: any) => {
+                const data = m?.data ?? m;
+                if (data?.msg_type === 'proposal_open_contract' && data.proposal_open_contract) {
+                    const poc = data.proposal_open_contract;
+                    // Push settled contract into the shared Transactions widget
+                    if (poc.status === 'won' || poc.status === 'lost') {
+                        transactions.onBotContractEvent(poc);
+                        // update recent trades
+                        try {
+                            setRecentTrades((prev) => {
+                                return prev.map((t) => (t.contract_id === poc.contract_id ? { ...t, status: poc.status, profit: poc.profit } : t));
+                            });
+                            run_panel.setContractStage(contract_stages.CONTRACT_CLOSED);
+                        } catch {
+                            // ignore
+                        }
+                    }
+                }
+            });
+        }
+    }, [isRunning, stopPassiveSub, run_panel, summary_card, ui, transactions]);
 
     const selectedList = useMemo<number[]>(
         () => [...selectedDigits].sort((a, b) => a - b),
@@ -304,6 +432,25 @@ const DigitMatcher: React.FC = () => {
                             <div className='dm__legend-item dm__legend-item--bottom1'>
                                 <span className='dm__legend-swatch' />
                                 {localize('Least frequent')}
+                            </div>
+                        </div>
+                        <div className='dm__recent-trades'>
+                            <div className='dm__recent-trades-title'>
+                                {localize('Recent trades')}
+                            </div>
+                            <div className='dm__recent-trades-list'>
+                                {recentTrades.length === 0 && (
+                                    <div className='dm__placeholder'>{localize('No recent trades')}</div>
+                                )}
+                                {recentTrades.map((t) => (
+                                    <div key={t.contract_id} className='dm__recent-trade'>
+                                        <div className='dm__recent-trade-line'>
+                                            <span className='dm__recent-trade-barrier'>{t.barrier}</span>
+                                            <span className='dm__recent-trade-price'>{t.buy_price}</span>
+                                        </div>
+                                        <div className='dm__recent-trade-status'>{t.status}{t.profit ? ` • ${t.profit}` : ''}</div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                         <div className='dm__digit-grid dm__digit-grid--sidebar'>
