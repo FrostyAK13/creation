@@ -214,6 +214,10 @@
     overflow-y: auto;
     box-sizing: border-box;
 
+    @include mobile-screen {
+        padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0));
+    }
+
     &__header {
         margin-bottom: 2.4rem;
         position: relative;
@@ -324,6 +328,7 @@
 
     @include mobile-screen {
         padding: 1rem;
+        padding-bottom: 6.5rem;
 
         &__mini-tabs {
             display: flex;
@@ -357,12 +362,17 @@
         &__grid {
             grid-template-columns: 1fr;
             gap: 0.9rem;
-            padding-bottom: 1.5rem;
+            padding-bottom: 1rem;
         }
 
         &__card {
             min-width: 0;
             padding: 0.75rem;
+            margin-bottom: 0.5rem;
+
+            &:last-child {
+                margin-bottom: 1rem;
+            }
 
             &-icon-row,
             &-top {
