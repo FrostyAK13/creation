@@ -1,3 +1,5 @@
+@use 'components/shared/styles/devices' as *;
+
 @property --p-angle {
     syntax: '<angle>';
     initial-value: 0deg;
@@ -15,8 +17,6 @@
     initial-value: 0deg;
     inherits: false;
 }
-
-@use 'components/shared/styles/devices' as *;
 
 @property --fo-angle {
     syntax: '<angle>';
