@@ -53,6 +53,8 @@ const DigitMatcher: React.FC = () => {
     const [marketOpen, setMarketOpen] = useState(false);
     const [digits, setDigits] = useState<number[]>([]);
     const [prices, setPrices] = useState<string[]>([]);
+    const [latestPrice, setLatestPrice] = useState<string | null>(null);
+    const [currentDigit, setCurrentDigit] = useState<number | null>(null);
     const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set([4, 5]));
     const [statusMsg, setStatusMsg] = useState(localize('Waiting for live ticks…'));
 
@@ -125,6 +127,8 @@ const DigitMatcher: React.FC = () => {
 
             setDigits((current) => [digit, ...current].slice(0, MAX_DIGITS));
             setPrices((current) => [quote, ...current].slice(0, MAX_DIGITS));
+            setLatestPrice(quote);
+            setCurrentDigit(digit);
             setStatusMsg(localize('Live tick stream active'));
         });
 
@@ -175,15 +179,34 @@ const DigitMatcher: React.FC = () => {
         () => digits.filter((digit) => selectedDigits.has(digit)).length,
         [digits, selectedDigits],
     );
+    const digitCounts = useMemo(() => {
+        const counts = Array.from({ length: 10 }, () => 0);
+        digits.forEach((digit) => { counts[digit] += 1; });
+        return counts;
+    }, [digits]);
+    const digitPercents = useMemo(
+        () => digits.length ? digitCounts.map((count) => Math.round((count / digits.length) * 1000) / 10) : Array(10).fill(0),
+        [digitCounts, digits.length],
+    );
 
     return (
         <div className='dm'>
             <div className='dm__header'>
                 <div className='dm__title'>{localize('Digit Matcher')}</div>
                 <div className='dm__description'>
-                    {localize('Select one or more digits and compare them against the most recent live tick stream.')}
+                    {localize('Select digits and watch the cursor move to the digit formed by the latest ticks.')}
                 </div>
                 <div className='dm__status'>{statusMsg}</div>
+            </div>
+
+            <div className='dm__hero'>
+                <div className='dm__hero-market'>{activeMarket.short}</div>
+                <div className='dm__hero-price'>{latestPrice ?? '—'}</div>
+                <div className='dm__hero-meta'>
+                    <span>{localize('Analyze window')}</span>
+                    <strong>{digits.length}</strong>
+                    <span>{localize('ticks')}</span>
+                </div>
             </div>
 
             <div className='dm__row'>
@@ -242,35 +265,26 @@ const DigitMatcher: React.FC = () => {
             <div className='dm__digit-grid'>
                 {DIGITS.map((digit) => {
                     const isSelected = selectedDigits.has(digit);
+                    const percent = digitPercents[digit];
+                    const isCurrent = currentDigit === digit;
                     return (
                         <button
                             key={digit}
                             type='button'
-                            className={`dm__digit-button${isSelected ? ' dm__digit-button--selected' : ''}`}
+                            className={`dm__digit-button${isSelected ? ' dm__digit-button--selected' : ''}${isCurrent ? ' dm__digit-button--current' : ''}`}
                             onClick={() => toggleDigit(digit)}
                         >
-                            {digit}
+                            {isCurrent && <span className='dm__digit-cursor'>▼</span>}
+                            <span className='dm__digit-grid-number'>{digit}</span>
+                            <span className='dm__digit-grid-percent'>{percent.toFixed(1)}%</span>
                         </button>
                     );
                 })}
             </div>
 
-            <div className='dm__results'>
-                <div className='dm__results-title'>{localize('Recent Tick Digits')}</div>
-                <div className='dm__results-grid'>
-                    {digits.length === 0 ? (
-                        <div className='dm__placeholder'>{localize('No ticks yet')}</div>
-                    ) : digits.map((digit, index) => {
-                        const isSelected = selectedDigits.has(digit);
-                        const price = prices[index] ?? '';
-                        return (
-                            <div key={`${digit}-${index}`} className={`dm__result-card${isSelected ? ' dm__result-card--match' : ''}`}>
-                                <span className='dm__result-digit'>{digit}</span>
-                                <span className='dm__result-price'>{price}</span>
-                            </div>
-                        );
-                    })}
-                </div>
+            <div className='dm__selected-line'>
+                <span>{localize('Selected digits:')}</span>
+                <strong>{selectedList.length > 0 ? selectedList.join(', ') : localize('None')}</strong>
             </div>
         </div>
     );
