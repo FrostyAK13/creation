@@ -293,6 +293,26 @@ const DigitMatcher: React.FC = () => {
                                 {localize('Least frequent')}
                             </div>
                         </div>
+                        <div className='dm__digit-grid dm__digit-grid--sidebar'>
+                            {DIGITS.map((digit) => {
+                                const isSelected = selectedDigits.has(digit);
+                                const percent = digitPercents[digit];
+                                const isCurrent = currentDigit === digit;
+                                const rankClass = digitRanks[digit] ? ` dm__digit-button--${digitRanks[digit]}` : '';
+                                return (
+                                    <button
+                                        key={digit}
+                                        type='button'
+                                        className={`dm__digit-button${isSelected ? ' dm__digit-button--selected' : ''}${isCurrent ? ' dm__digit-button--current' : ''}${rankClass}`}
+                                        onClick={() => toggleDigit(digit)}
+                                    >
+                                        {isCurrent && <span className='dm__digit-cursor'>▼</span>}
+                                        <span className='dm__digit-grid-number'>{digit}</span>
+                                        <span className='dm__digit-grid-percent'>{percent.toFixed(1)}%</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </aside>
                 <section className='dm__main'>
@@ -346,26 +366,7 @@ const DigitMatcher: React.FC = () => {
                             <span className='dm__summary-value'>{matchedCount}</span>
                         </div>
                     </div>
-                    <div className='dm__digit-grid'>
-                        {DIGITS.map((digit) => {
-                            const isSelected = selectedDigits.has(digit);
-                            const percent = digitPercents[digit];
-                            const isCurrent = currentDigit === digit;
-                            const rankClass = digitRanks[digit] ? ` dm__digit-button--${digitRanks[digit]}` : '';
-                            return (
-                                <button
-                                    key={digit}
-                                    type='button'
-                                    className={`dm__digit-button${isSelected ? ' dm__digit-button--selected' : ''}${isCurrent ? ' dm__digit-button--current' : ''}${rankClass}`}
-                                    onClick={() => toggleDigit(digit)}
-                                >
-                                    {isCurrent && <span className='dm__digit-cursor'>▼</span>}
-                                    <span className='dm__digit-grid-number'>{digit}</span>
-                                    <span className='dm__digit-grid-percent'>{percent.toFixed(1)}%</span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                    {/* digit grid moved to sidebar for left-fixed layout */}
 
                     <div className='dm__selected-line'>
                         <span>{localize('Selected digits:')}</span>
