@@ -52,6 +52,7 @@ import FreeBots from '../free-bots';
 import OverUnderEngine from '@/components/over-under-engine';
 import AnalysisTools from '../analysis';
 import CopyTrading from '../copy-trading';
+import DigitMatcher from '@/components/digit-matcher';
 import TradeAssistant from '../trade-assistant';
 import './main.scss';
 
@@ -89,7 +90,7 @@ const AppWrapper = observer(() => {
     const { clear } = summary_card;
     const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
     const init_render = React.useRef(true);
-    const hash = ['dashboard', 'bot_builder', 'free_bots', 'over_under_engine', 'd_circles', 'analysis_tool', 'market_analyzer', 'chart', 'trading_view', 'copy_trading', 'trade_assistant', 'analysis', 'tutorial'];
+    const hash = ['dashboard', 'bot_builder', 'free_bots', 'over_under_engine', 'd_circles', 'digit_matcher', 'analysis_tool', 'market_analyzer', 'chart', 'trading_view', 'copy_trading', 'trade_assistant', 'analysis', 'tutorial'];
     const { isDesktop } = useDevice();
     const location = useLocation();
     const navigate = useNavigate();
@@ -458,6 +459,22 @@ const AppWrapper = observer(() => {
                                     style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                                     allow='clipboard-read; clipboard-write'
                                 />
+                            </div>
+                            <div
+                                label={
+                                    <>
+                                        <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='var(--text-general)' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                                            <rect x='3' y='3' width='18' height='18' rx='3' />
+                                            <line x1='9' y1='8' x2='9' y2='16' />
+                                            <line x1='15' y1='8' x2='15' y2='16' />
+                                            <line x1='9' y1='12' x2='15' y2='12' />
+                                        </svg>
+                                        <Localize i18n_default_text='Digit Matcher' />
+                                    </>
+                                }
+                                id='id-digit-matcher'
+                            >
+                                <DigitMatcher />
                             </div>
                             <div
                                 label={

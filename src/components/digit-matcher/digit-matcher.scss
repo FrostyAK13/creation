@@ -1,0 +1,214 @@
+.dm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 100%;
+    padding: 1.6rem;
+    color: var(--text-general);
+}
+
+.dm__header {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.dm__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.dm__description,
+.dm__status {
+    color: var(--text-secondary);
+}
+
+.dm__row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.dm__market-selector {
+    position: relative;
+}
+
+.dm__market-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--general-section-1);
+    border: 1px solid rgb(59 130 246 / 0.45);
+    border-radius: 0.75rem;
+    color: var(--text-general);
+    font-weight: 600;
+}
+
+.dm__market-chevron {
+    font-size: 0.85rem;
+}
+
+.dm__market-dropdown {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 0;
+    width: 100%;
+    min-width: 260px;
+    background: var(--general-section-1);
+    border: 1px solid rgb(102 126 234 / 0.16);
+    border-radius: 1rem;
+    box-shadow: 0 18px 30px rgb(15 23 42 / 0.15);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.dm__market-category {
+    padding: 1rem 1.2rem 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+}
+
+.dm__market-list {
+    display: grid;
+}
+
+.dm__market-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-general);
+    text-align: left;
+    cursor: pointer;
+}
+
+.dm__market-row:hover,
+.dm__market-row--active {
+    background: rgb(15 23 42 / 0.35);
+}
+
+.dm__market-code {
+    display: grid;
+    gap: 0.15rem;
+    font-size: 0.95rem;
+}
+
+.dm__market-code-main {
+    font-weight: 700;
+}
+
+.dm__market-code-sub {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.dm__market-name {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.dm__summary {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.dm__summary-card {
+    min-width: 144px;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgb(15 23 42 / 0.3);
+    border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.dm__summary-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.dm__summary-value {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.dm__digit-grid {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.dm__digit-button {
+    min-height: 4rem;
+    background: rgb(15 23 42 / 0.24);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 1rem;
+    color: var(--text-general);
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dm__digit-button--selected {
+    border-color: #06b6d4;
+    background: rgb(6 182 212 / 0.12);
+}
+
+.dm__results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dm__results-title {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.dm__results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.dm__result-card {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgb(15 23 42 / 0.18);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    display: grid;
+    gap: 0.4rem;
+}
+
+.dm__result-card--match {
+    border-color: #22c55e;
+    background: rgb(16 185 129 / 0.12);
+}
+
+.dm__result-digit {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.dm__result-price {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.dm__placeholder {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: rgb(15 23 42 / 0.18);
+    color: var(--text-secondary);
+    text-align: center;
+}
