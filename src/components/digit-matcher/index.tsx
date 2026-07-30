@@ -60,18 +60,22 @@ const DigitMatcher: React.FC = () => {
     const [latestPrice, setLatestPrice] = useState<string | null>(null);
     const [currentDigit, setCurrentDigit] = useState<number | null>(null);
     const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set(DIGITS));
-    const [statusMsg, setStatusMsg] = useState(localize('Analyzer stopped. Click Start Engine to begin.'));
+    const [statusMsg, setStatusMsg] = useState(localize('Markets live. Click Start Engine to trade.'));
     const [isRunning, setIsRunning] = useState(false);
     const [stake, setStake] = useState<number>(0.5);
     const [recentTrades, setRecentTrades] = useState<any[]>([]);
     const windowSize = MAX_DIGITS;
 
+    const selectedDigitsRef = useRef(selectedDigits);
+    const isRunningRef = useRef(isRunning);
+    const stakeRef = useRef(stake);
     const passiveSub = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveTickId = useRef<string | null>(null);
     const passiveApiRef = useRef<any>(null);
     const pendingForget = useRef<boolean>(false);
     const msgSub = useRef<{ unsubscribe: () => void } | null>(null);
     const lastBuyTickRef = useRef<number | null>(null);
+    const tradePlacedRef = useRef(false);
     const marketTriggerRef = useRef<HTMLButtonElement>(null);
     const marketDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +84,18 @@ const DigitMatcher: React.FC = () => {
     const openMarket = useCallback(() => {
         setMarketOpen((open) => !open);
     }, []);
+
+    useEffect(() => {
+        selectedDigitsRef.current = selectedDigits;
+    }, [selectedDigits]);
+
+    useEffect(() => {
+        isRunningRef.current = isRunning;
+    }, [isRunning]);
+
+    useEffect(() => {
+        stakeRef.current = stake;
+    }, [stake]);
 
     useEffect(() => {
         if (!marketOpen) return;
@@ -141,30 +157,29 @@ const DigitMatcher: React.FC = () => {
             setCurrentDigit(digit);
             setStatusMsg(localize('Live tick stream active'));
 
-            // Auto-place a buy when engine is running and digit matches selection
+            // Auto-place a buy once per engine start when running and the digit matches selection
             try {
-                if (isRunning && selectedDigits.has(digit) && api_base.api) {
-                    // avoid multiple buys for the same tick epoch
-                    if (lastBuyTickRef.current !== (tick.epoch ?? tick.time)) {
-                        lastBuyTickRef.current = tick.epoch ?? tick.time ?? Date.now();
-                        const api = api_base.api as any;
-                        const currency = (api_base as any).account_info?.currency || (client as any)?.currency || 'USD';
-                        const makeBuy = (contract_type: string, barrier: string, amount: number) => ({
-                            buy: '1',
-                            price: amount,
-                            parameters: {
-                                amount,
-                                basis: 'stake',
-                                contract_type,
-                                currency,
-                                duration: 1,
-                                duration_unit: 't',
-                                barrier,
-                                underlying_symbol: sym,
-                            },
-                        });
+                if (isRunningRef.current && !tradePlacedRef.current && selectedDigitsRef.current.has(digit) && api_base.api) {
+                    tradePlacedRef.current = true;
+                    lastBuyTickRef.current = tick.epoch ?? tick.time ?? Date.now();
+                    const api = api_base.api as any;
+                    const currency = (api_base as any).account_info?.currency || (client as any)?.currency || 'USD';
+                    const makeBuy = (contract_type: string, barrier: string, amount: number) => ({
+                        buy: '1',
+                        price: amount,
+                        parameters: {
+                            amount,
+                            basis: 'stake',
+                            contract_type,
+                            currency,
+                            duration: 1,
+                            duration_unit: 't',
+                            barrier,
+                            underlying_symbol: sym,
+                        },
+                    });
 
-                        api.send(makeBuy('DIGITMATCH', String(digit), stake)).then((res: any) => {
+                    api.send(makeBuy('DIGITMATCH', String(digit), stakeRef.current)).then((res: any) => {
                             const buy = res?.buy;
                             if (!buy?.contract_id) return;
                             transactions.onBotContractEvent({
@@ -228,24 +243,21 @@ const DigitMatcher: React.FC = () => {
             return undefined;
         }
 
-        if (isRunning) {
-            startPassiveSub(symbol);
-        }
+        startPassiveSub(symbol);
 
         return () => stopPassiveSub();
-    }, [isRunning, symbol, startPassiveSub, stopPassiveSub]);
+    }, [symbol, startPassiveSub, stopPassiveSub]);
 
     useEffect(() => {
         const check = () => {
-            if (api_base.api && passiveApiRef.current !== api_base.api && isRunning) {
-                startPassiveSub(symbol);
-            }
-        };
-        const interval = window.setInterval(check, 3000);
-        return () => window.clearInterval(interval);
-    }, [startPassiveSub, symbol, isRunning]);
-
-    useEffect(() => () => stopPassiveSub(), [stopPassiveSub]);
+             const apiChanged = api_base.api && passiveApiRef.current !== api_base.api;
+             if (apiChanged) {
+                 startPassiveSub(symbol);
+             }
+         };
+         const interval = window.setInterval(check, 3000);
+         return () => window.clearInterval(interval);
+     }, [startPassiveSub, symbol]);
 
     useEffect(() => {
         return () => {
@@ -272,20 +284,18 @@ const DigitMatcher: React.FC = () => {
 
     const toggleRunning = useCallback(() => {
         if (isRunning) {
-            // mirror global stop behavior: stop local subs, notify run panel
+            // keep market subscription active; stop only trading and update run panel
             try {
-                stopPassiveSub();
                 // open run panel drawer and switch to Transactions
                 run_panel.toggleDrawer(true);
                 run_panel.setActiveTabIndex(1);
                 // invoke store stop which handles clearing/stop flow
                 if (typeof run_panel.onStopBotClick === 'function') run_panel.onStopBotClick();
             } catch {
-                // fall back to local stop
-                stopPassiveSub();
+                // ignore store stop failures
             }
             setIsRunning(false);
-            setStatusMsg(localize('Analyzer stopped.'));
+            setStatusMsg(localize('Markets live. Click Start Engine to trade.'));
             return;
         }
 
@@ -309,11 +319,15 @@ const DigitMatcher: React.FC = () => {
             // ignore when stores are not available
         }
 
+        tradePlacedRef.current = false;
         setIsRunning(true);
-        setStatusMsg(localize('Analyzer running... loading latest ticks.'));
+        setStatusMsg(localize('Analyzer running... awaiting trade signal.'));
 
         // Listen for settled contract events and push to transactions
-        if (msgSub.current) msgSub.current.unsubscribe();
+        if (msgSub.current) {
+            msgSub.current.unsubscribe();
+            msgSub.current = null;
+        }
         if ((api_base as any).onMessage) {
             msgSub.current = (api_base.api as any).onMessage().subscribe((m: any) => {
                 const data = m?.data ?? m;
