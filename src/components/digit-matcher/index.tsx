@@ -245,17 +245,16 @@ const DigitMatcher: React.FC = () => {
                 <div className='dm__status'>{statusMsg}</div>
             </div>
 
-            <div className='dm__hero'>
-                <div className='dm__hero-market'>{activeMarket.short}</div>
-                <div className='dm__hero-price'>{latestPrice ?? '—'}</div>
-                <div className='dm__hero-meta'>
-                    <span>{localize('Engine status')}</span>
-                    <strong>{isRunning ? localize('Running') : localize('Stopped')}</strong>
-                </div>
-            </div>
-
             <div className='dm__content'>
                 <aside className='dm__sidebar'>
+                    <div className='dm__hero dm__hero--sidebar'>
+                        <div className='dm__hero-market'>{activeMarket.short}</div>
+                        <div className='dm__hero-price'>{latestPrice ?? '—'}</div>
+                        <div className='dm__hero-meta'>
+                            <span>{localize('Engine status')}</span>
+                            <strong>{isRunning ? localize('Running') : localize('Stopped')}</strong>
+                        </div>
+                    </div>
                     <div className='dm__control-panel'>
                         <button
                             type='button'
