@@ -5,6 +5,7 @@ import { cleanupUrl, handleOAuthCallback } from '@/external/deriv-core';
 import EpicLoader from '@/components/loader/epic-loader';
 import LocalStorageSyncWrapper from '@/components/localStorage-sync-wrapper';
 import RoutePromptDialog from '@/components/route-prompt-dialog';
+import DevToolsGuard from '@/components/devtools-guard/devtools-guard';
 import { useAccountSwitching } from '@/hooks/useAccountSwitching';
 import { useLanguageFromURL } from '@/hooks/useLanguageFromURL';
 import { StoreProvider } from '@/hooks/useStore';
@@ -137,7 +138,11 @@ function App() {
         handleCallback();
     }, []);
 
-    return <RouterProvider router={router} />;
+    return (
+        <DevToolsGuard>
+            <RouterProvider router={router} />
+        </DevToolsGuard>
+    );
 }
 
 export default App;
