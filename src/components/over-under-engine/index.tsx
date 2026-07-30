@@ -761,6 +761,9 @@ const OverUnderEngine: React.FC = observer(() => {
                         {lastEntryDigit !== null && (
                             <span className='oue__entry-last'>Last entry: <strong>{lastEntryDigit}</strong></span>
                         )}
+                        {digits.length > 0 && (
+                            <span className='oue__entry-recent'>Recent: {digits.slice(-6).join(' ')}</span>
+                        )}
                     </div>
                 )}
             </div>
