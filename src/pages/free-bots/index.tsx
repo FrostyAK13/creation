@@ -8,14 +8,13 @@ import { LabelPairedCircleStarCaptionBoldIcon } from '@deriv/quill-icons/LabelPa
 import { Localize } from '@deriv-com/translations';
 import './free-bots.scss';
 
-type MiniTab = 'NORMAL' | 'PREMIUM' | 'CLASSICS';
+type MiniTab = 'NORMAL' | 'PREMIUM';
 
-const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM', 'CLASSICS'];
+const MINI_TABS: MiniTab[] = ['NORMAL', 'PREMIUM'];
 
 const TAB_LABELS: Record<MiniTab, string> = {
     NORMAL: 'NORMAL',
     PREMIUM: 'PREMIUM',
-    CLASSICS: 'CLASSICS',
 };
 
 const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
@@ -26,10 +25,6 @@ const TAB_CONFIG: Record<MiniTab, { badge: string; cardBorder: string }> = {
     PREMIUM: {
         badge: '👑',
         cardBorder: 'linear-gradient(135deg, #ffd700 0%, #ff9500 50%, #ffd700 100%)',
-    },
-    CLASSICS: {
-        badge: '🏛️',
-        cardBorder: 'linear-gradient(135deg, #cd7f32 0%, #8b4513 50%, #cd7f32 100%)',
     },
 };
 
@@ -50,7 +45,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 
 // ─── Add bots here ────────────────────────────────────────────────────────────
 // Each entry needs: id (unique), xml_file (filename in src/xml/ without .xml),
-// name, description, tab ('NORMAL' | 'PREMIUM' | 'CLASSICS'), difficulty ('Beginner' | 'Intermediate' | 'Advanced')
+// name, description, tab ('NORMAL' or 'PREMIUM'), difficulty ('Beginner' | 'Intermediate' | 'Advanced')
 const FREE_BOTS: BotEntry[] = [
     {
         id: 'frosty_entry_loop_premium',
@@ -148,63 +143,6 @@ const FREE_BOTS: BotEntry[] = [
         tab: 'NORMAL',
         difficulty: 'Beginner',
     },
-    // ─── CLASSICS ────────────────────────────────────────────────────────────────
-    {
-        id: 'classics_under_8_v2',
-        xml_file: 'classics_under_8_v2',
-        name: 'Under 8 V2',
-        description: 'Classic digit-under-8 strategy, version 2. Predicts the last digit will be under 8 on Volatility indices with optimised recovery logic and configurable stake management.',
-        tab: 'CLASSICS',
-        difficulty: 'Beginner',
-    },
-    {
-        id: 'classics_even_odd_combo',
-        xml_file: 'classics_even_odd_combo',
-        name: 'Even/Odd Combo',
-        description: 'Classic Even/Odd combination strategy that alternates between Even and Odd digit predictions. Features multi-condition entry logic and configurable recovery settings.',
-        tab: 'CLASSICS',
-        difficulty: 'Intermediate',
-    },
-    {
-        id: 'classics_high_low_tick_combo',
-        xml_file: 'classics_high_low_tick_combo',
-        name: 'High/Low Tick Combo',
-        description: 'Classic High/Low tick combination strategy trading higher and lower tick contracts. Uses adaptive entry conditions with take-profit and stop-loss controls.',
-        tab: 'CLASSICS',
-        difficulty: 'Intermediate',
-    },
-    {
-        id: 'classics_higher_lower_combo',
-        xml_file: 'classics_higher_lower_combo',
-        name: 'Higher/Lower Combo',
-        description: 'Classic Higher/Lower combination strategy trading rise and fall predictions on Volatility indices. Features combination entry logic with configurable stake and recovery.',
-        tab: 'CLASSICS',
-        difficulty: 'Intermediate',
-    },
-    {
-        id: 'classics_only_ups_and_down_combo',
-        xml_file: 'classics_only_ups_and_down_combo',
-        name: 'Only Ups & Downs Combo',
-        description: 'Classic Rise/Fall combination strategy targeting consistent upward and downward price movements. Includes multi-condition entry logic and automated recovery.',
-        tab: 'CLASSICS',
-        difficulty: 'Beginner',
-    },
-    {
-        id: 'classics_candle_mine_v5',
-        xml_file: 'classics_candle_mine_v5',
-        name: 'Candle Mine V5.1',
-        description: 'Community classic — Candle Mine Version 5.1. Uses candle-based entry conditions with advanced stake management and configurable profit and loss targets.',
-        tab: 'CLASSICS',
-        difficulty: 'Advanced',
-    },
-    {
-        id: 'classics_auto_c4_pro_under9',
-        xml_file: 'classics_auto_c4_pro_under9',
-        name: 'Auto C4 Pro — Under 9',
-        description: 'Auto C4 Pro 2 — classic automated Under-9 digit strategy with 6-level recovery. Predicts the last digit will be under 9 with systematic martingale recovery.',
-        tab: 'CLASSICS',
-        difficulty: 'Advanced',
-    },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -285,7 +223,7 @@ const FreeBots = observer(() => {
                         return (
                             <div
                                 key={bot.id}
-                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card--classics' : ' free-bots__card--normal-tab'}`}
+                                className={`free-bots__card${bot.tab === 'PREMIUM' ? ' free-bots__card--premium' : ' free-bots__card--normal-tab'}`}
                                 style={{ '--card-border': cfg.cardBorder } as React.CSSProperties}
                             >
                                 <div className='free-bots__card-icon-row'>
@@ -297,8 +235,6 @@ const FreeBots = observer(() => {
                                         style={
                                             bot.tab === 'PREMIUM'
                                                 ? { color: '#f7a800', background: 'rgb(247 168 0 / 12%)', borderColor: '#f7a800' + '40' }
-                                                : bot.tab === 'CLASSICS'
-                                                ? { color: '#cd7f32', background: 'rgb(205 127 50 / 12%)', borderColor: '#cd7f3240' }
                                                 : { color: '#3b82f6', background: 'rgb(59 130 246 / 12%)', borderColor: '#3b82f6' + '40' }
                                         }
                                     >
@@ -320,7 +256,7 @@ const FreeBots = observer(() => {
                                     <p className='free-bots__card-description'>{bot.description}</p>
                                 </div>
                                 <button
-                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : bot.tab === 'CLASSICS' ? ' free-bots__card-btn--classics' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
+                                    className={`free-bots__card-btn${bot.tab === 'PREMIUM' ? ' free-bots__card-btn--premium' : ' free-bots__card-btn--normal-tab'}${is_loading ? ' free-bots__card-btn--loading' : ''}`}
                                     onClick={() => handleImport(bot)}
                                     disabled={is_loading}
                                 >

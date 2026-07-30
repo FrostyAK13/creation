@@ -10,12 +10,6 @@
     inherits: false;
 }
 
-@property --c-angle {
-    syntax: '<angle>';
-    initial-value: 0deg;
-    inherits: false;
-}
-
 @keyframes shimmer {
     0% { background-position: -200% center; }
     100% { background-position: 200% center; }
@@ -80,43 +74,6 @@
             0 0 36px 8px rgb(6 182 212 / 18%),
             0 10px 36px rgb(0 0 0 / 60%);
     }
-}
-
-@keyframes classics-spin {
-    to { --c-angle: 360deg; }
-}
-
-@keyframes classics-pulse {
-    0%, 100% {
-        box-shadow:
-            0 0 0 0 rgb(205 127 50 / 0%),
-            0 0 18px 2px rgb(139 69 19 / 8%),
-            0 4px 20px rgb(0 0 0 / 50%);
-    }
-    50% {
-        box-shadow:
-            0 0 0 5px rgb(205 127 50 / 10%),
-            0 0 36px 8px rgb(139 69 19 / 20%),
-            0 10px 36px rgb(0 0 0 / 60%);
-    }
-}
-
-@keyframes classics-badge-pulse {
-    0%, 60%, 100% { transform: scale(1) rotate(0deg); }
-    30% { transform: scale(1.12) rotate(-6deg); }
-    45% { transform: scale(1.05) rotate(4deg); }
-}
-
-@keyframes bronze-shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-}
-
-@keyframes bronze-foil-sweep {
-    0%   { opacity: 0; transform: translateX(-150%) skewX(-20deg); }
-    15%  { opacity: 1; }
-    85%  { opacity: 1; }
-    100% { opacity: 0; transform: translateX(260%) skewX(-20deg); }
 }
 
 @keyframes normal-badge-pulse {
@@ -233,15 +190,6 @@
             &.free-bots__mini-tab--active {
                 color: #10b981;
                 border-bottom-color: #10b981;
-            }
-        }
-
-        &--classics {
-            &:hover { border-bottom-color: rgb(205 127 50 / 40%); }
-
-            &.free-bots__mini-tab--active {
-                color: #cd7f32;
-                border-bottom-color: #cd7f32;
             }
         }
     }
@@ -518,103 +466,6 @@
                 span:first-child {
                     display: inline-block;
                     animation: normal-badge-pulse 2.8s ease-in-out infinite;
-                }
-            }
-        }
-
-        &--classics {
-            background: radial-gradient(ellipse at 50% 0%, #1a0f00 0%, #100900 55%, #060300 100%);
-            border-color: transparent;
-            animation: classics-pulse 3s ease-in-out infinite;
-
-            // Spinning conic border — bronze/copper palette
-            &::before {
-                background: conic-gradient(
-                    from var(--c-angle),
-                    #cd7f32 0deg,
-                    #b8631a 60deg,
-                    #f0c080 120deg,
-                    #8b4513 180deg,
-                    #cd7f32 240deg,
-                    #e8a060 300deg,
-                    #cd7f32 360deg
-                );
-                -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-                -webkit-mask-composite: xor;
-                mask-composite: exclude;
-                padding: 1.5px;
-                inset: 0;
-                border-radius: 12px;
-                opacity: 1;
-                animation: classics-spin 4s linear infinite;
-            }
-
-            // Bronze foil sweep
-            &::after {
-                width: 55%;
-                background: linear-gradient(
-                    105deg,
-                    transparent 10%,
-                    rgb(205 127 50 / 7%) 35%,
-                    rgb(240 192 128 / 18%) 50%,
-                    rgb(205 127 50 / 7%) 65%,
-                    transparent 90%
-                );
-                transform: translateX(-150%) skewX(-20deg);
-                animation: bronze-foil-sweep 5s ease-in-out 2s infinite;
-            }
-
-            &:hover {
-                transform: translateY(-6px) scale(1.02);
-                animation: none;
-                box-shadow:
-                    0 0 0 3px rgb(205 127 50 / 18%),
-                    0 0 44px 10px rgb(139 69 19 / 25%),
-                    0 18px 52px rgb(0 0 0 / 65%);
-
-                &::before {
-                    animation: classics-spin 1.2s linear infinite;
-                }
-
-                &::after {
-                    animation: card-shine 0.55s ease forwards;
-                }
-
-                .free-bots__card-icon {
-                    animation: float-icon 1.2s ease-in-out infinite;
-                    box-shadow: 0 0 0 5px rgb(205 127 50 / 22%), 0 0 28px rgb(205 127 50 / 35%) !important;
-                }
-            }
-
-            .free-bots__card-icon {
-                background: linear-gradient(135deg, rgb(205 127 50 / 20%) 0%, rgb(139 69 19 / 12%) 100%) !important;
-                border-color: rgb(205 127 50 / 50%) !important;
-                box-shadow: 0 0 0 3px rgb(205 127 50 / 10%), 0 0 18px rgb(205 127 50 / 15%) !important;
-
-                svg path, svg [fill] {
-                    fill: #e8a060 !important;
-                }
-            }
-
-            .free-bots__card-name {
-                background: linear-gradient(90deg, #cd7f32 0%, #f0c080 25%, #8b4513 50%, #f0c080 75%, #cd7f32 100%);
-                background-size: 200% auto;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                animation: bronze-shimmer 2.5s linear infinite;
-            }
-
-            .free-bots__card-category {
-                color: #e8a060;
-                background: rgb(205 127 50 / 12%);
-                border-color: rgb(205 127 50 / 25%);
-            }
-
-            .free-bots__card-special-tag {
-                span:first-child {
-                    display: inline-block;
-                    animation: classics-badge-pulse 3s ease-in-out infinite;
                 }
             }
         }
