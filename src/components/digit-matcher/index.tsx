@@ -55,9 +55,9 @@ const DigitMatcher: React.FC = () => {
     const [prices, setPrices] = useState<string[]>([]);
     const [latestPrice, setLatestPrice] = useState<string | null>(null);
     const [currentDigit, setCurrentDigit] = useState<number | null>(null);
-    const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set([4, 5]));
-    const [statusMsg, setStatusMsg] = useState(localize('Waiting for live ticks…'));
-    const [isRunning, setIsRunning] = useState(false);
+    const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set(DIGITS));
+    const [statusMsg, setStatusMsg] = useState(localize('Connecting to live Deriv ticks…'));
+    const [isRunning, setIsRunning] = useState(true);
     const windowSize = MAX_DIGITS;
 
     const passiveSub = useRef<{ unsubscribe: () => void } | null>(null);
@@ -147,12 +147,15 @@ const DigitMatcher: React.FC = () => {
     }, [forgetId]);
 
     useEffect(() => {
-        if (!isRunning) return;
         if (!api_base.api) {
             setStatusMsg(localize('Log in to see live digits'));
             return undefined;
         }
-        startPassiveSub(symbol);
+
+        if (isRunning) {
+            startPassiveSub(symbol);
+        }
+
         return () => stopPassiveSub();
     }, [isRunning, symbol, startPassiveSub, stopPassiveSub]);
 
@@ -177,14 +180,22 @@ const DigitMatcher: React.FC = () => {
         });
     }, []);
 
-    const runAnalysis = useCallback(() => {
+    const toggleRunning = useCallback(() => {
+        if (isRunning) {
+            stopPassiveSub();
+            setIsRunning(false);
+            setStatusMsg(localize('Analyzer stopped.'));
+            return;
+        }
+
         if (!api_base.api) {
             setStatusMsg(localize('Log in and refresh to start the analyzer.'));
             return;
         }
+
         setIsRunning(true);
         setStatusMsg(localize('Analyzer running... loading latest ticks.'));
-    }, []);
+    }, [isRunning, stopPassiveSub]);
 
     const selectedList = useMemo<number[]>(
         () => [...selectedDigits].sort((a, b) => a - b),
@@ -238,9 +249,8 @@ const DigitMatcher: React.FC = () => {
                 <div className='dm__hero-market'>{activeMarket.short}</div>
                 <div className='dm__hero-price'>{latestPrice ?? '—'}</div>
                 <div className='dm__hero-meta'>
-                    <span>{localize('Analyzer window')}</span>
-                    <strong>{loadedTickCount}/{windowSize}</strong>
-                    <span>{localize('ticks')}</span>
+                    <span>{localize('Engine status')}</span>
+                    <strong>{isRunning ? localize('Running') : localize('Stopped')}</strong>
                 </div>
             </div>
 
@@ -250,21 +260,17 @@ const DigitMatcher: React.FC = () => {
                         <button
                             type='button'
                             className={`dm__run-button${isRunning ? ' dm__run-button--active' : ''}`}
-                            onClick={runAnalysis}
+                            onClick={toggleRunning}
                         >
-                            {isRunning ? localize('Running') : localize('Run Analyzer')}
+                            {isRunning ? localize('Stop Engine') : localize('Start Engine')}
                         </button>
-                        <div className='dm__panel-item'>
-                            <span>{localize('Window size')}</span>
-                            <strong>{windowSize}</strong>
-                        </div>
-                        <div className='dm__panel-item'>
-                            <span>{localize('Loaded ticks')}</span>
-                            <strong>{loadedTickCount}</strong>
-                        </div>
                         <div className='dm__panel-item'>
                             <span>{localize('Current digit')}</span>
                             <strong>{currentDigit !== null ? currentDigit : '—'}</strong>
+                        </div>
+                        <div className='dm__panel-item'>
+                            <span>{localize('Default digits')}</span>
+                            <strong>{localize('All ready')}</strong>
                         </div>
                         <div className='dm__panel-item'>
                             <span>{localize('Selected digits')}</span>
@@ -292,55 +298,55 @@ const DigitMatcher: React.FC = () => {
                 </aside>
                 <section className='dm__main'>
                     <div className='dm__market-selector'>
-                    <button
-                        ref={marketTriggerRef}
-                        type='button'
-                        className='dm__market-trigger'
-                        onClick={openMarket}
-                    >
-                        <span>{activeMarket.short}</span>
-                        <span className='dm__market-chevron'>▼</span>
-                    </button>
-                    {marketOpen && (
-                        <div className='dm__market-dropdown' ref={marketDropdownRef}>
-                            <div className='dm__market-category'>{localize('CONTINUOUS INDICES')}</div>
-                            <div className='dm__market-list'>
-                                {MARKETS.map((market) => {
-                                    const isActive = market.symbol === symbol;
-                                    const [codeMain, codeSub] = market.code.split('\n');
-                                    return (
-                                        <button
-                                            key={market.symbol}
-                                            type='button'
-                                            className={`dm__market-row${isActive ? ' dm__market-row--active' : ''}`}
-                                            onClick={() => {
-                                                setSymbol(market.symbol);
-                                                setMarketOpen(false);
-                                            }}
-                                        >
-                                            <span className='dm__market-code'>
-                                                <span className='dm__market-code-main'>{codeMain}</span>
-                                                {codeSub && <span className='dm__market-code-sub'>{codeSub}</span>}
-                                            </span>
-                                            <span className='dm__market-name'>{market.label}</span>
-                                        </button>
-                                    );
-                                })}
+                        <button
+                            ref={marketTriggerRef}
+                            type='button'
+                            className='dm__market-trigger'
+                            onClick={openMarket}
+                        >
+                            <span>{activeMarket.short}</span>
+                            <span className='dm__market-chevron'>▼</span>
+                        </button>
+                        {marketOpen && (
+                            <div className='dm__market-dropdown' ref={marketDropdownRef}>
+                                <div className='dm__market-category'>{localize('CONTINUOUS INDICES')}</div>
+                                <div className='dm__market-list'>
+                                    {MARKETS.map((market) => {
+                                        const isActive = market.symbol === symbol;
+                                        const [codeMain, codeSub] = market.code.split('\n');
+                                        return (
+                                            <button
+                                                key={market.symbol}
+                                                type='button'
+                                                className={`dm__market-row${isActive ? ' dm__market-row--active' : ''}`}
+                                                onClick={() => {
+                                                    setSymbol(market.symbol);
+                                                    setMarketOpen(false);
+                                                }}
+                                            >
+                                                <span className='dm__market-code'>
+                                                    <span className='dm__market-code-main'>{codeMain}</span>
+                                                    {codeSub && <span className='dm__market-code-sub'>{codeSub}</span>}
+                                                </span>
+                                                <span className='dm__market-name'>{market.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
 
-                <div className='dm__summary'>
-                    <div className='dm__summary-card'>
-                        <span className='dm__summary-label'>{localize('Selected')}</span>
-                        <span className='dm__summary-value'>{selectedList.length}</span>
+                    <div className='dm__summary'>
+                        <div className='dm__summary-card'>
+                            <span className='dm__summary-label'>{localize('Selected')}</span>
+                            <span className='dm__summary-value'>{selectedList.length}</span>
+                        </div>
+                        <div className='dm__summary-card'>
+                            <span className='dm__summary-label'>{localize('Matches')}</span>
+                            <span className='dm__summary-value'>{matchedCount}</span>
+                        </div>
                     </div>
-                    <div className='dm__summary-card'>
-                        <span className='dm__summary-label'>{localize('Matches')}</span>
-                        <span className='dm__summary-value'>{matchedCount}</span>
-                    </div>
-                </div>
                     <div className='dm__digit-grid'>
                         {DIGITS.map((digit) => {
                             const isSelected = selectedDigits.has(digit);
