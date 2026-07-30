@@ -60,8 +60,8 @@ const DigitMatcher: React.FC = () => {
     const [latestPrice, setLatestPrice] = useState<string | null>(null);
     const [currentDigit, setCurrentDigit] = useState<number | null>(null);
     const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set(DIGITS));
-    const [statusMsg, setStatusMsg] = useState(localize('Connecting to live Deriv ticks…'));
-    const [isRunning, setIsRunning] = useState(true);
+    const [statusMsg, setStatusMsg] = useState(localize('Analyzer stopped. Click Start Engine to begin.'));
+    const [isRunning, setIsRunning] = useState(false);
     const [stake, setStake] = useState<number>(0.5);
     const [recentTrades, setRecentTrades] = useState<any[]>([]);
     const windowSize = MAX_DIGITS;
@@ -272,7 +272,18 @@ const DigitMatcher: React.FC = () => {
 
     const toggleRunning = useCallback(() => {
         if (isRunning) {
-            stopPassiveSub();
+            // mirror global stop behavior: stop local subs, notify run panel
+            try {
+                stopPassiveSub();
+                // open run panel drawer and switch to Transactions
+                run_panel.toggleDrawer(true);
+                run_panel.setActiveTabIndex(1);
+                // invoke store stop which handles clearing/stop flow
+                if (typeof run_panel.onStopBotClick === 'function') run_panel.onStopBotClick();
+            } catch {
+                // fall back to local stop
+                stopPassiveSub();
+            }
             setIsRunning(false);
             setStatusMsg(localize('Analyzer stopped.'));
             return;
