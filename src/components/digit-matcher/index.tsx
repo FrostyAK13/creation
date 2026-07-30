@@ -4,7 +4,7 @@ import { localize } from '@deriv-com/translations';
 import './digit-matcher.scss';
 
 const DIGITS = Array.from({ length: 10 }, (_, i) => i);
-const MAX_DIGITS = 30;
+const MAX_DIGITS = 1000;
 
 interface Market { symbol: string; label: string; short: string; code: string; }
 const MARKETS: Market[] = [
@@ -57,6 +57,8 @@ const DigitMatcher: React.FC = () => {
     const [currentDigit, setCurrentDigit] = useState<number | null>(null);
     const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set([4, 5]));
     const [statusMsg, setStatusMsg] = useState(localize('Waiting for live ticks…'));
+    const [isRunning, setIsRunning] = useState(false);
+    const windowSize = MAX_DIGITS;
 
     const passiveSub = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveTickId = useRef<string | null>(null);
@@ -145,23 +147,24 @@ const DigitMatcher: React.FC = () => {
     }, [forgetId]);
 
     useEffect(() => {
+        if (!isRunning) return;
         if (!api_base.api) {
             setStatusMsg(localize('Log in to see live digits'));
-            return;
+            return undefined;
         }
         startPassiveSub(symbol);
         return () => stopPassiveSub();
-    }, [symbol, startPassiveSub, stopPassiveSub]);
+    }, [isRunning, symbol, startPassiveSub, stopPassiveSub]);
 
     useEffect(() => {
         const check = () => {
-            if (api_base.api && passiveApiRef.current !== api_base.api) {
+            if (api_base.api && passiveApiRef.current !== api_base.api && isRunning) {
                 startPassiveSub(symbol);
             }
         };
         const interval = window.setInterval(check, 3000);
         return () => window.clearInterval(interval);
-    }, [startPassiveSub, symbol]);
+    }, [startPassiveSub, symbol, isRunning]);
 
     useEffect(() => () => stopPassiveSub(), [stopPassiveSub]);
 
@@ -174,20 +177,52 @@ const DigitMatcher: React.FC = () => {
         });
     }, []);
 
-    const selectedList = useMemo(() => Array.from(selectedDigits).sort((a, b) => a - b), [selectedDigits]);
+    const runAnalysis = useCallback(() => {
+        if (!api_base.api) {
+            setStatusMsg(localize('Log in and refresh to start the analyzer.'));
+            return;
+        }
+        setIsRunning(true);
+        setStatusMsg(localize('Analyzer running... loading latest ticks.'));
+    }, []);
+
+    const selectedList = useMemo<number[]>(
+        () => [...selectedDigits].sort((a, b) => a - b),
+        [selectedDigits],
+    );
     const matchedCount = useMemo(
         () => digits.filter((digit) => selectedDigits.has(digit)).length,
         [digits, selectedDigits],
     );
+    const loadedTickCount = Math.min(digits.length, windowSize);
     const digitCounts = useMemo(() => {
         const counts = Array.from({ length: 10 }, () => 0);
-        digits.forEach((digit) => { counts[digit] += 1; });
+        const slice = digits.slice(0, windowSize);
+        slice.forEach((digit) => { counts[digit] += 1; });
         return counts;
-    }, [digits]);
+    }, [digits, windowSize]);
     const digitPercents = useMemo(
-        () => digits.length ? digitCounts.map((count) => Math.round((count / digits.length) * 1000) / 10) : Array(10).fill(0),
-        [digitCounts, digits.length],
+        () => loadedTickCount ? digitCounts.map((count) => Math.round((count / loadedTickCount) * 1000) / 10) : Array(10).fill(0),
+        [digitCounts, loadedTickCount],
     );
+    const digitRanks = useMemo(() => {
+        const items = DIGITS.map((digit) => ({ digit, count: digitCounts[digit] }));
+        const sortedAsc = [...items].sort((a, b) => a.count - b.count || a.digit - b.digit);
+        const sortedDesc = [...items].sort((a, b) => b.count - a.count || a.digit - b.digit);
+        const least = sortedAsc[0]?.digit ?? 0;
+        const secondLeast = sortedAsc[1]?.digit ?? sortedAsc[0]?.digit ?? 0;
+        const most = sortedDesc[0]?.digit ?? 0;
+        const secondMost = sortedDesc[1]?.digit ?? sortedDesc[0]?.digit ?? 0;
+        return DIGITS.reduce<Record<number, string>>((acc, digit) => {
+            acc[digit] =
+                digit === most ? 'top1' :
+                digit === secondMost ? 'top2' :
+                digit === secondLeast ? 'bottom2' :
+                digit === least ? 'bottom1' :
+                'normal';
+            return acc;
+        }, {} as Record<number, string>);
+    }, [digitCounts]);
 
     return (
         <div className='dm'>
@@ -203,14 +238,60 @@ const DigitMatcher: React.FC = () => {
                 <div className='dm__hero-market'>{activeMarket.short}</div>
                 <div className='dm__hero-price'>{latestPrice ?? '—'}</div>
                 <div className='dm__hero-meta'>
-                    <span>{localize('Analyze window')}</span>
-                    <strong>{digits.length}</strong>
+                    <span>{localize('Analyzer window')}</span>
+                    <strong>{loadedTickCount}/{windowSize}</strong>
                     <span>{localize('ticks')}</span>
                 </div>
             </div>
 
-            <div className='dm__row'>
-                <div className='dm__market-selector'>
+            <div className='dm__content'>
+                <aside className='dm__sidebar'>
+                    <div className='dm__control-panel'>
+                        <button
+                            type='button'
+                            className={`dm__run-button${isRunning ? ' dm__run-button--active' : ''}`}
+                            onClick={runAnalysis}
+                        >
+                            {isRunning ? localize('Running') : localize('Run Analyzer')}
+                        </button>
+                        <div className='dm__panel-item'>
+                            <span>{localize('Window size')}</span>
+                            <strong>{windowSize}</strong>
+                        </div>
+                        <div className='dm__panel-item'>
+                            <span>{localize('Loaded ticks')}</span>
+                            <strong>{loadedTickCount}</strong>
+                        </div>
+                        <div className='dm__panel-item'>
+                            <span>{localize('Current digit')}</span>
+                            <strong>{currentDigit !== null ? currentDigit : '—'}</strong>
+                        </div>
+                        <div className='dm__panel-item'>
+                            <span>{localize('Selected digits')}</span>
+                            <strong>{selectedList.length > 0 ? selectedList.join(', ') : localize('None')}</strong>
+                        </div>
+                        <div className='dm__legend'>
+                            <div className='dm__legend-item dm__legend-item--top1'>
+                                <span className='dm__legend-swatch' />
+                                {localize('Most frequent')}
+                            </div>
+                            <div className='dm__legend-item dm__legend-item--top2'>
+                                <span className='dm__legend-swatch' />
+                                {localize('Second most frequent')}
+                            </div>
+                            <div className='dm__legend-item dm__legend-item--bottom2'>
+                                <span className='dm__legend-swatch' />
+                                {localize('Second least frequent')}
+                            </div>
+                            <div className='dm__legend-item dm__legend-item--bottom1'>
+                                <span className='dm__legend-swatch' />
+                                {localize('Least frequent')}
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                <section className='dm__main'>
+                    <div className='dm__market-selector'>
                     <button
                         ref={marketTriggerRef}
                         type='button'
@@ -260,31 +341,32 @@ const DigitMatcher: React.FC = () => {
                         <span className='dm__summary-value'>{matchedCount}</span>
                     </div>
                 </div>
-            </div>
+                    <div className='dm__digit-grid'>
+                        {DIGITS.map((digit) => {
+                            const isSelected = selectedDigits.has(digit);
+                            const percent = digitPercents[digit];
+                            const isCurrent = currentDigit === digit;
+                            const rankClass = digitRanks[digit] ? ` dm__digit-button--${digitRanks[digit]}` : '';
+                            return (
+                                <button
+                                    key={digit}
+                                    type='button'
+                                    className={`dm__digit-button${isSelected ? ' dm__digit-button--selected' : ''}${isCurrent ? ' dm__digit-button--current' : ''}${rankClass}`}
+                                    onClick={() => toggleDigit(digit)}
+                                >
+                                    {isCurrent && <span className='dm__digit-cursor'>▼</span>}
+                                    <span className='dm__digit-grid-number'>{digit}</span>
+                                    <span className='dm__digit-grid-percent'>{percent.toFixed(1)}%</span>
+                                </button>
+                            );
+                        })}
+                    </div>
 
-            <div className='dm__digit-grid'>
-                {DIGITS.map((digit) => {
-                    const isSelected = selectedDigits.has(digit);
-                    const percent = digitPercents[digit];
-                    const isCurrent = currentDigit === digit;
-                    return (
-                        <button
-                            key={digit}
-                            type='button'
-                            className={`dm__digit-button${isSelected ? ' dm__digit-button--selected' : ''}${isCurrent ? ' dm__digit-button--current' : ''}`}
-                            onClick={() => toggleDigit(digit)}
-                        >
-                            {isCurrent && <span className='dm__digit-cursor'>▼</span>}
-                            <span className='dm__digit-grid-number'>{digit}</span>
-                            <span className='dm__digit-grid-percent'>{percent.toFixed(1)}%</span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className='dm__selected-line'>
-                <span>{localize('Selected digits:')}</span>
-                <strong>{selectedList.length > 0 ? selectedList.join(', ') : localize('None')}</strong>
+                    <div className='dm__selected-line'>
+                        <span>{localize('Selected digits:')}</span>
+                        <strong>{selectedList.length > 0 ? selectedList.join(', ') : localize('None')}</strong>
+                    </div>
+                </section>
             </div>
         </div>
     );
