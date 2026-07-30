@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import AuthLoadingWrapper from '@/components/auth-loading-wrapper';
 import { botNotification } from '@/components/bot-notification/bot-notification';
 import useLiveChat from '@/components/chat/useLiveChat';
-import ConnectionLoader from '@/components/loader/connection-loader';
+import EpicLoader from '@/components/loader/epic-loader';
 import { getUrlBase } from '@/components/shared';
 import TransactionDetailsModal from '@/components/transaction-details';
 import { api_base, ApiHelpers, ServerTime } from '@/external/bot-skeleton';
@@ -189,7 +189,7 @@ const AppContent = observer(() => {
                 </Suspense>
             )}
             {is_loading ? (
-                <ConnectionLoader />
+                <EpicLoader />
             ) : (
                 <AuthLoadingWrapper>
                     <ThemeProvider theme={is_dark_mode_on ? 'dark' : 'light'}>

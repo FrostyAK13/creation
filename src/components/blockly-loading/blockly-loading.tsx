@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import ConnectionLoader from '@/components/loader/connection-loader';
+import EpicLoader from '@/components/loader/epic-loader';
 import { useStore } from '@/hooks/useStore';
 
 const BlocklyLoading = observer(() => {
@@ -8,7 +8,7 @@ const BlocklyLoading = observer(() => {
 
     if (!is_loading) return null;
 
-    return <ConnectionLoader />;
+    return <EpicLoader />;
 });
 
 export default BlocklyLoading;

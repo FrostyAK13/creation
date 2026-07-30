@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import React from 'react';
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import { cleanupUrl, handleOAuthCallback } from '@/external/deriv-core';
-import ConnectionLoader from '@/components/loader/connection-loader';
+import EpicLoader from '@/components/loader/epic-loader';
 import LocalStorageSyncWrapper from '@/components/localStorage-sync-wrapper';
 import RoutePromptDialog from '@/components/route-prompt-dialog';
 import { useAccountSwitching } from '@/hooks/useAccountSwitching';
@@ -36,8 +36,8 @@ const router = createBrowserRouter(
         <Route
             path='/'
             element={
-                <Suspense
-                    fallback={<ConnectionLoader />}
+                    <Suspense
+                    fallback={<EpicLoader />}
                 >
                     <TranslationProvider defaultLang='EN' i18nInstance={i18nInstance}>
                         <LanguageHandler>

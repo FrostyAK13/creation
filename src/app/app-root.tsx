@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import ErrorBoundary from '@/components/error-component/error-boundary';
 import ErrorComponent from '@/components/error-component/error-component';
-import ConnectionLoader from '@/components/loader/connection-loader';
+import EpicLoader from '@/components/loader/epic-loader';
 import { api_base } from '@/external/bot-skeleton';
 import { CONNECTION_STATUS } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
 import { useApiBase } from '@/hooks/useApiBase';
@@ -64,10 +64,10 @@ const AppRoot = () => {
 
     const isConnected = connectionStatus === CONNECTION_STATUS.OPENED;
 
-    if (!store || !is_api_initialized || !isConnected) return <ConnectionLoader />;
+    if (!store || !is_api_initialized || !isConnected) return <EpicLoader />;
 
     return (
-        <Suspense fallback={<ConnectionLoader />}>
+        <Suspense fallback={<EpicLoader />}>
             <ErrorBoundary root_store={store}>
                 <ErrorComponentWrapper />
                 <AppContent />
