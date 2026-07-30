@@ -65,18 +65,11 @@ const DevToolsGuard: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             }
         };
 
-        const handleContextMenu = (event: MouseEvent) => {
-            event.preventDefault();
-            setDevtoolsOpen(true);
-        };
-
         window.addEventListener('keydown', handleKeyDown, true);
-        window.addEventListener('contextmenu', handleContextMenu, true);
 
         return () => {
             window.clearInterval(intervalId);
             window.removeEventListener('keydown', handleKeyDown, true);
-            window.removeEventListener('contextmenu', handleContextMenu, true);
             if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
         };
     }, [devtoolsOpen]);
