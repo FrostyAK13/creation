@@ -145,7 +145,7 @@
   0% { transform: scale(1); filter: saturate(1); }
   30% { transform: scale(1.12) rotate(-3deg); filter: saturate(1.25) brightness(1.08); }
   60% { transform: scale(0.98) rotate(2deg); }
-  100% { transform: scale(1); rotate(0deg); filter: saturate(1); }
+  100% { transform: scale(1) rotate(0deg); filter: saturate(1); }
 }
 
 /* ── Ticker and quotes ───────────────────────────────────────────────────── */
