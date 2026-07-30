@@ -117,22 +117,26 @@
 
     &__digits {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 0.3rem;
         min-height: 2rem;
         align-items: center;
+        overflow-x: auto;
+        padding-bottom: 0.35rem;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar       { height: 6px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 18%); border-radius: 3px; }
 
         // Grow to fill all space the title/legend leave behind (desktop only).
         @media (min-width: 641px) {
-            align-items: flex-start;
-            align-content: flex-start;
             flex: 1;
-            overflow-y: auto;
+            align-items: center;
+            align-content: flex-start;
             padding-bottom: 0.4rem;
-
-            &::-webkit-scrollbar       { width: 4px; }
-            &::-webkit-scrollbar-track { background: transparent; }
-            &::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 15%); border-radius: 2px; }
+            overflow-y: hidden;
         }
     }
 
@@ -194,6 +198,7 @@
         gap: 0.25rem;
         flex-shrink: 0;
         transition: transform 0.15s ease;
+        scroll-snap-align: center;
 
         &--last {
             transform: scale(1.15);

@@ -157,6 +157,8 @@ function makeInitState(
 const OverUnderEngine: React.FC = observer(() => {
     const { client, dashboard, transactions, run_panel, summary_card, ui } = useStore();
 
+    const digitsRef = useRef<HTMLDivElement | null>(null);
+
     // Config
     const [stake, setStake]           = useState(0.5);
     const [martingale]                = useState(2);
@@ -467,7 +469,15 @@ const OverUnderEngine: React.FC = observer(() => {
                 const d        = getLastDigit(priceStr);
                 if (d === null) return;
                 latestDigitRef.current = d;
-                setDigits(prev  => { const n = [...prev,  d];        return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
+                setDigits(prev  => {
+                    const n = [...prev, d];
+                    const next = n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n;
+                    requestAnimationFrame(() => {
+                        const wrapper = digitsRef.current;
+                        if (wrapper) wrapper.scrollLeft = wrapper.scrollWidth;
+                    });
+                    return next;
+                });
                 setPrices(prev  => { const n = [...prev,  priceStr]; return n.length > MAX_DIGITS ? n.slice(-MAX_DIGITS) : n; });
 
                 // Entry-point trigger (only active while engine is running)
@@ -718,7 +728,7 @@ const OverUnderEngine: React.FC = observer(() => {
                 </div>
 
                 {/* digit row */}
-                <div className='oue__digits'>
+                <div ref={digitsRef} className='oue__digits'>
                     {digits.length === 0 ? (
                         <span className='oue__digit-empty'>{api_base.api ? 'Connecting to market…' : 'Log in to see live digits'}</span>
                     ) : digits.map((d, i) => {
