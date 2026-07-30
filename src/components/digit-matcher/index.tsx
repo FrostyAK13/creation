@@ -58,6 +58,7 @@ const DigitMatcher: React.FC = () => {
     const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set(DIGITS));
     const [statusMsg, setStatusMsg] = useState(localize('Connecting to live Deriv ticks…'));
     const [isRunning, setIsRunning] = useState(true);
+    const [stake, setStake] = useState<number>(0.5);
     const windowSize = MAX_DIGITS;
 
     const passiveSub = useRef<{ unsubscribe: () => void } | null>(null);
@@ -263,6 +264,18 @@ const DigitMatcher: React.FC = () => {
                         >
                             {isRunning ? localize('Stop Engine') : localize('Start Engine')}
                         </button>
+                        <label className='dm__panel-field'>
+                            <span className='dm__panel-label'>{localize('Stake')}</span>
+                            <input
+                                type='number'
+                                min='0'
+                                step='0.01'
+                                className='dm__stake-input'
+                                value={stake}
+                                onChange={(e) => setStake(Number(e.target.value) || 0)}
+                                aria-label={localize('Stake')}
+                            />
+                        </label>
                         <div className='dm__panel-item'>
                             <span>{localize('Current digit')}</span>
                             <strong>{currentDigit !== null ? currentDigit : '—'}</strong>
