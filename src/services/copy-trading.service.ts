@@ -199,6 +199,42 @@ export class CopyTradingService {
         this.onError = onError;
     }
 
+    /**
+     * Attach an existing API instance (for example the app's active WebSocket)
+     * as the leader connection. This allows using the currently logged-in
+     * session (OAuth) as the leader without requiring the user to paste
+     * their API token again.
+     */
+    async connectLeaderFromApi(
+        api_instance: InstanceType<typeof DerivAPIBasic>,
+        account_info: { loginid: string; balance?: number; currency?: string; is_virtual?: number },
+        onDisconnect?: (loginid: string) => void
+    ): Promise<CopyAccount> {
+        if (!api_instance) throw new Error('API instance not provided');
+        if (this.leaderConn) this.disconnectLeader();
+
+        const account: CopyAccount = {
+            token: account_info?.loginid ?? '',
+            loginid: account_info?.loginid ?? '',
+            balance: account_info?.balance ?? 0,
+            currency: account_info?.currency ?? 'USD',
+            is_virtual: !!account_info?.is_virtual,
+        };
+
+        // DerivAPIBasic exposes its WebSocket on `connection`.
+        const ws = (api_instance as any).connection as WebSocket;
+
+        this.leaderConn = { api: api_instance, ws, account } as any;
+
+        try {
+            ws.addEventListener?.('close', () => onDisconnect?.(account.loginid));
+        } catch (e) {
+            // ignore
+        }
+
+        return account;
+    }
+
     // ── public API ─────────────────────────────────────────────────────────
 
     /** Authorize the leader account. */

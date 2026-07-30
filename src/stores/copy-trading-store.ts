@@ -96,6 +96,39 @@ export default class CopyTradingStore {
     };
 
     /**
+     * Auto-detect and use the app's current authorized API session as leader.
+     * This will only attach if the current session is available (e.g. via
+     * `api_base`), and will set the leader_account accordingly.
+     */
+    connectLeaderFromApi = async (api_instance: any, account_info: any) => {
+        this.leader_status = 'connecting';
+        this.leader_error = '';
+        this.leader_account = null;
+        try {
+            this.ensureService();
+            const account = await this.service!.connectLeaderFromApi(api_instance, account_info, action((_loginid: string) => {
+                this.leader_status = 'error';
+                this.leader_error = 'Leader connection lost — stop copying and reconnect.';
+                if (this.is_running) {
+                    this.service?.stopCopying();
+                    this.is_running = false;
+                }
+            }));
+            runInAction(() => {
+                this.leader_account = account;
+                this.leader_status = 'connected';
+                // store leader_token as marker (not a real API token)
+                this.leader_token = account.loginid || '';
+            });
+        } catch (e: any) {
+            runInAction(() => {
+                this.leader_status = 'error';
+                this.leader_error = e?.message ?? 'Connection failed';
+            });
+        }
+    };
+
+    /**
      * Disconnect the leader and reset back to idle so a new token can be entered.
      */
     disconnectLeader = () => {
@@ -118,6 +151,36 @@ export default class CopyTradingStore {
         const token = this.new_follower_token;
         if (!token) return;
         if (this.followers.find(f => f.token === token)) return;
+        // Prevent adding the app's own token (avoid self-replication)
+        try {
+            const active_loginid = localStorage.getItem('active_loginid') || '';
+            const accounts_map = JSON.parse(localStorage.getItem('accountsList') || '{}');
+            const local_token = accounts_map[active_loginid] || '';
+            if (local_token && token === local_token) {
+                const entry: FollowerEntry = {
+                    token,
+                    account: null,
+                    status: 'error',
+                    error: 'Cannot add your own token as a follower',
+                };
+                this.followers.push(entry);
+                this.new_follower_token = '';
+                return;
+            }
+            if (this.leader_token && token === this.leader_token) {
+                const entry: FollowerEntry = {
+                    token,
+                    account: null,
+                    status: 'error',
+                    error: 'Follower token cannot match leader token',
+                };
+                this.followers.push(entry);
+                this.new_follower_token = '';
+                return;
+            }
+        } catch (e) {
+            // parsing error — continue
+        }
 
         const entry: FollowerEntry = {
             token,

@@ -84,6 +84,21 @@ const CopyTrading = observer(() => {
     const ct = store.copy_trading;
     const [showLeaderInput, setShowLeaderInput] = React.useState(false);
 
+    React.useEffect(() => {
+        try {
+            const client = store.client;
+            const globalApi = (window as any).api_base?.api || (window as any).api_base || undefined;
+            if (client && client.is_virtual && client.loginid && globalApi) {
+                ct.connectLeaderFromApi(
+                    globalApi,
+                    { loginid: client.loginid, balance: parseFloat(client.balance) || 0, currency: client.currency, is_virtual: client.is_virtual ? 1 : 0 }
+                );
+            }
+        } catch (e) {
+            // ignore auto-detect failures
+        }
+    }, []);
+
     const handleFollowerKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') ct.addFollower();
     };
