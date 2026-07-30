@@ -323,25 +323,35 @@
     }
 
     @include mobile-screen {
-        padding: 1.2rem;
+        padding: 1rem;
 
         &__mini-tabs {
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
             border-bottom: 1px solid var(--general-section-2);
             padding-bottom: 0.8rem;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
+            min-width: 0;
         }
 
         &__mini-tab {
-            flex: 1 1 auto;
-            min-width: 10rem;
-            padding: 0.6rem 1rem;
-            font-size: 1.2rem;
-            letter-spacing: 0.04em;
+            flex: 0 0 auto;
+            min-width: 8.5rem;
+            padding: 0.55rem 0.9rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.03em;
             white-space: nowrap;
+            scroll-snap-align: start;
+        }
+
+        &__mini-tab-badge {
+            font-size: 1.2rem;
         }
 
         &__grid {
@@ -351,13 +361,15 @@
         }
 
         &__card {
-            padding: 0.8rem;
+            min-width: 0;
+            padding: 0.75rem;
 
             &-icon-row,
             &-top {
                 flex-wrap: wrap;
                 gap: 0.5rem;
                 justify-content: space-between;
+                align-items: flex-start;
             }
 
             &-special-tag {
@@ -385,7 +397,8 @@
 
             &-btn {
                 font-size: 1rem;
-                padding: 0.75rem 0.8rem;
+                padding: 0.75rem 0.75rem;
+                min-width: 0;
             }
         }
     }
