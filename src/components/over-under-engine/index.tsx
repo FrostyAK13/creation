@@ -189,6 +189,13 @@ const OverUnderEngine: React.FC = observer(() => {
     const msgSub           = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveSub       = useRef<{ unsubscribe: () => void } | null>(null);
     const passiveTickId    = useRef<string | null>(null);
+    // Track which api_base.api instance the passiveSub is using so we can
+    // detect when api_base.init() replaces it with a new instance (reconnect,
+    // account switch, window-focus reconnect) and restart the subscription.
+    const passiveApiRef    = useRef<any>(null);
+    // Set to true when stopPassiveSub is called before the subscription ID has
+    // arrived — signals that the next resolved ID must be immediately forgotten.
+    const pendingForget    = useRef<boolean>(false);
     const fireRoundRef     = useRef<() => void>(() => {});
     const symbolRef        = useRef(symbol);
     const latestDigitRef   = useRef<number | null>(null);   // always the most recent tick digit
@@ -237,6 +244,10 @@ const OverUnderEngine: React.FC = observer(() => {
         if (passiveTickId.current && api_base.api) {
             try { (api_base.api as any).send({ forget: passiveTickId.current }); } catch { /* ignore */ }
             passiveTickId.current = null;
+        } else {
+            // The subscription ID hasn't arrived yet — flag it so startPassiveSub
+            // can forget the server-side subscription as soon as the ID resolves.
+            pendingForget.current = true;
         }
         if (passiveSub.current) { passiveSub.current.unsubscribe(); passiveSub.current = null; }
     }, []);
@@ -437,9 +448,13 @@ const OverUnderEngine: React.FC = observer(() => {
 
     const startPassiveSub = useCallback(async (sym: string) => {
         if (!api_base.api) return;
+        pendingForget.current = false; // reset before stopping so stopPassiveSub can set it fresh
         stopPassiveSub();
         setDigits([]);
         setPrices([]);
+        // Record which API instance this subscription is for so the health-check
+        // effect can detect when api_base.init() replaces it with a new instance.
+        passiveApiRef.current = api_base.api;
 
         passiveSub.current = (api_base.api as any).onMessage().subscribe((msg: any) => {
             const data = getApiData(msg);
@@ -471,7 +486,19 @@ const OverUnderEngine: React.FC = observer(() => {
 
         try {
             const r = await (api_base.api as any).send({ ticks: sym, subscribe: 1 });
-            passiveTickId.current = r?.subscription?.id ?? null;
+            const subId = r?.subscription?.id ?? null;
+            if (pendingForget.current) {
+                // stopPassiveSub was called while we were waiting for this ID —
+                // the Rx subscription is already gone, but the server-side
+                // subscription is still live. Forget it immediately so we don't
+                // accumulate duplicate server subscriptions.
+                pendingForget.current = false;
+                if (subId && api_base.api) {
+                    try { (api_base.api as any).send({ forget: subId }); } catch { /* ignore */ }
+                }
+            } else {
+                passiveTickId.current = subId;
+            }
         } catch {
             // Do not leave a dead Rx subscription behind; the readiness poll
             // below can retry once the API connection is available.
@@ -568,6 +595,33 @@ const OverUnderEngine: React.FC = observer(() => {
             if (retryTimer) clearTimeout(retryTimer);
         };
     }, [symbol, startPassiveSub]);
+
+    // Health-check: restart the passive subscription whenever api_base.api is
+    // replaced by a new instance (happens on reconnect, account switch, or the
+    // window-focus reconnect triggered by reconnectIfNotConnected). The
+    // ensureSubscription effect above only catches the initial mount / symbol
+    // change; it cannot detect a mid-session API instance swap because
+    // passiveSub.current is still non-null (pointing to the old instance).
+    useEffect(() => {
+        const checkHealth = () => {
+            const apiChanged = api_base.api && passiveApiRef.current !== api_base.api;
+            if ((apiChanged || !passiveSub.current) && api_base.api) {
+                startPassiveSub(symbolRef.current);
+            }
+        };
+
+        // Poll every 3 s — cheap enough and fast enough to recover within a
+        // few seconds after a reconnect.
+        const interval = setInterval(checkHealth, 3000);
+        // Also fire immediately on window focus: that is exactly when
+        // api_base.reconnectIfNotConnected() runs and may swap the instance.
+        window.addEventListener('focus', checkHealth);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', checkHealth);
+        };
+    }, [startPassiveSub]);
 
     // Teardown on unmount — kill everything including the passive subscription
     useEffect(() => () => {
