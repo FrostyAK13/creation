@@ -352,7 +352,7 @@ const FreeBots = observer(() => {
                             >
                                 <div className='free-bots__card-icon-row'>
                                     <div className='free-bots__card-icon'>
-                                        <LabelPairedCircleStarCaptionBoldIcon height='32px' width='32px' fill='#f7c53b' />
+                                        <LabelPairedCircleStarCaptionBoldIcon height='22px' width='22px' fill='#f7c53b' />
                                     </div>
                                     <span
                                         className='free-bots__card-special-tag'
