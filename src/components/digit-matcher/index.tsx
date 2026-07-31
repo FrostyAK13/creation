@@ -62,6 +62,7 @@ const DigitMatcher: React.FC = () => {
     const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set());
     const [statusMsg, setStatusMsg] = useState(localize('Select one or more entry digits to enable the engine.'));
     const [isRunning, setIsRunning] = useState(false);
+    const [scannerReady, setScannerReady] = useState(false);
     const [stake, setStake] = useState<number>(0.5);
     const [recentTrades, setRecentTrades] = useState<any[]>([]);
     const windowSize = MAX_DIGITS;
@@ -160,6 +161,7 @@ const DigitMatcher: React.FC = () => {
                     setPrices((current) => [quote, ...current].slice(0, MAX_DIGITS));
                     setLatestPrice(quote);
                     setCurrentDigit(digit);
+                    setScannerReady(true);
 
                     // Only trade when the current digit is one of the selected entry digits.
                     try {
@@ -248,12 +250,19 @@ const DigitMatcher: React.FC = () => {
             return undefined;
         }
 
+        if (!isRunning) {
+            stopPassiveSub();
+            return undefined;
+        }
+
         startPassiveSub(symbol);
 
         return () => stopPassiveSub();
-    }, [symbol, startPassiveSub, stopPassiveSub]);
+    }, [symbol, startPassiveSub, stopPassiveSub, isRunning]);
 
     useEffect(() => {
+        if (!isRunning) return undefined;
+
         const check = () => {
              const apiChanged = api_base.api && passiveApiRef.current !== api_base.api;
              if (apiChanged) {
@@ -262,7 +271,7 @@ const DigitMatcher: React.FC = () => {
          };
          const interval = window.setInterval(check, 3000);
          return () => window.clearInterval(interval);
-     }, [startPassiveSub, symbol]);
+     }, [startPassiveSub, symbol, isRunning]);
 
     useEffect(() => {
         return () => {
@@ -301,7 +310,8 @@ const DigitMatcher: React.FC = () => {
                 // ignore store stop failures
             }
             setIsRunning(false);
-            setStatusMsg(localize('Markets live. Click Start Engine to trade.'));
+            setScannerReady(false);
+            setStatusMsg(localize('Scanner stopped. Click Start Engine to scan again.'));
             return;
         }
 
@@ -310,9 +320,9 @@ const DigitMatcher: React.FC = () => {
             return;
         }
 
+        setScannerReady(false);
         if (selectedDigits.size === 0) {
-            setStatusMsg(localize('Select at least one entry digit before starting the engine.'));
-            return;
+            setStatusMsg(localize('Scanner ready. Select entry digits to trade when they appear.'));
         }
 
         // Mirror run-panel start: activate global running state and open drawer
@@ -332,7 +342,8 @@ const DigitMatcher: React.FC = () => {
 
         tradePlacedRef.current = false;
         setIsRunning(true);
-        setStatusMsg(localize('Waiting for one of your selected entry digits...'));
+        setStatusMsg(localize('Scanner active. Waiting for one of your selected entry digits...'));
+        void startPassiveSub(symbol);
 
         // Listen for settled contract events and push to transactions
         if (msgSub.current) {
@@ -417,7 +428,7 @@ const DigitMatcher: React.FC = () => {
                         <div className='dm__hero-price'>{latestPrice ?? '—'}</div>
                         <div className='dm__hero-meta'>
                             <span>{localize('Engine status')}</span>
-                            <strong>{isRunning ? localize('Running') : localize('Stopped')}</strong>
+                            <strong>{isRunning ? (scannerReady ? localize('Scanning') : localize('Ready')) : localize('Stopped')}</strong>
                         </div>
                     </div>
                     <div className='dm__control-panel'>

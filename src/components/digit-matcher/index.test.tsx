@@ -59,6 +59,22 @@ describe('DigitMatcher', () => {
 
         fireEvent.click(screen.getByRole('button', { name: /start engine/i }));
 
-        expect((useStore as jest.Mock).mock.results[0].value.run_panel.setIsRunning).not.toHaveBeenCalled();
+        expect((useStore as jest.Mock).mock.results[0].value.run_panel.setIsRunning).toHaveBeenCalled();
+    });
+
+    it('starts scanning only after the engine is started', () => {
+        const subscribe = jest.fn(() => ({ unsubscribe: jest.fn() }));
+        (api_base as any).api = {
+            send: jest.fn().mockResolvedValue({}),
+            onMessage: jest.fn(() => ({ subscribe })),
+        };
+
+        render(<DigitMatcher />);
+
+        expect(subscribe).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: /start engine/i }));
+
+        expect(subscribe).toHaveBeenCalledTimes(2);
     });
 });
