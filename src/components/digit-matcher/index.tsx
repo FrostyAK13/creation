@@ -131,110 +131,116 @@ const DigitMatcher: React.FC = () => {
             pendingForget.current = true;
         }
         if (passiveSub.current) {
-            passiveSub.current.unsubscribe();
+            passiveSub.current.unsubscribe?.();
             passiveSub.current = null;
         }
     }, []);
 
     const startPassiveSub = useCallback(async (sym: string) => {
-        if (!api_base.api) return;
+        const api = api_base.api as any;
+        if (!api) return;
         pendingForget.current = false;
-        passiveApiRef.current = api_base.api;
+        passiveApiRef.current = api;
 
-        passiveSub.current = (api_base.api as any).onMessage().subscribe((message: any) => {
-            const msg = message?.data ?? message;
-            const tick = msg?.msg_type === 'tick' ? msg.tick : msg?.tick;
-            if (!tick || tick.quote === undefined || (tick.symbol && tick.symbol !== sym)) return;
+        passiveSub.current = null;
+        if (typeof api.onMessage === 'function') {
+            const messageStream = api.onMessage();
+            if (messageStream?.subscribe) {
+                passiveSub.current = messageStream.subscribe((message: any) => {
+                    const msg = message?.data ?? message;
+                    const tick = msg?.msg_type === 'tick' ? msg.tick : msg?.tick;
+                    if (!tick || tick.quote === undefined || (tick.symbol && tick.symbol !== sym)) return;
 
-            const pipSize = Number(tick.pip_size ?? (api_base as any).pip_sizes?.[sym]);
-            const quote = formatQuote(tick.quote, pipSize);
-            const digit = getLastDigit(quote, pipSize);
-            if (digit === null) return;
+                    const pipSize = Number(tick.pip_size ?? (api_base as any).pip_sizes?.[sym]);
+                    const quote = formatQuote(tick.quote, pipSize);
+                    const digit = getLastDigit(quote, pipSize);
+                    if (digit === null) return;
 
-            setDigits((current) => [digit, ...current].slice(0, MAX_DIGITS));
-            setPrices((current) => [quote, ...current].slice(0, MAX_DIGITS));
-            setLatestPrice(quote);
-            setCurrentDigit(digit);
-            setStatusMsg(localize('Live tick stream active'));
+                    setDigits((current) => [digit, ...current].slice(0, MAX_DIGITS));
+                    setPrices((current) => [quote, ...current].slice(0, MAX_DIGITS));
+                    setLatestPrice(quote);
+                    setCurrentDigit(digit);
+                    setStatusMsg(localize('Live tick stream active'));
 
-            // Auto-place a buy once per engine start when running and the digit matches selection
-            try {
-                if (isRunningRef.current && !tradePlacedRef.current && selectedDigitsRef.current.has(digit) && api_base.api) {
-                    tradePlacedRef.current = true;
-                    lastBuyTickRef.current = tick.epoch ?? tick.time ?? Date.now();
-                    const api = api_base.api as any;
-                    const currency = (api_base as any).account_info?.currency || (client as any)?.currency || 'USD';
-                    const makeBuy = (contract_type: string, barrier: string, amount: number) => ({
-                        buy: '1',
-                        price: amount,
-                        parameters: {
-                            amount,
-                            basis: 'stake',
-                            contract_type,
-                            currency,
-                            duration: 1,
-                            duration_unit: 't',
-                            barrier,
-                            underlying_symbol: sym,
-                        },
-                    });
+                    // Auto-place a buy once per engine start when running and the digit matches selection
+                    try {
+                        if (isRunningRef.current && !tradePlacedRef.current && selectedDigitsRef.current.has(digit) && api) {
+                            tradePlacedRef.current = true;
+                            lastBuyTickRef.current = tick.epoch ?? tick.time ?? Date.now();
+                            const currency = (api_base as any).account_info?.currency || (client as any)?.currency || 'USD';
+                            const makeBuy = (contract_type: string, barrier: string, amount: number) => ({
+                                buy: '1',
+                                price: amount,
+                                parameters: {
+                                    amount,
+                                    basis: 'stake',
+                                    contract_type,
+                                    currency,
+                                    duration: 1,
+                                    duration_unit: 't',
+                                    barrier,
+                                    underlying_symbol: sym,
+                                },
+                            });
 
-                    api.send(makeBuy('DIGITMATCH', String(digit), stakeRef.current)).then((res: any) => {
-                        const buy = res?.buy;
-                        if (!buy?.contract_id) return;
-                        transactions.onBotContractEvent({
-                            ...buy,
-                            contract_id: buy.contract_id,
-                            contract_type: 'DIGITMATCH',
-                            barrier: String(digit),
-                            underlying_symbol: sym,
-                            currency: buy.currency ?? currency,
-                            buy_price: buy.buy_price ?? stake,
-                            date_start: buy.date_start ?? buy.purchase_time ?? Math.floor(Date.now() / 1000),
-                            status: 'open',
-                            profit: 0,
-                            transaction_ids: {
-                                ...(buy.transaction_ids ?? {}),
-                                buy: buy.transaction_id ?? buy.transaction_ids?.buy ?? buy.contract_id,
-                            },
-                        } as any);
-                        // Add to local recent trades list
-                        try {
-                            setRecentTrades((prev) => [{
-                                contract_id: buy.contract_id,
-                                barrier: String(digit),
-                                buy_price: buy.buy_price ?? stake,
-                                status: 'open',
-                                date_start: buy.date_start ?? Math.floor(Date.now() / 1000),
-                            }, ...prev].slice(0, 5));
-                        } catch (_e) {
-                            // ignore
+                            Promise.resolve(api.send(makeBuy('DIGITMATCH', String(digit), stakeRef.current))).then((res: any) => {
+                                const buy = res?.buy;
+                                if (!buy?.contract_id) return;
+                                transactions.onBotContractEvent({
+                                    ...buy,
+                                    contract_id: buy.contract_id,
+                                    contract_type: 'DIGITMATCH',
+                                    barrier: String(digit),
+                                    underlying_symbol: sym,
+                                    currency: buy.currency ?? currency,
+                                    buy_price: buy.buy_price ?? stake,
+                                    date_start: buy.date_start ?? buy.purchase_time ?? Math.floor(Date.now() / 1000),
+                                    status: 'open',
+                                    profit: 0,
+                                    transaction_ids: {
+                                        ...(buy.transaction_ids ?? {}),
+                                        buy: buy.transaction_id ?? buy.transaction_ids?.buy ?? buy.contract_id,
+                                    },
+                                } as any);
+                                // Add to local recent trades list
+                                try {
+                                    setRecentTrades((prev) => [{
+                                        contract_id: buy.contract_id,
+                                        barrier: String(digit),
+                                        buy_price: buy.buy_price ?? stake,
+                                        status: 'open',
+                                        date_start: buy.date_start ?? Math.floor(Date.now() / 1000),
+                                    }, ...prev].slice(0, 5));
+                                } catch (_e) {
+                                    // ignore
+                                }
+                                try {
+                                    run_panel.setContractStage(contract_stages.PURCHASE_SENT);
+                                } catch (_e) {
+                                    // ignore when store not present
+                                }
+                            }).catch(() => {
+                                // ignore buy failure
+                            });
                         }
-                        try {
-                            run_panel.setContractStage(contract_stages.PURCHASE_SENT);
-                        } catch (_e) {
-                            // ignore when store not present
-                        }
-                    }).catch(() => {
-                        // ignore buy failure
-                    });
-                }
-            } catch (_e) {
-                // defensive: swallow errors to avoid breaking tick stream
+                    } catch (_e) {
+                        // defensive: swallow errors to avoid breaking tick stream
+                    }
+                });
             }
-        });
+        }
 
         try {
-            const response = await (api_base.api as any).send({ ticks: sym, subscribe: 1 });
+            const response = await Promise.resolve(api.send({ ticks: sym, subscribe: 1 }));
             if (pendingForget.current && response?.subscription?.id) {
                 forgetId(response.subscription.id);
             } else if (response?.subscription?.id) {
                 passiveTickId.current = response.subscription.id;
             }
         } catch (_e) {
-            setStatusMsg(localize('Unable to subscribe to ticks.')); 
+            setStatusMsg(localize('Unable to subscribe to ticks.'));
         }
-    }, [forgetId]);
+    }, [forgetId, client, transactions, run_panel]);
 
     useEffect(() => {
         if (!api_base.api) {
@@ -324,7 +330,7 @@ const DigitMatcher: React.FC = () => {
 
         // Listen for settled contract events and push to transactions
         if (msgSub.current) {
-            msgSub.current.unsubscribe();
+            msgSub.current.unsubscribe?.();
             msgSub.current = null;
         }
         if ((api_base as any).onMessage) {
