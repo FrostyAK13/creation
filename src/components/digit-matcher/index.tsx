@@ -180,45 +180,44 @@ const DigitMatcher: React.FC = () => {
                     });
 
                     api.send(makeBuy('DIGITMATCH', String(digit), stakeRef.current)).then((res: any) => {
-                            const buy = res?.buy;
-                            if (!buy?.contract_id) return;
-                            transactions.onBotContractEvent({
-                                ...buy,
+                        const buy = res?.buy;
+                        if (!buy?.contract_id) return;
+                        transactions.onBotContractEvent({
+                            ...buy,
+                            contract_id: buy.contract_id,
+                            contract_type: 'DIGITMATCH',
+                            barrier: String(digit),
+                            underlying_symbol: sym,
+                            currency: buy.currency ?? currency,
+                            buy_price: buy.buy_price ?? stake,
+                            date_start: buy.date_start ?? buy.purchase_time ?? Math.floor(Date.now() / 1000),
+                            status: 'open',
+                            profit: 0,
+                            transaction_ids: {
+                                ...(buy.transaction_ids ?? {}),
+                                buy: buy.transaction_id ?? buy.transaction_ids?.buy ?? buy.contract_id,
+                            },
+                        } as any);
+                        // Add to local recent trades list
+                        try {
+                            setRecentTrades((prev) => [{
                                 contract_id: buy.contract_id,
-                                contract_type: 'DIGITMATCH',
                                 barrier: String(digit),
-                                underlying_symbol: sym,
-                                currency: buy.currency ?? currency,
                                 buy_price: buy.buy_price ?? stake,
-                                date_start: buy.date_start ?? buy.purchase_time ?? Math.floor(Date.now() / 1000),
                                 status: 'open',
-                                profit: 0,
-                                transaction_ids: {
-                                    ...(buy.transaction_ids ?? {}),
-                                    buy: buy.transaction_id ?? buy.transaction_ids?.buy ?? buy.contract_id,
-                                },
-                            } as any);
-                            // Add to local recent trades list
-                            try {
-                                setRecentTrades((prev) => [{
-                                    contract_id: buy.contract_id,
-                                    barrier: String(digit),
-                                    buy_price: buy.buy_price ?? stake,
-                                    status: 'open',
-                                    date_start: buy.date_start ?? Math.floor(Date.now() / 1000),
-                                }, ...prev].slice(0, 5));
-                            } catch (_e) {
-                                // ignore
-                            }
-                            try {
-                                run_panel.setContractStage(contract_stages.PURCHASE_SENT);
-                            } catch (_e) {
-                                // ignore when store not present
-                            }
-                        }).catch(() => {
-                            // ignore buy failure
-                        });
-                    }
+                                date_start: buy.date_start ?? Math.floor(Date.now() / 1000),
+                            }, ...prev].slice(0, 5));
+                        } catch (_e) {
+                            // ignore
+                        }
+                        try {
+                            run_panel.setContractStage(contract_stages.PURCHASE_SENT);
+                        } catch (_e) {
+                            // ignore when store not present
+                        }
+                    }).catch(() => {
+                        // ignore buy failure
+                    });
                 }
             } catch (_e) {
                 // defensive: swallow errors to avoid breaking tick stream

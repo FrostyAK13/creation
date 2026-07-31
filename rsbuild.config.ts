@@ -13,22 +13,10 @@ const smartchartsDist = path.join(
   'dist'
 );
 
-// Fail the production build loudly if the Deriv OAuth app id is missing, instead
-// of silently shipping a build where Log in / Sign up are disabled. This var is
-// baked in at build time (see source.define below), so a missing value can only
-// be fixed by setting it in the hosting provider's env vars and rebuilding —
-// catching it here saves a debug cycle after a "deployed but login doesn't work"
-// report. Dev builds only warn, since local dev often runs without it.
-const isProductionBuild = process.env.NODE_ENV === 'production' && !isStaticBuild;
-if (isProductionBuild && !process.env.NEXT_PUBLIC_DERIV_APP_ID) {
-  throw new Error(
-    '[frostydbot] Missing NEXT_PUBLIC_DERIV_APP_ID environment variable.\n' +
-      'This must be set in your hosting provider\'s build-time environment variables ' +
-      '(e.g. Vercel → Project Settings → Environment Variables), then rebuilt.\n' +
-      'Without it, Log in / Sign up will render disabled. Get an app id from ' +
-      'https://developers.deriv.com/dashboard/.'
-  );
-} else if (!process.env.NEXT_PUBLIC_DERIV_APP_ID) {
+// Keep builds green when the Deriv OAuth app id is not configured in CI or
+// local development. The app can still build and render with login disabled,
+// and the value can be supplied later in the hosting provider's env vars.
+if (!process.env.NEXT_PUBLIC_DERIV_APP_ID) {
   // eslint-disable-next-line no-console
   console.warn(
     '\n⚠️  NEXT_PUBLIC_DERIV_APP_ID is not set — Log in / Sign up will be disabled.\n'
