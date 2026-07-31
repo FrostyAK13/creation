@@ -463,22 +463,6 @@ const AppWrapper = observer(() => {
                             <div
                                 label={
                                     <>
-                                        <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='var(--text-general)' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-                                            <rect x='3' y='3' width='18' height='18' rx='3' />
-                                            <line x1='9' y1='8' x2='9' y2='16' />
-                                            <line x1='15' y1='8' x2='15' y2='16' />
-                                            <line x1='9' y1='12' x2='15' y2='12' />
-                                        </svg>
-                                        <Localize i18n_default_text='Digit Matcher' />
-                                    </>
-                                }
-                                id='id-digit-matcher'
-                            >
-                                <DigitMatcher />
-                            </div>
-                            <div
-                                label={
-                                    <>
                                         <LabelPairedChartLineCaptionRegularIcon
                                             height='24px'
                                             width='24px'
