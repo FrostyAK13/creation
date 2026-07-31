@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import DigitMatcher from './index';
 import { api_base } from '@/external/bot-skeleton';
@@ -49,5 +49,16 @@ describe('DigitMatcher', () => {
         expect(() => render(<DigitMatcher />)).not.toThrow();
 
         errorSpy.mockRestore();
+    });
+
+    it('starts with no selected entry digits and blocks the engine until one is chosen', () => {
+        const { getByText } = render(<DigitMatcher />);
+
+        expect(getByText('Selected digits')).toBeInTheDocument();
+        expect(screen.getAllByText('None').length).toBeGreaterThan(0);
+
+        fireEvent.click(screen.getByRole('button', { name: /start engine/i }));
+
+        expect((useStore as jest.Mock).mock.results[0].value.run_panel.setIsRunning).not.toHaveBeenCalled();
     });
 });

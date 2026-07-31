@@ -59,8 +59,8 @@ const DigitMatcher: React.FC = () => {
     const [prices, setPrices] = useState<string[]>([]);
     const [latestPrice, setLatestPrice] = useState<string | null>(null);
     const [currentDigit, setCurrentDigit] = useState<number | null>(null);
-    const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set(DIGITS));
-    const [statusMsg, setStatusMsg] = useState(localize('Markets live. Click Start Engine to trade.'));
+    const [selectedDigits, setSelectedDigits] = useState<Set<number>>(new Set());
+    const [statusMsg, setStatusMsg] = useState(localize('Select one or more entry digits to enable the engine.'));
     const [isRunning, setIsRunning] = useState(false);
     const [stake, setStake] = useState<number>(0.5);
     const [recentTrades, setRecentTrades] = useState<any[]>([]);
@@ -160,13 +160,13 @@ const DigitMatcher: React.FC = () => {
                     setPrices((current) => [quote, ...current].slice(0, MAX_DIGITS));
                     setLatestPrice(quote);
                     setCurrentDigit(digit);
-                    setStatusMsg(localize('Live tick stream active'));
 
-                    // Auto-place a buy once per engine start when running and the digit matches selection
+                    // Only trade when the current digit is one of the selected entry digits.
                     try {
-                        if (isRunningRef.current && !tradePlacedRef.current && selectedDigitsRef.current.has(digit) && api) {
+                        if (isRunningRef.current && selectedDigitsRef.current.size > 0 && selectedDigitsRef.current.has(digit) && api) {
                             tradePlacedRef.current = true;
                             lastBuyTickRef.current = tick.epoch ?? tick.time ?? Date.now();
+                            setStatusMsg(localize('Entry digit detected. Trade placed.'));
                             const currency = (api_base as any).account_info?.currency || (client as any)?.currency || 'USD';
                             const makeBuy = (contract_type: string, barrier: string, amount: number) => ({
                                 buy: '1',
@@ -268,7 +268,8 @@ const DigitMatcher: React.FC = () => {
         return () => {
             try {
                 stopPassiveSub();
-                if (msgSub.current) msgSub.current.unsubscribe();
+                msgSub.current?.unsubscribe?.();
+                msgSub.current = null;
                 run_panel?.setIsRunning(false);
                 run_panel?.setContractStage(contract_stages.NOT_RUNNING);
                 (ui as any)?.setPromptHandler?.(false);
@@ -309,6 +310,11 @@ const DigitMatcher: React.FC = () => {
             return;
         }
 
+        if (selectedDigits.size === 0) {
+            setStatusMsg(localize('Select at least one entry digit before starting the engine.'));
+            return;
+        }
+
         // Mirror run-panel start: activate global running state and open drawer
         try {
             run_panel.run_id = `run-${Date.now()}`;
@@ -326,7 +332,7 @@ const DigitMatcher: React.FC = () => {
 
         tradePlacedRef.current = false;
         setIsRunning(true);
-        setStatusMsg(localize('Analyzer running... awaiting trade signal.'));
+        setStatusMsg(localize('Waiting for one of your selected entry digits...'));
 
         // Listen for settled contract events and push to transactions
         if (msgSub.current) {
