@@ -163,11 +163,18 @@ const CopyTrading = observer(() => {
     };
 
     const connectedFollowers = ct.followers.filter(f => f.status === 'connected');
-    const canStart =
-        ct.leader_status === 'connected' &&
-        !ct.is_running &&
-        (connectedFollowers.length > 0 || !!ct.leader_account);
+    const hasActiveFollower = connectedFollowers.length > 0 || !!ct.leader_account;
+    const canStart = ct.leader_status === 'connected' && !ct.is_running && hasActiveFollower;
     const canStop = ct.is_running;
+    const connectionSummary = ct.is_running
+        ? localize('Copy trading is active and listening for new trades.')
+        : ct.leader_status === 'connected' && hasActiveFollower
+            ? localize('Leader and follower accounts are connected. Press Start to begin copying.')
+            : ct.leader_status === 'connected'
+                ? localize('Leader account connected. Waiting for a follower account to become active.')
+                : ct.leader_status === 'connecting'
+                    ? localize('Connecting your account for copy trading…')
+                    : localize('Not connected yet. Connect your account to begin.');
 
     return (
         <div className='ct2'>
@@ -256,6 +263,17 @@ const CopyTrading = observer(() => {
                             )}
                         </p>
 
+                        <div className='ct2__leader-section' style={{ marginBottom: '0.75rem' }}>
+                            <div className='ct2__token-row' style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span className='ct2__hint-text' style={{ fontWeight: 600 }}>
+                                    {ct.is_running ? localize('Active') : ct.leader_status === 'connected' ? localize('Connected') : localize('Ready to connect')}
+                                </span>
+                                <span className={`ct2__acct-badge ct2__acct-badge--${ct.is_running ? 'demo' : ct.leader_status === 'connected' ? 'real' : 'demo'}`}>
+                                    {ct.is_running ? localize('Running') : ct.leader_status === 'connected' ? localize('Live') : localize('Standby')}
+                                </span>
+                            </div>
+                        </div>
+
                         {/* Leader token */}
                         {ct.leader_status === 'connected' ? (
                             <div className='ct2__leader-section'>
@@ -301,6 +319,7 @@ const CopyTrading = observer(() => {
                                 {ct.leader_error && (
                                     <span className='ct2__error-text'>{ct.leader_error}</span>
                                 )}
+                                <span className='ct2__hint-text' style={{ marginTop: '0.35rem' }}>{connectionSummary}</span>
                             </div>
                         )}
 
@@ -388,9 +407,9 @@ const CopyTrading = observer(() => {
                         {!canStart && !ct.is_running && (
                             <span className='ct2__hint-text'>
                                 {ct.leader_status !== 'connected'
-                                    ? localize('Connect the leader (demo) account first.')
+                                    ? localize('Connect the leader account first.')
                                     : connectedFollowers.length === 0
-                                        ? localize('Add at least one client token above.')
+                                        ? localize('A follower account is required before copy trading can start.')
                                         : ''}
                             </span>
                         )}

@@ -55,6 +55,12 @@ const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 let _logIdCounter = 0;
 const nextLogId = () => `ct-${Date.now()}-${++_logIdCounter}`;
 
+export function shouldTreatConnectionAsDisconnected(ws: WebSocket | null | undefined, isBrowserOnline: boolean): boolean {
+    if (!ws) return true;
+    if (!isBrowserOnline) return false;
+    return ws.readyState === WebSocket.CLOSED;
+}
+
 async function createConnection(
     token: string,
     onDisconnect?: (loginid: string) => void
@@ -66,6 +72,7 @@ async function createConnection(
     return new Promise((resolve, reject) => {
         const ws = new WebSocket(WS_URL);
         const api = new DerivAPIBasic({ connection: ws });
+        const isBrowserOnline = () => typeof navigator !== 'undefined' ? navigator.onLine : true;
         let resolved = false;
 
         const timeout = setTimeout(() => {
@@ -93,8 +100,14 @@ async function createConnection(
                     is_virtual: !!auth?.is_virtual,
                 };
                 resolved = true;
-                // Notify on future disconnects
-                ws.addEventListener('close', () => onDisconnect?.(account.loginid));
+                // Only mark the connection as lost when the socket is actually closed
+                // and the browser is online. Temporary offline/network blips should not
+                // force the copy tool into a disconnected state.
+                ws.addEventListener('close', () => {
+                    if (shouldTreatConnectionAsDisconnected(ws, isBrowserOnline())) {
+                        onDisconnect?.(account.loginid);
+                    }
+                });
                 resolve({ api, ws, account });
             } catch (e: any) {
                 clearTimeout(timeout);
@@ -227,7 +240,11 @@ export class CopyTradingService {
         this.leaderConn = { api: api_instance, ws, account } as any;
 
         try {
-            ws.addEventListener?.('close', () => onDisconnect?.(account.loginid));
+            ws.addEventListener?.('close', () => {
+                if (shouldTreatConnectionAsDisconnected(ws, typeof navigator !== 'undefined' ? navigator.onLine : true)) {
+                    onDisconnect?.(account.loginid);
+                }
+            });
         } catch (e) {
             // ignore
         }
@@ -290,7 +307,11 @@ export class CopyTradingService {
         this.followerConns.set(loginid, { api: api_instance, ws, account } as any);
 
         try {
-            ws.addEventListener?.('close', () => onDisconnect?.(account.loginid));
+            ws.addEventListener?.('close', () => {
+                if (shouldTreatConnectionAsDisconnected(ws, typeof navigator !== 'undefined' ? navigator.onLine : true)) {
+                    onDisconnect?.(account.loginid);
+                }
+            });
         } catch (e) {
             // ignore
         }
