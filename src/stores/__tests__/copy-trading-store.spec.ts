@@ -1,4 +1,4 @@
-import { resolveAutoFollowerToken, resolvePairedAccountInfo } from '../copy-trading-store';
+import CopyTradingStore, { resolveAutoFollowerToken, resolvePairedAccountInfo } from '../copy-trading-store';
 
 describe('resolveAutoFollowerToken', () => {
     it('returns the stored direct token for a demo leader when the saved account is real', () => {
@@ -47,5 +47,24 @@ describe('resolveAutoFollowerToken', () => {
         expect(account?.loginid).toBe('CR12345');
         expect(account?.balance).toBe(250);
         expect(account?.is_virtual).toBe(false);
+    });
+
+    it('starts copy trading when the leader is connected even without a follower', async () => {
+        const store = new CopyTradingStore();
+        const startCopying = jest.fn();
+        (store as any).service = { startCopying, stopCopying: jest.fn(), stakeMultiplier: 1 };
+        store.leader_status = 'connected';
+        store.leader_account = {
+            token: 'leader',
+            loginid: 'VRTC12345',
+            balance: 100,
+            currency: 'USD',
+            is_virtual: true,
+        };
+
+        await store.startCopying();
+
+        expect(startCopying).toHaveBeenCalled();
+        expect(store.is_running).toBe(true);
     });
 });

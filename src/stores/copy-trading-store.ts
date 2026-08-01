@@ -358,11 +358,6 @@ export default class CopyTradingStore {
             await this.connectFollowerFromApi(this.followerApiInstance, this.followerAccountInfo);
         }
 
-        if (this.followers.filter(f => f.status === 'connected').length === 0) {
-            this.leader_error = 'No follower account is ready yet.';
-            return;
-        }
-
         if (this.service) {
             this.service.stakeMultiplier = this.stake_multiplier;
         }
