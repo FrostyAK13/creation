@@ -89,7 +89,16 @@ const EpicLoader: React.FC<{ phrase?: string }> = ({ phrase = 'Starting up…' }
     }, []);
 
     return (
-        <div ref={rootRef} className='epic-loader' role='status' aria-live='polite'>
+        <div
+            ref={rootRef}
+            className='epic-loader'
+            role='status'
+            aria-live='polite'
+            style={{
+                background: "linear-gradient(rgba(3,6,12,0.88), rgba(6,10,18,0.88)), url('/logo-loader.jpeg') center/cover no-repeat",
+                backgroundBlendMode: 'overlay',
+            }}
+        >
             <span id='epic-loader-aria' className='visually-hidden' />
 
             <div className='epic-loader__backdrop' aria-hidden='true' />
