@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1785548761540" clover="3.2.0">
-  <project timestamp="1785548761540" name="All files">
-    <metrics statements="1000" coveredstatements="546" conditionals="14" coveredconditionals="11" methods="28" coveredmethods="3" elements="1042" coveredelements="560" complexity="0" loc="1000" ncloc="1000" packages="3" files="3" classes="3"/>
+<coverage generated="1785549531107" clover="3.2.0">
+  <project timestamp="1785549531107" name="All files">
+    <metrics statements="1003" coveredstatements="547" conditionals="16" coveredconditionals="12" methods="28" coveredmethods="3" elements="1047" coveredelements="562" complexity="0" loc="1003" ncloc="1003" packages="3" files="3" classes="3"/>
     <package name="services">
       <metrics statements="461" coveredstatements="134" conditionals="4" coveredconditionals="3" methods="16" coveredmethods="1"/>
       <file name="copy-trading.service.ts" path="/workspaces/creation/src/services/copy-trading.service.ts">
@@ -470,9 +470,9 @@
       </file>
     </package>
     <package name="stores">
-      <metrics statements="388" coveredstatements="338" conditionals="8" coveredconditionals="7" methods="4" coveredmethods="1"/>
+      <metrics statements="391" coveredstatements="339" conditionals="10" coveredconditionals="8" methods="4" coveredmethods="1"/>
       <file name="copy-trading-store.ts" path="/workspaces/creation/src/stores/copy-trading-store.ts">
-        <metrics statements="388" coveredstatements="338" conditionals="8" coveredconditionals="7" methods="4" coveredmethods="1"/>
+        <metrics statements="391" coveredstatements="339" conditionals="10" coveredconditionals="8" methods="4" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -499,12 +499,12 @@
         <line num="24" count="3" type="cond" truecount="0" falsecount="1"/>
         <line num="25" count="3" type="cond" truecount="1" falsecount="0"/>
         <line num="26" count="3" type="stmt"/>
-        <line num="27" count="3" type="cond" truecount="3" falsecount="0"/>
-        <line num="28" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="29" count="1" type="stmt"/>
-        <line num="30" count="1" type="stmt"/>
-        <line num="31" count="1" type="stmt"/>
-        <line num="32" count="1" type="stmt"/>
+        <line num="27" count="3" type="cond" truecount="1" falsecount="0"/>
+        <line num="28" count="2" type="cond" truecount="1" falsecount="0"/>
+        <line num="29" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="30" count="3" type="cond" truecount="1" falsecount="0"/>
+        <line num="31" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="32" count="0" type="stmt"/>
         <line num="33" count="1" type="stmt"/>
         <line num="34" count="1" type="stmt"/>
         <line num="35" count="1" type="stmt"/>
@@ -530,9 +530,9 @@
         <line num="55" count="1" type="stmt"/>
         <line num="56" count="1" type="stmt"/>
         <line num="57" count="1" type="stmt"/>
-        <line num="58" count="0" type="stmt"/>
-        <line num="59" count="0" type="stmt"/>
-        <line num="60" count="0" type="stmt"/>
+        <line num="58" count="1" type="stmt"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
         <line num="61" count="0" type="stmt"/>
         <line num="62" count="0" type="stmt"/>
         <line num="63" count="0" type="stmt"/>
@@ -556,9 +556,9 @@
         <line num="81" count="0" type="stmt"/>
         <line num="82" count="0" type="stmt"/>
         <line num="83" count="0" type="stmt"/>
-        <line num="84" count="1" type="stmt"/>
-        <line num="85" count="1" type="stmt"/>
-        <line num="86" count="1" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
         <line num="87" count="1" type="stmt"/>
         <line num="88" count="1" type="stmt"/>
         <line num="89" count="1" type="stmt"/>
@@ -834,9 +834,9 @@
         <line num="359" count="1" type="stmt"/>
         <line num="360" count="1" type="stmt"/>
         <line num="361" count="1" type="stmt"/>
-        <line num="362" count="0" type="stmt"/>
-        <line num="363" count="0" type="stmt"/>
-        <line num="364" count="0" type="stmt"/>
+        <line num="362" count="1" type="stmt"/>
+        <line num="363" count="1" type="stmt"/>
+        <line num="364" count="1" type="stmt"/>
         <line num="365" count="0" type="stmt"/>
         <line num="366" count="0" type="stmt"/>
         <line num="367" count="0" type="stmt"/>
@@ -854,13 +854,16 @@
         <line num="379" count="0" type="stmt"/>
         <line num="380" count="0" type="stmt"/>
         <line num="381" count="0" type="stmt"/>
-        <line num="382" count="1" type="stmt"/>
-        <line num="383" count="1" type="stmt"/>
+        <line num="382" count="0" type="stmt"/>
+        <line num="383" count="0" type="stmt"/>
         <line num="384" count="0" type="stmt"/>
-        <line num="385" count="0" type="stmt"/>
-        <line num="386" count="0" type="stmt"/>
+        <line num="385" count="1" type="stmt"/>
+        <line num="386" count="1" type="stmt"/>
         <line num="387" count="0" type="stmt"/>
-        <line num="388" count="1" type="stmt"/>
+        <line num="388" count="0" type="stmt"/>
+        <line num="389" count="0" type="stmt"/>
+        <line num="390" count="0" type="stmt"/>
+        <line num="391" count="1" type="stmt"/>
       </file>
     </package>
     <package name="utils">

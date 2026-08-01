@@ -86,45 +86,6 @@ const CopyTrading = observer(() => {
     const store = useStore();
     const ct = store.copy_trading;
 
-    React.useEffect(() => {
-        try {
-            const client = store.client;
-            const liveApi = api_base?.api || undefined;
-            const liveAccountInfo = (api_base as any)?.account_info || {};
-            const activeLoginid = client?.loginid || liveAccountInfo?.loginid || api_base?.account_id || '';
-            const activeBalance = client?.balance ?? liveAccountInfo?.balance ?? 0;
-            const activeCurrency = client?.currency ?? liveAccountInfo?.currency ?? 'USD';
-            const activeIsVirtual = client?.is_virtual ?? liveAccountInfo?.is_virtual ?? (activeLoginid ? isDemoAccount(activeLoginid) : false);
-            const detectedLeaderLoginid = getAutoDetectedCopyTradingLeader(activeLoginid, !!activeIsVirtual);
-
-            if (!activeLoginid || !detectedLeaderLoginid || !liveApi) return;
-            if (ct.leader_status === 'connected' && ct.leader_account?.loginid === detectedLeaderLoginid) return;
-
-            void (async () => {
-                await ct.connectLeaderFromApi(
-                    liveApi,
-                    {
-                        loginid: detectedLeaderLoginid,
-                        balance: parseFloat(String(activeBalance)) || 0,
-                        currency: activeCurrency,
-                        is_virtual: activeIsVirtual ? 1 : 0,
-                    }
-                );
-
-                if (activeLoginid !== detectedLeaderLoginid) {
-                    await ct.connectFollowerFromApi(liveApi, {
-                        loginid: activeLoginid,
-                        balance: parseFloat(String(activeBalance)) || 0,
-                        currency: activeCurrency,
-                        is_virtual: activeIsVirtual ? 1 : 0,
-                    });
-                }
-            })();
-        } catch (e) {
-            // ignore auto-detect failures
-        }
-    }, [store.client?.loginid, store.client?.balance, store.client?.currency, store.client?.is_virtual]);
-
     const handleFollowerKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') ct.addFollower();
     };
@@ -163,6 +124,8 @@ const CopyTrading = observer(() => {
     };
 
     const connectedFollowers = ct.followers.filter(f => f.status === 'connected');
+    const connectedFollowerAccount = connectedFollowers.find(f => f.account)?.account ?? null;
+    const displayAccount = connectedFollowerAccount ?? ct.leader_account;
     const hasActiveFollower = connectedFollowers.length > 0 || !!ct.leader_account;
     const canStart = ct.leader_status === 'connected' && !ct.is_running && hasActiveFollower;
     const canStop = ct.is_running;
@@ -278,13 +241,13 @@ const CopyTrading = observer(() => {
                         {ct.leader_status === 'connected' ? (
                             <div className='ct2__leader-section'>
                                 <div className='ct2__leader-chip'>
-                                    <span className={`ct2__acct-badge ct2__acct-badge--${ct.leader_account?.is_virtual ? 'demo' : 'real'}`}>
-                                        {ct.leader_account?.is_virtual ? localize('Demo') : localize('Real')}
+                                    <span className={`ct2__acct-badge ct2__acct-badge--${displayAccount?.is_virtual ? 'demo' : 'real'}`}>
+                                        {displayAccount?.is_virtual ? localize('Demo') : localize('Real')}
                                     </span>
-                                    <span className='ct2__acct-id'>{ct.leader_account?.loginid}</span>
+                                    <span className='ct2__acct-id'>{displayAccount?.loginid}</span>
                                     <span className='ct2__acct-bal'>
-                                        {ct.leader_account
-                                            ? fmtBalance(ct.leader_account.balance, ct.leader_account.currency)
+                                        {displayAccount
+                                            ? fmtBalance(displayAccount.balance, displayAccount.currency)
                                             : ''}
                                     </span>
                                     {!ct.is_running && (

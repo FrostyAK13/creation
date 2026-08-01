@@ -22,10 +22,13 @@ export function resolveAutoFollowerToken({
 }): string | null {
     const token = (storedDirectToken || '').trim();
     const accountType = (storedAccountType || '').trim().toLowerCase();
-    const isDemoLeader = !!isVirtualAccount || isDemoAccount(currentLoginid);
+    const isDemoCurrentAccount = !!isVirtualAccount || isDemoAccount(currentLoginid);
 
-    if (!isDemoLeader || !token || accountType !== 'real') return null;
-    return token;
+    if (!token) return null;
+
+    if (isDemoCurrentAccount && accountType === 'real') return token;
+    if (!isDemoCurrentAccount && accountType === 'demo') return token;
+    return null;
 }
 
 export default class CopyTradingStore {

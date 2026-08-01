@@ -12,15 +12,15 @@ describe('resolveAutoFollowerToken', () => {
         ).toBe('real-token');
     });
 
-    it('returns null when the current account is not a demo account', () => {
+    it('returns the stored direct token for a real account when the current account is demo', () => {
         expect(
             resolveAutoFollowerToken({
                 currentLoginid: 'CR12345',
                 isVirtualAccount: false,
-                storedDirectToken: 'real-token',
-                storedAccountType: 'real',
+                storedDirectToken: 'demo-token',
+                storedAccountType: 'demo',
             })
-        ).toBeNull();
+        ).toBe('demo-token');
     });
 
     it('returns null when no direct token is stored', () => {
