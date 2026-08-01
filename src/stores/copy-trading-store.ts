@@ -2,6 +2,7 @@ import { action, makeObservable, observable, runInAction } from 'mobx';
 import { CopyAccount, CopyTradeLog, CopyTradingService } from '@/services/copy-trading.service';
 import type { DerivAccount } from '@/services/derivws-accounts.service';
 import { isDemoAccount } from '@/utils/account-helpers';
+import { getMarketingDemoLoginid, isMarketingCR } from '@/utils/marketing-balance';
 
 export type FollowerEntry = {
     token: string;
@@ -45,9 +46,14 @@ export function resolvePairedAccountInfo({
 
     const isDemoCurrentAccount = !!isVirtualAccount || isDemoAccount(currentLoginid);
     const preferredType = isDemoCurrentAccount ? 'real' : 'demo';
-    const matchedAccount = accounts.find(
-        account => account.account_id !== currentLoginid && account.account_type === preferredType
-    );
+    const pairedLoginid = isMarketingCR(currentLoginid)
+        ? getMarketingDemoLoginid(currentLoginid)
+        : null;
+    const matchedAccount = accounts.find(account => {
+        if (account.account_id === currentLoginid) return false;
+        if (pairedLoginid && account.account_id === pairedLoginid) return true;
+        return account.account_type === preferredType;
+    });
 
     if (!matchedAccount) return null;
 
