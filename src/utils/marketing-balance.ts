@@ -22,6 +22,8 @@
  * To add more marketing accounts, extend MARKETING_ACCOUNTS below.
  */
 
+import { isDemoAccount } from '@/utils/account-helpers';
+
 // ── Configuration ─────────────────────────────────────────────────────────────
 
 export interface MarketingAccountConfig {
@@ -89,6 +91,22 @@ export function getMarketingCurrency(crLoginid: string): string {
  */
 export function getMarketingDemoLoginid(crLoginid: string): string | null {
     return MARKETING_ACCOUNTS[crLoginid]?.demoLoginid ?? null;
+}
+
+/**
+ * Auto-detect which account should act as the copy-trading leader for the
+ * currently logged-in session. For demo accounts this is the current account;
+ * for marketing real accounts it uses the paired demo account (for example
+ * ROT -> DOT); for other real accounts it falls back to the current loginid.
+ */
+export function getAutoDetectedCopyTradingLeader(loginid: string, isVirtualAccountFlag?: boolean): string | null {
+    if (!loginid) return null;
+
+    if (isVirtualAccountFlag || isDemoAccount(loginid)) {
+        return loginid;
+    }
+
+    return getMarketingDemoLoginid(loginid) ?? loginid;
 }
 
 /**

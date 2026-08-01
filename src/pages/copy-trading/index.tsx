@@ -2,6 +2,8 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/hooks/useStore';
 import { localize } from '@deriv-com/translations';
+import { isDemoAccount } from '@/utils/account-helpers';
+import { getAutoDetectedCopyTradingLeader } from '@/utils/marketing-balance';
 import './copy-trading.scss';
 
 // ── icons ────────────────────────────────────────────────────────────────────
@@ -88,16 +90,24 @@ const CopyTrading = observer(() => {
         try {
             const client = store.client;
             const globalApi = (window as any).api_base?.api || (window as any).api_base || undefined;
-            if (client && client.is_virtual && client.loginid && globalApi) {
-                ct.connectLeaderFromApi(
-                    globalApi,
-                    { loginid: client.loginid, balance: parseFloat(client.balance) || 0, currency: client.currency, is_virtual: client.is_virtual ? 1 : 0 }
-                );
-            }
+            const detectedLeaderLoginid = getAutoDetectedCopyTradingLeader(client?.loginid ?? '', !!client?.is_virtual);
+
+            if (!client?.loginid || !detectedLeaderLoginid || !globalApi) return;
+            if (ct.leader_status === 'connected' && ct.leader_account?.loginid === detectedLeaderLoginid) return;
+
+            ct.connectLeaderFromApi(
+                globalApi,
+                {
+                    loginid: detectedLeaderLoginid,
+                    balance: parseFloat(client.balance) || 0,
+                    currency: client.currency,
+                    is_virtual: isDemoAccount(detectedLeaderLoginid) ? 1 : 0,
+                }
+            );
         } catch (e) {
             // ignore auto-detect failures
         }
-    }, []);
+    }, [store.client?.loginid, store.client?.balance, store.client?.currency, store.client?.is_virtual]);
 
     const handleFollowerKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') ct.addFollower();
@@ -196,7 +206,7 @@ const CopyTrading = observer(() => {
                         <div className='ct2__card-heading'>{localize('Demo → Real')}</div>
                         <p className='ct2__card-desc'>
                             {localize(
-                                'Mirror trades from your demo account to your real account automatically.'
+                                'Auto-detects your leader account and mirrors trades from the logged-in account using only client API tokens.'
                             )}
                         </p>
 
