@@ -89,7 +89,7 @@ const EpicLoader: React.FC<{ phrase?: string }> = ({ phrase = 'Starting up…' }
     }, []);
 
     return (
-        <div className='epic-loader' role='status' aria-live='polite'>
+        <div ref={rootRef} className='epic-loader' role='status' aria-live='polite'>
             <span id='epic-loader-aria' className='visually-hidden' />
 
             <div className='epic-loader__backdrop' aria-hidden='true' />
@@ -102,8 +102,14 @@ const EpicLoader: React.FC<{ phrase?: string }> = ({ phrase = 'Starting up…' }
 
             <div className='epic-loader__centre'>
                 <div className='epic-loader__live-core'>
+                    <div className='epic-loader__live-ring' aria-hidden='true' />
                     <img src='/logo-loader.jpeg' alt='App logo' className='epic-loader__logo' />
                     <div className='epic-loader__pulse' />
+                </div>
+
+                <div className='epic-loader__live-status'>
+                    <span className='epic-loader__live-dot' />
+                    <span className='epic-loader__live-text'>Live market sync</span>
                 </div>
 
                 <div className='epic-loader__phrase'>{phrase}</div>
