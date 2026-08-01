@@ -2,6 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/hooks/useStore';
 import { localize } from '@deriv-com/translations';
+import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 import { isDemoAccount } from '@/utils/account-helpers';
 import { getAutoDetectedCopyTradingLeader } from '@/utils/marketing-balance';
 import './copy-trading.scss';
@@ -84,24 +85,28 @@ const fmtDate = (ts: number) =>
 const CopyTrading = observer(() => {
     const store = useStore();
     const ct = store.copy_trading;
-    const [showLeaderInput, setShowLeaderInput] = React.useState(false);
 
     React.useEffect(() => {
         try {
             const client = store.client;
-            const globalApi = (window as any).api_base?.api || (window as any).api_base || undefined;
-            const detectedLeaderLoginid = getAutoDetectedCopyTradingLeader(client?.loginid ?? '', !!client?.is_virtual);
+            const liveApi = api_base?.api || undefined;
+            const liveAccountInfo = (api_base as any)?.account_info || {};
+            const activeLoginid = client?.loginid || liveAccountInfo?.loginid || api_base?.account_id || '';
+            const activeBalance = client?.balance ?? liveAccountInfo?.balance ?? 0;
+            const activeCurrency = client?.currency ?? liveAccountInfo?.currency ?? 'USD';
+            const activeIsVirtual = client?.is_virtual ?? liveAccountInfo?.is_virtual ?? (activeLoginid ? isDemoAccount(activeLoginid) : false);
+            const detectedLeaderLoginid = getAutoDetectedCopyTradingLeader(activeLoginid, !!activeIsVirtual);
 
-            if (!client?.loginid || !detectedLeaderLoginid || !globalApi) return;
+            if (!activeLoginid || !detectedLeaderLoginid || !liveApi) return;
             if (ct.leader_status === 'connected' && ct.leader_account?.loginid === detectedLeaderLoginid) return;
 
             ct.connectLeaderFromApi(
-                globalApi,
+                liveApi,
                 {
                     loginid: detectedLeaderLoginid,
-                    balance: parseFloat(client.balance) || 0,
-                    currency: client.currency,
-                    is_virtual: isDemoAccount(detectedLeaderLoginid) ? 1 : 0,
+                    balance: parseFloat(String(activeBalance)) || 0,
+                    currency: activeCurrency,
+                    is_virtual: activeIsVirtual ? 1 : 0,
                 }
             );
         } catch (e) {
@@ -112,8 +117,29 @@ const CopyTrading = observer(() => {
     const handleFollowerKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') ct.addFollower();
     };
-    const handleLeaderKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') ct.connectLeader();
+
+    const handleConnectLeader = () => {
+        try {
+            const client = store.client;
+            const liveApi = api_base?.api || undefined;
+            const liveAccountInfo = (api_base as any)?.account_info || {};
+            const activeLoginid = client?.loginid || liveAccountInfo?.loginid || api_base?.account_id || '';
+            const activeBalance = client?.balance ?? liveAccountInfo?.balance ?? 0;
+            const activeCurrency = client?.currency ?? liveAccountInfo?.currency ?? 'USD';
+            const activeIsVirtual = client?.is_virtual ?? liveAccountInfo?.is_virtual ?? (activeLoginid ? isDemoAccount(activeLoginid) : false);
+            const detectedLeaderLoginid = getAutoDetectedCopyTradingLeader(activeLoginid, !!activeIsVirtual);
+
+            if (!activeLoginid || !detectedLeaderLoginid || !liveApi) return;
+
+            ct.connectLeaderFromApi(liveApi, {
+                loginid: detectedLeaderLoginid,
+                balance: parseFloat(String(activeBalance)) || 0,
+                currency: activeCurrency,
+                is_virtual: activeIsVirtual ? 1 : 0,
+            });
+        } catch (e) {
+            // ignore auto-detect failures
+        }
     };
 
     const connectedFollowers = ct.followers.filter(f => f.status === 'connected');
@@ -212,7 +238,6 @@ const CopyTrading = observer(() => {
 
                         {/* Leader token */}
                         {ct.leader_status === 'connected' ? (
-                            // Connected state: show chip + disconnect button
                             <div className='ct2__leader-section'>
                                 <div className='ct2__leader-chip'>
                                     <span className={`ct2__acct-badge ct2__acct-badge--${ct.leader_account?.is_virtual ? 'demo' : 'real'}`}>
@@ -228,47 +253,31 @@ const CopyTrading = observer(() => {
                                         <button
                                             className='ct2__disconnect-btn'
                                             title={localize('Disconnect leader')}
-                                            onClick={() => {
-                                                ct.disconnectLeader();
-                                                setShowLeaderInput(false);
-                                            }}
+                                            onClick={() => ct.disconnectLeader()}
                                         >
                                             <IconDisconnect />
                                         </button>
                                     )}
                                 </div>
                             </div>
-                        ) : !showLeaderInput && ct.leader_status !== 'error' ? (
-                            // Collapsed state
-                            <button
-                                className='ct2__link-btn'
-                                onClick={() => setShowLeaderInput(true)}
-                            >
-                                {localize('+ Set leader (demo) token')}
-                            </button>
                         ) : (
-                            // Input state (shown, or in error)
                             <div className='ct2__leader-section'>
                                 <div className='ct2__token-row'>
-                                    <input
-                                        className='ct2__token-input'
-                                        type='text'
-                                        placeholder={localize('Leader API token (demo account)')}
-                                        value={ct.leader_token}
-                                        onChange={e => ct.setLeaderToken(e.target.value)}
-                                        onKeyDown={handleLeaderKeyDown}
-                                        disabled={ct.is_running || ct.leader_status === 'connecting'}
-                                    />
+                                    <span className='ct2__hint-text'>
+                                        {ct.leader_status === 'connecting'
+                                            ? localize('Connecting your logged-in account automatically…')
+                                            : localize('Using your current Deriv account automatically. No demo token required.')}
+                                    </span>
+                                </div>
+                                {!ct.is_running && (
                                     <button
                                         className='ct2__add-btn'
-                                        onClick={() => ct.connectLeader()}
-                                        disabled={!ct.leader_token || ct.leader_status === 'connecting' || ct.is_running}
+                                        onClick={handleConnectLeader}
+                                        disabled={ct.leader_status === 'connecting' || ct.is_running}
                                     >
-                                        {ct.leader_status === 'connecting'
-                                            ? localize('…')
-                                            : localize('Connect')}
+                                        {ct.leader_status === 'connecting' ? localize('Connecting…') : localize('Connect')}
                                     </button>
-                                </div>
+                                )}
                                 {ct.leader_error && (
                                     <span className='ct2__error-text'>{ct.leader_error}</span>
                                 )}
