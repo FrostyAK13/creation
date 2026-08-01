@@ -91,6 +91,9 @@ export default class CopyTradingStore {
     private service: CopyTradingService | null = null;
     private followerApiInstance: any = null;
     private followerAccountInfo: any = null;
+    private leaderApiInstance: any = null;
+    private leaderAccountInfo: any = null;
+    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor() {
         makeObservable(this, {
@@ -118,6 +121,14 @@ export default class CopyTradingStore {
             clearLog: action,
             dismissError: action,
         });
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && this.leader_status === 'error' && this.leaderApiInstance) {
+                    this.scheduleReconnect();
+                }
+            });
+        }
     }
 
     // ── actions ───────────────────────────────────────────────────────────────
@@ -165,15 +176,18 @@ export default class CopyTradingStore {
         this.leader_status = 'connecting';
         this.leader_error = '';
         this.leader_account = null;
+        this.leaderApiInstance = api_instance;
+        this.leaderAccountInfo = account_info;
         try {
             this.ensureService();
             const account = await this.service!.connectLeaderFromApi(api_instance, account_info, action((_loginid: string) => {
                 this.leader_status = 'error';
-                this.leader_error = 'Leader connection lost — stop copying and reconnect.';
+                this.leader_error = 'Leader connection lost — reconnecting…';
                 if (this.is_running) {
                     this.service?.stopCopying();
                     this.is_running = false;
                 }
+                this.scheduleReconnect();
             }));
 
             const autoFollowerToken = resolveAutoFollowerToken({
@@ -348,6 +362,33 @@ export default class CopyTradingStore {
     removeFollower = (token: string) => {
         this.service?.removeFollower(token);
         this.followers = this.followers.filter(f => f.token !== token);
+    };
+
+    private scheduleReconnect = () => {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+        }
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            void this.recoverFromDisconnect();
+        }, 800);
+    };
+
+    private recoverFromDisconnect = async () => {
+        if (!this.leaderApiInstance || !this.leaderAccountInfo) return;
+
+        try {
+            this.leader_status = 'connecting';
+            this.leader_error = '';
+            await this.connectLeaderFromApi(this.leaderApiInstance, this.leaderAccountInfo);
+
+            if (this.followerApiInstance && this.followerAccountInfo) {
+                await this.connectFollowerFromApi(this.followerApiInstance, this.followerAccountInfo);
+            }
+        } catch (e: any) {
+            this.leader_status = 'error';
+            this.leader_error = e?.message ?? 'Reconnect failed';
+        }
     };
 
     startCopying = async () => {

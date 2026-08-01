@@ -67,4 +67,26 @@ describe('resolveAutoFollowerToken', () => {
         expect(startCopying).toHaveBeenCalled();
         expect(store.is_running).toBe(true);
     });
+
+    it('reconnects the leader and follower after a transient disconnect', async () => {
+        const store = new CopyTradingStore();
+        const connectLeaderFromApi = jest.fn().mockResolvedValue({ loginid: 'VRTC12345' });
+        const connectFollowerFromApi = jest.fn().mockResolvedValue({ loginid: 'CR12345' });
+        (store as any).service = {
+            connectLeaderFromApi,
+            connectFollowerFromApi,
+            startCopying: jest.fn(),
+            stopCopying: jest.fn(),
+            stakeMultiplier: 1,
+        };
+        (store as any).leaderApiInstance = {};
+        (store as any).leaderAccountInfo = { loginid: 'VRTC12345', is_virtual: 1 };
+        (store as any).followerApiInstance = {};
+        (store as any).followerAccountInfo = { loginid: 'CR12345', is_virtual: 0 };
+
+        await (store as any).recoverFromDisconnect();
+
+        expect(connectLeaderFromApi).toHaveBeenCalled();
+        expect(connectFollowerFromApi).toHaveBeenCalled();
+    });
 });
