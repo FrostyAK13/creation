@@ -1,5 +1,6 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import { CopyAccount, CopyTradeLog, CopyTradingService } from '@/services/copy-trading.service';
+import { isDemoAccount } from '@/utils/account-helpers';
 
 export type FollowerEntry = {
     token: string;
@@ -7,6 +8,25 @@ export type FollowerEntry = {
     status: 'pending' | 'connected' | 'error';
     error: string;
 };
+
+export function resolveAutoFollowerToken({
+    currentLoginid,
+    isVirtualAccount,
+    storedDirectToken,
+    storedAccountType,
+}: {
+    currentLoginid: string;
+    isVirtualAccount?: boolean;
+    storedDirectToken?: string;
+    storedAccountType?: string | null;
+}): string | null {
+    const token = (storedDirectToken || '').trim();
+    const accountType = (storedAccountType || '').trim().toLowerCase();
+    const isDemoLeader = !!isVirtualAccount || isDemoAccount(currentLoginid);
+
+    if (!isDemoLeader || !token || accountType !== 'real') return null;
+    return token;
+}
 
 export default class CopyTradingStore {
     // ── leader ──────────────────────────────────────────────────────────────
@@ -117,6 +137,18 @@ export default class CopyTradingStore {
                     this.is_running = false;
                 }
             }));
+
+            const autoFollowerToken = resolveAutoFollowerToken({
+                currentLoginid: account_info?.loginid || '',
+                isVirtualAccount: !!account_info?.is_virtual,
+                storedDirectToken: localStorage.getItem('api_token_direct') || sessionStorage.getItem('api_token_direct') || '',
+                storedAccountType: localStorage.getItem('account_type') || sessionStorage.getItem('account_type') || '',
+            });
+
+            if (autoFollowerToken) {
+                await this.addFollower(autoFollowerToken);
+            }
+
             runInAction(() => {
                 this.leader_account = account;
                 this.leader_status = 'connected';
@@ -150,8 +182,8 @@ export default class CopyTradingStore {
         this.new_follower_token = token.trim();
     };
 
-    addFollower = async () => {
-        const token = this.new_follower_token;
+    addFollower = async (tokenOverride?: string) => {
+        const token = (tokenOverride ?? this.new_follower_token).trim();
         if (!token) return;
         if (this.followers.find(f => f.token === token)) return;
         // Prevent adding the app's own token (avoid self-replication)

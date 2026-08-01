@@ -258,8 +258,10 @@ class APIBase {
         this.account_id = getAccountId() || '';
         setIsAuthorizing(true);
 
-        // Direct API token mode — must call authorize() before any other API call
-        const directToken = localStorage.getItem('api_token_direct');
+        // Direct API token mode — must call authorize() before any other API call.
+        // The token may be stored in either localStorage or sessionStorage depending
+        // on the entry point used (OAuth flow vs direct-token modal).
+        const directToken = localStorage.getItem('api_token_direct') || sessionStorage.getItem('api_token_direct');
         if (directToken) {
             try {
                 const authResult = await (this.api as any).authorize(directToken);
