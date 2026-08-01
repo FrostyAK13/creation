@@ -264,6 +264,40 @@ export class CopyTradingService {
         return conn.account;
     }
 
+    /** Attach an existing API instance as a follower connection for the current account. */
+    async connectFollowerFromApi(
+        api_instance: InstanceType<typeof DerivAPIBasic>,
+        account_info: { loginid: string; balance?: number; currency?: string; is_virtual?: number },
+        onDisconnect?: (loginid: string) => void
+    ): Promise<CopyAccount> {
+        if (!api_instance) throw new Error('API instance not provided');
+        const loginid = account_info?.loginid ?? '';
+        if (!loginid) throw new Error('Follower loginid not provided');
+
+        if (this.followerConns.has(loginid)) {
+            return this.followerConns.get(loginid)!.account;
+        }
+
+        const account: CopyAccount = {
+            token: loginid,
+            loginid,
+            balance: account_info?.balance ?? 0,
+            currency: account_info?.currency ?? 'USD',
+            is_virtual: !!account_info?.is_virtual,
+        };
+
+        const ws = (api_instance as any).connection as WebSocket;
+        this.followerConns.set(loginid, { api: api_instance, ws, account } as any);
+
+        try {
+            ws.addEventListener?.('close', () => onDisconnect?.(account.loginid));
+        } catch (e) {
+            // ignore
+        }
+
+        return account;
+    }
+
     /** Disconnect and remove a follower. */
     removeFollower(token: string) {
         const conn = this.followerConns.get(token);

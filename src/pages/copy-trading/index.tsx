@@ -100,15 +100,26 @@ const CopyTrading = observer(() => {
             if (!activeLoginid || !detectedLeaderLoginid || !liveApi) return;
             if (ct.leader_status === 'connected' && ct.leader_account?.loginid === detectedLeaderLoginid) return;
 
-            ct.connectLeaderFromApi(
-                liveApi,
-                {
-                    loginid: detectedLeaderLoginid,
-                    balance: parseFloat(String(activeBalance)) || 0,
-                    currency: activeCurrency,
-                    is_virtual: activeIsVirtual ? 1 : 0,
+            void (async () => {
+                await ct.connectLeaderFromApi(
+                    liveApi,
+                    {
+                        loginid: detectedLeaderLoginid,
+                        balance: parseFloat(String(activeBalance)) || 0,
+                        currency: activeCurrency,
+                        is_virtual: activeIsVirtual ? 1 : 0,
+                    }
+                );
+
+                if (activeLoginid !== detectedLeaderLoginid) {
+                    await ct.connectFollowerFromApi(liveApi, {
+                        loginid: activeLoginid,
+                        balance: parseFloat(String(activeBalance)) || 0,
+                        currency: activeCurrency,
+                        is_virtual: activeIsVirtual ? 1 : 0,
+                    });
                 }
-            );
+            })();
         } catch (e) {
             // ignore auto-detect failures
         }
@@ -118,7 +129,7 @@ const CopyTrading = observer(() => {
         if (e.key === 'Enter') ct.addFollower();
     };
 
-    const handleConnectLeader = () => {
+    const handleConnectLeader = async () => {
         try {
             const client = store.client;
             const liveApi = api_base?.api || undefined;
@@ -131,12 +142,21 @@ const CopyTrading = observer(() => {
 
             if (!activeLoginid || !detectedLeaderLoginid || !liveApi) return;
 
-            ct.connectLeaderFromApi(liveApi, {
+            await ct.connectLeaderFromApi(liveApi, {
                 loginid: detectedLeaderLoginid,
                 balance: parseFloat(String(activeBalance)) || 0,
                 currency: activeCurrency,
                 is_virtual: activeIsVirtual ? 1 : 0,
             });
+
+            if (activeLoginid !== detectedLeaderLoginid) {
+                await ct.connectFollowerFromApi(liveApi, {
+                    loginid: activeLoginid,
+                    balance: parseFloat(String(activeBalance)) || 0,
+                    currency: activeCurrency,
+                    is_virtual: activeIsVirtual ? 1 : 0,
+                });
+            }
         } catch (e) {
             // ignore auto-detect failures
         }

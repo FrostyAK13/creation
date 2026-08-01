@@ -50,6 +50,7 @@ export default class CopyTradingStore {
             disconnectLeader: action,
             setNewFollowerToken: action,
             addFollower: action,
+            connectFollowerFromApi: action,
             removeFollower: action,
             startCopying: action,
             stopCopying: action,
@@ -218,6 +219,54 @@ export default class CopyTradingStore {
                     this.followers[idx].error = e?.message ?? 'Connection failed';
                 }
             });
+        }
+    };
+
+    connectFollowerFromApi = async (api_instance: any, account_info: any) => {
+        const loginid = account_info?.loginid || '';
+        if (!loginid) return null;
+
+        const existing = this.followers.find(f => f.token === loginid || f.account?.loginid === loginid);
+        if (existing) {
+            existing.status = 'connected';
+            existing.error = '';
+            return existing.account;
+        }
+
+        const entry: FollowerEntry = {
+            token: loginid,
+            account: null,
+            status: 'pending',
+            error: '',
+        };
+        this.followers.push(entry);
+
+        try {
+            this.ensureService();
+            const account = await this.service!.connectFollowerFromApi(api_instance, account_info, action((_loginid: string) => {
+                const idx = this.followers.findIndex(f => f.account?.loginid === _loginid || f.token === _loginid);
+                if (idx >= 0) {
+                    this.followers[idx].status = 'error';
+                    this.followers[idx].error = 'Connection lost — reconnect this follower.';
+                }
+            }));
+            runInAction(() => {
+                const idx = this.followers.findIndex(f => f.token === loginid || f.account?.loginid === loginid);
+                if (idx >= 0) {
+                    this.followers[idx].account = account;
+                    this.followers[idx].status = 'connected';
+                }
+            });
+            return account;
+        } catch (e: any) {
+            runInAction(() => {
+                const idx = this.followers.findIndex(f => f.token === loginid || f.account?.loginid === loginid);
+                if (idx >= 0) {
+                    this.followers[idx].status = 'error';
+                    this.followers[idx].error = e?.message ?? 'Connection failed';
+                }
+            });
+            return null;
         }
     };
 
