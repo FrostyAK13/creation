@@ -165,8 +165,8 @@ const CopyTrading = observer(() => {
     const connectedFollowers = ct.followers.filter(f => f.status === 'connected');
     const canStart =
         ct.leader_status === 'connected' &&
-        connectedFollowers.length > 0 &&
-        !ct.is_running;
+        !ct.is_running &&
+        (connectedFollowers.length > 0 || !!ct.leader_account);
     const canStop = ct.is_running;
 
     return (
@@ -306,7 +306,7 @@ const CopyTrading = observer(() => {
 
                         <button
                             className='ct2__primary-btn'
-                            onClick={() => ct.startCopying()}
+                            onClick={() => void ct.startCopying()}
                             disabled={!canStart}
                         >
                             <IconPlay />
@@ -377,7 +377,7 @@ const CopyTrading = observer(() => {
                         ) : (
                             <button
                                 className='ct2__primary-btn'
-                                onClick={() => ct.startCopying()}
+                                onClick={() => void ct.startCopying()}
                                 disabled={!canStart}
                             >
                                 <IconPlay />

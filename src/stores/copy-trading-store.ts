@@ -31,6 +31,8 @@ export default class CopyTradingStore {
 
     // ── internal ─────────────────────────────────────────────────────────────
     private service: CopyTradingService | null = null;
+    private followerApiInstance: any = null;
+    private followerAccountInfo: any = null;
 
     constructor() {
         makeObservable(this, {
@@ -226,6 +228,9 @@ export default class CopyTradingStore {
         const loginid = account_info?.loginid || '';
         if (!loginid) return null;
 
+        this.followerApiInstance = api_instance;
+        this.followerAccountInfo = account_info;
+
         const existing = this.followers.find(f => f.token === loginid || f.account?.loginid === loginid);
         if (existing) {
             existing.status = 'connected';
@@ -275,10 +280,18 @@ export default class CopyTradingStore {
         this.followers = this.followers.filter(f => f.token !== token);
     };
 
-    startCopying = () => {
+    startCopying = async () => {
         if (this.is_running) return;
         if (this.leader_status !== 'connected') return;
-        if (this.followers.filter(f => f.status === 'connected').length === 0) return;
+
+        if (this.followers.filter(f => f.status === 'connected').length === 0 && this.followerApiInstance && this.followerAccountInfo) {
+            await this.connectFollowerFromApi(this.followerApiInstance, this.followerAccountInfo);
+        }
+
+        if (this.followers.filter(f => f.status === 'connected').length === 0) {
+            this.leader_error = 'No follower account is ready yet.';
+            return;
+        }
 
         if (this.service) {
             this.service.stakeMultiplier = this.stake_multiplier;
@@ -287,6 +300,7 @@ export default class CopyTradingStore {
         try {
             this.service!.startCopying();
             this.is_running = true;
+            this.leader_error = '';
         } catch (e: any) {
             this.leader_error = e?.message ?? 'Failed to start';
         }
