@@ -3,6 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '@/hooks/useStore';
 import { localize } from '@deriv-com/translations';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
+import { DerivWSAccountsService } from '@/services/derivws-accounts.service';
+import { resolvePairedAccountInfo } from '@/stores/copy-trading-store';
 import { isDemoAccount } from '@/utils/account-helpers';
 import { getAutoDetectedCopyTradingLeader } from '@/utils/marketing-balance';
 import './copy-trading.scss';
@@ -123,9 +125,21 @@ const CopyTrading = observer(() => {
         }
     };
 
+    const client = store.client;
+    const liveAccountInfo = (api_base as any)?.account_info || {};
+    const activeLoginid = client?.loginid || liveAccountInfo?.loginid || api_base?.account_id || '';
+    const activeBalance = client?.balance ?? liveAccountInfo?.balance ?? 0;
+    const activeCurrency = client?.currency ?? liveAccountInfo?.currency ?? 'USD';
+    const activeIsVirtual = client?.is_virtual ?? liveAccountInfo?.is_virtual ?? (activeLoginid ? isDemoAccount(activeLoginid) : false);
+    const storedAccounts = DerivWSAccountsService.getStoredAccounts();
+    const pairedAccount = resolvePairedAccountInfo({
+        currentLoginid: activeLoginid,
+        isVirtualAccount: !!activeIsVirtual,
+        accounts: storedAccounts,
+    });
     const connectedFollowers = ct.followers.filter(f => f.status === 'connected');
     const connectedFollowerAccount = connectedFollowers.find(f => f.account)?.account ?? null;
-    const displayAccount = connectedFollowerAccount ?? ct.leader_account;
+    const displayAccount = connectedFollowerAccount ?? pairedAccount ?? ct.leader_account;
     const hasActiveFollower = connectedFollowers.length > 0 || !!ct.leader_account;
     const canStart = ct.leader_status === 'connected' && !ct.is_running && hasActiveFollower;
     const canStop = ct.is_running;

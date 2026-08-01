@@ -1,5 +1,6 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import { CopyAccount, CopyTradeLog, CopyTradingService } from '@/services/copy-trading.service';
+import type { DerivAccount } from '@/services/derivws-accounts.service';
 import { isDemoAccount } from '@/utils/account-helpers';
 
 export type FollowerEntry = {
@@ -29,6 +30,34 @@ export function resolveAutoFollowerToken({
     if (isDemoCurrentAccount && accountType === 'real') return token;
     if (!isDemoCurrentAccount && accountType === 'demo') return token;
     return null;
+}
+
+export function resolvePairedAccountInfo({
+    currentLoginid,
+    isVirtualAccount,
+    accounts,
+}: {
+    currentLoginid: string;
+    isVirtualAccount?: boolean;
+    accounts: DerivAccount[] | null;
+}): CopyAccount | null {
+    if (!accounts?.length) return null;
+
+    const isDemoCurrentAccount = !!isVirtualAccount || isDemoAccount(currentLoginid);
+    const preferredType = isDemoCurrentAccount ? 'real' : 'demo';
+    const matchedAccount = accounts.find(
+        account => account.account_id !== currentLoginid && account.account_type === preferredType
+    );
+
+    if (!matchedAccount) return null;
+
+    return {
+        token: matchedAccount.account_id,
+        loginid: matchedAccount.account_id,
+        balance: parseFloat(matchedAccount.balance) || 0,
+        currency: matchedAccount.currency || 'USD',
+        is_virtual: matchedAccount.account_type === 'demo',
+    };
 }
 
 export default class CopyTradingStore {
